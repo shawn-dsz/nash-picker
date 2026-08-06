@@ -1,7 +1,8 @@
 import "server-only";
 import { nash } from "./nash";
-import type { NashOrderDetail, NashSubItem } from "./types";
+import type { NashOrderDetail } from "./types";
 import { fillRate, type Outcome } from "./outcomes";
+import { toItemsPayload } from "./pick-payload";
 
 /**
  * Writing picking outcomes back to Nash.
@@ -27,46 +28,9 @@ import { fillRate, type Outcome } from "./outcomes";
  *     partial array silently destroys the rest of the basket.
  *
  * If a first-class picking write path exists, `toItemsPayload` is the only
- * function that changes. That is why the mapping is isolated here.
+ * function that changes. That is why the mapping is isolated in
+ * lib/pick-payload.ts, where it is pure and under test.
  */
-
-/** Metadata values must be strings on the wire. */
-const s = (v: unknown) => (v === undefined || v === null ? undefined : String(v));
-
-/**
- * Maps outcomes onto the order's existing items array.
- *
- * Takes the CURRENT items and returns a full replacement, because PATCH
- * replaces. Sub-items with no recorded outcome are passed through untouched
- * rather than dropped.
- */
-export function toItemsPayload(
-  current: NashOrderDetail["items"],
-  outcomes: Outcome[],
-) {
-  const byId = new Map(outcomes.map((o) => [o.subItemId, o]));
-
-  return (current ?? []).map((item) => ({
-    ...item,
-    subItems: (item.subItems ?? []).map((sub: NashSubItem) => {
-      const o = sub.id ? byId.get(sub.id) : undefined;
-      if (!o) return sub;
-
-      return {
-        ...sub,
-        metadata: {
-          ...(sub as { metadata?: Record<string, string> }).metadata,
-          pick_status: o.status,
-          picked_quantity: s(o.quantity)!,
-          requested_quantity: s(o.requestedQuantity)!,
-          ...(o.weight !== undefined ? { picked_weight: s(o.weight)! } : {}),
-          ...(o.substituteSku ? { substitute_sku: o.substituteSku } : {}),
-          ...(o.scannedBarcode ? { scanned_barcode: o.scannedBarcode } : {}),
-        },
-      };
-    }),
-  }));
-}
 
 export type WriteResult = {
   orderId: string;

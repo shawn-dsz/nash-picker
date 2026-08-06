@@ -30,6 +30,15 @@ export type NashSubItem = {
   category?: string | null;
   barcode?: string | null;
   substitution?: NashSubstitution | null;
+  /**
+   * Where picking outcomes live, because `pickedItems` is not writable and
+   * order `status` is not either. Values are strings on the wire.
+   *
+   * Modelled rather than cast at each use site: this app both writes and reads
+   * back this field, so it is part of the shape whether the type admits it or
+   * not. See lib/pick-payload.ts for what goes in it.
+   */
+  metadata?: Record<string, string> | null;
 };
 
 export type NashOrderSummary = {

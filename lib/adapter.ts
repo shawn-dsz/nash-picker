@@ -256,7 +256,7 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
     fillRate: meta.pick_fill_rate ? Number(meta.pick_fill_rate) : null,
     completedAt: meta.pick_completed_at ?? null,
     recorded: subItemsOf(order).map((s) => {
-      const m = (s as { metadata?: Record<string, string> }).metadata ?? {};
+      const m = s.metadata ?? {};
       return {
         subItemId: s.id ?? "",
         status: m.pick_status ?? null,
