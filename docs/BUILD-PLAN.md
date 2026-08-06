@@ -125,15 +125,42 @@ Only if L0-L5 are stable. **Cut in this order.**
 
 ---
 
+## Verified against the live sandbox, 2026-08-06
+
+Probed directly rather than assumed. **The write path is not what the docs implied.**
+
+| | Field / behaviour | Verdict |
+|---|---|---|
+| ✅ | `requirements: ["pick_and_pack"]` | Accepted and persists |
+| ✅ | `items[].subItems[]` with `sku`, `count`, `barcode`, `description` | Round-trips intact. **`subItems` is the pickable unit** - A1 confirmed |
+| ✅ | `subItems[].substitution { preference, substituteItems[{sku, quantity}] }` | **Persists on `POST /order`.** The substitution storyline is seedable |
+| ✅ | `orderMetadata` (object) and `tags` (array) | Both persist on create and update. **Channel has a home** |
+| ✅ | `subItems[].metadata` (object) | Persists on update. The only writable per-sub-item field |
+| ❌ | `pickedItems` | **Does not exist.** `Unknown argument 'pickedItems' on field 'NashMutations.updateOrder'` |
+| ❌ | `status` on the order | **Not an argument on updateOrder.** No `items_pick_complete` transition available |
+| ❌ | `subItems[].status`, `subItems[].substitution` **on update** | Returns `200` and is **silently dropped**. Only `metadata` survives a PATCH |
+| ⚠️ | `PATCH` on `items` | **Replaces the array, does not merge.** A partial item payload wipes `count`, `barcode`, `sku` and `description` |
+| ⚠️ | `deliveryMode` | Required, and must be `now` or `scheduled` |
+| ⚠️ | `valueCents` | Required, or the order sits in `needs_attention` |
+
+**The `200`-but-dropped behaviour is the dangerous one.** A write that reports success and persists nothing would have looked like a working L5 until someone checked the portal.
+
+---
+
 ## Blocked right now
 
-| | Blocker | Needed for | Who |
+| | Blocker | Needed for | Status |
 |---|---|---|---|
-| ✅ | ~~Sandbox credentials~~ | Resolved - key verified, store confirmed, catalog empty | - |
-| 🟡 | Where channel should live - `tags` or `orderMetadata` | L1.4, L2.3 | Confirm at check-in. **Assume `tags` and proceed** |
-| 🟡 | Whether `PATCH /v1/order` is the right write path | L5 | Confirm at check-in. **Assume yes and proceed** |
+| ✅ | ~~Sandbox credentials~~ | - | Key verified, store confirmed, catalog empty |
+| ✅ | ~~Where channel should live~~ | L1.4, L2.3 | **Resolved by probe: `orderMetadata.channel`.** Structured, and `tags` carries a mirror for filtering |
+| ✅ | ~~Whether substitutions can be seeded~~ | L1.4 | **Resolved by probe: yes, on create** |
+| 🔴 | **Where does a picking outcome get written?** | **L4, L5, R4** | `pickedItems` rejected, order `status` not writable. **Ask at the next check-in - the brief invites exactly this** |
 
-**Nothing is blocking. Neither amber item blocks starting.** Both are isolated to one adapter function each, so a wrong guess is a small edit, not a rewrite. Do not wait on them.
+**One real blocker, and it does not stop L1-L3.** Seeding, the queue and the pick screen are all read-path work and are unaffected.
+
+**Fallback if the answer is "there is no picking field":** write outcomes to `subItems[].metadata` and a run summary to `orderMetadata`. Both are verified to persist. Completion becomes `orderMetadata.pickStatus` rather than a first-class order status. That keeps D2 intact - Nash still holds the state - and costs one adapter function, not the architecture.
+
+**Do not wait on the answer. Build L1-L3 and keep `toPickedItems()` behind one function.**
 
 ---
 

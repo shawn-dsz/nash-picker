@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nash-signal:#c9ff00;
+  --nash-bg:#01051E;
+  --nash-surface:#0a0f28;
+  --nash-surface-2:#1e2535;
+  --nash-ocean:#314868;
+  --nash-mist:#d7f0ee;
+  --nash-text:#ffffff;
+  --nash-text-secondary:#ffffffb3;
+  --nash-text-tertiary:#ffffff73;
+  --nash-border:#ffffff1a;
+  --nash-border-2:#ffffff33;
+  --r-sm:4px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--nash-bg);color:var(--nash-text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:72px 32px 128px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:24px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--nash-signal)}
+h1{font-size:clamp(44px,7vw,76px);line-height:.98;letter-spacing:-.035em;font-weight:700;margin:0 0 20px}
+h1 .sig{color:var(--nash-signal)}
+.deck{font-size:clamp(20px,2.4vw,26px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text-secondary);max-width:52ch;margin:0 0 56px;font-weight:400}
+h2{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin:64px 0 24px;padding-bottom:14px;
+  border-bottom:1px solid var(--nash-border)}
+p{margin:0 0 14px;color:var(--nash-text-secondary);max-width:68ch}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--nash-surface-2);border:1px solid var(--nash-border);
+  padding:2px 7px;border-radius:var(--r-sm);color:var(--nash-mist);white-space:nowrap}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin:24px 0}
+a.card{
+  display:block;text-decoration:none;background:var(--nash-surface);
+  border:1px solid var(--nash-border);border-radius:var(--r-lg);padding:30px;
+  transition:border-color .15s ease,transform .15s ease;
+}
+a.card:hover{border-color:var(--nash-signal);transform:translateY(-2px)}
+a.card .n{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:14px}
+a.card .v{font-size:26px;font-weight:650;letter-spacing:-.025em;line-height:1.15;
+  margin-bottom:12px;color:var(--nash-text)}
+a.card:hover .v{color:var(--nash-signal)}
+a.card p{font-size:14.5px;margin:0;color:var(--nash-text-secondary)}
+
+.links{list-style:none;padding:0;margin:20px 0}
+.links li{margin:0;border-bottom:1px solid var(--nash-border)}
+.links li:last-child{border-bottom:none}
+.links a{display:flex;gap:20px;align-items:baseline;padding:16px 0;
+  text-decoration:none;color:var(--nash-text-secondary);font-size:15px}
+.links a:hover{color:var(--nash-text)}
+.links a .t{font-weight:600;color:var(--nash-text);min-width:190px}
+.links a:hover .t{color:var(--nash-signal)}
+
+.live{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  background:var(--nash-signal);color:#01051E;font-weight:650;font-size:15px;
+  padding:14px 24px;border-radius:99px;margin:8px 10px 8px 0}
+.live.ghost{background:transparent;color:var(--nash-text);
+  border:1px solid var(--nash-border-2)}
+.live.ghost:hover{border-color:var(--nash-signal)}
+
+footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--nash-border);
+  font-size:13px;color:var(--nash-text-tertiary)}
+@media (max-width:640px){ .wrap{padding:48px 20px 80px} .links a{flex-direction:column;gap:4px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="eyebrow"><span class="dot"></span> Nash &middot; Picker Lite &middot; FreshMart</div>
+<h1>One<span class="sig">Pick</span></h1>
+<p class="deck">Three devices become one queue. A lightweight web picking app built on Nash's <code>pick_and_pack</code> model.</p>
+
+<a class="live" href="https://onepick-production.up.railway.app">Open the live app &rarr;</a>
+<a class="live ghost" href="https://onepick-production.up.railway.app/api/health">Health check</a>
+
+<h2>The two pages to read</h2>
+<div class="cards">
+  <a class="card" href="plan.html">
+    <div class="n">01</div>
+    <div class="v">The plan</div>
+    <p>The problem in FreshMart's words, the scope with a colour legend, the demo storyline, the metrics, and the timeline.</p>
+  </a>
+  <a class="card" href="dataflow.html">
+    <div class="n">02</div>
+    <div class="v">Data flow</div>
+    <p>Where every field comes from and where every outcome goes. The three-way join field by field, and what crosses each boundary.</p>
+  </a>
+</div>
+
+<h2>The rest</h2>
+<ul class="links">
+  <li><a href="ARCHITECTURE.md"><span class="t">Architecture</span> <span>The shape, key decisions, analytics and observability, NFRs, tradeoffs, current state</span></a></li>
+  <li><a href="SCOPE.md"><span class="t">Scope</span> <span>Built, stretch, and deliberately not built - each with what would change my mind</span></a></li>
+  <li><a href="DECISIONS.md"><span class="t">Decisions</span> <span>D1-D9. What was decided, what was rejected, and how reversible each one is</span></a></li>
+  <li><a href="BUILD-PLAN.md"><span class="t">Build plan</span> <span>Seven levels, each ending in something demonstrable</span></a></li>
+</ul>
+
+<h2>In one paragraph</h2>
+<p>Nash already models picking end to end. The exercise's four scenarios map exactly onto statuses that already exist - <code>picked</code>, <code>partially_picked</code>, <code>not_picked</code> and <code>substituted</code> - so this is a mapping problem rather than a domain design problem. OnePick drives Nash's model rather than inventing a parallel one, which is also why it is <strong>stateless</strong>: there is no database, Nash holds the state, and closing the tab loses nothing.</p>
+
+<footer>
+  Built for the Nash Picker Lite exercise. Source and decision log in the repository.
+</footer>
+
+</div>
+</body>
+</html>
