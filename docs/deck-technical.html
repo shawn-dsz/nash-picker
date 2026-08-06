@@ -687,6 +687,23 @@ correct   browser <span class="g">◀─push───</span> server <span class=
   </div>
 </section>
 
+<!-- 17b production readiness ------------------------------------------------ -->
+<section class="slide" data-notes="<strong>FYI slide - do not walk it line by line unless asked.</strong> The point is that these were measured, not guessed: each one was reproduced against the running app. If pushed, the sentence is &lsquo;the architecture is production-shaped, the edges are not&rsquo; - that is a different claim from &lsquo;it is unfinished&rsquo;. Two to three days of boundary work, no redesign. The only one fixed under freeze was the error leak, because that was a leak rather than a scope decision.">
+  <div class="inner">
+    <div class="sect r"><b>04</b> Current state &middot; production readiness</div>
+    <h2 class="r">The boundary was traded for the domain</h2>
+    <p class="lead r">Four hours buys a correct model of picking <b>or</b> a hardened edge, not both. These were reproduced against the running app, not read off the source.</p>
+    <div class="rows r">
+      <div class="row"><span class="k">01</span><span class="t">No auth on the write</span><span class="d"><code>POST /api/pick</code> takes no credentials. <b>Out of scope by decision</b>, and it stays out - but the deployed URL turns &ldquo;not built&rdquo; into &ldquo;reachable&rdquo;</span></div>
+      <div class="row"><span class="k">02</span><span class="t">Outcomes unvalidated</span><span class="d"><code>Outcome[]</code> is erased at compile time. A quantity of <b>99999</b> against a requested <b>1</b> was accepted and written to Nash</span></div>
+      <div class="row"><span class="k">03</span><span class="t">Fill rate unclamped</span><span class="d">That same write produced a <b>9,999,900% fill rate</b> in <code>orderMetadata</code>, which <code>/ops</code> reads straight back. Needs a UI bug, not an attacker</span></div>
+      <div class="row"><span class="k">04</span><span class="t">No timeout, no retry</span><span class="d">A hung upstream hangs the request. One transient 503 fails a run that would have succeeded on a second attempt</span></div>
+      <div class="row"><span class="k">05</span><span class="t">Upstream errors leaked</span><span class="d">The write route returned Nash&rsquo;s response body and <code>RequestID</code> to the caller. <b>Fixed &mdash; detail to a server log, a correlation ref to the client</b></span></div>
+    </div>
+    <p class="lead r">Fixed the leak because it was a leak. Left the clamp alone because it was <b>code freeze</b> with other work in the tree &mdash; the discipline is worth more than the two lines.</p>
+  </div>
+</section>
+
 <!-- 18 SECTION 05 - future state -------------------------------------------- -->
 <section class="slide" data-notes="<strong>Order matters and it is not the order of difficulty.</strong> Durability first because it is a correctness hole. Then the claim step, because it is the one that costs money in a real store.">
   <div class="inner">
