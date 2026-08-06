@@ -21,9 +21,8 @@ flowchart LR
   subgraph app["OnePick - Next.js, stateless"]
     route["route handlers<br/>API key stays server-side"]
     adapter["nash adapter<br/>the only module that knows Nash's shape<br/>+ channel normalisation"]
-    picker["Picker view<br/>one item, one action"]
-    ops["Fulfilment view<br/>fill rate by channel"]
-    events["event stream<br/>derived metrics"]
+    picker["Picker view<br/>one item, one action<br/>+ scan gate"]
+    ops["Fulfilment view<br/>fill rate by channel<br/>derived from Nash on load"]
   end
 
   orders <--> route
@@ -32,8 +31,13 @@ flowchart LR
   route <--> adapter
   adapter --> picker
   picker -- "outcome" --> route
-  picker --> events --> ops
+  adapter --> ops
 ```
+
+**The fulfilment view reads Nash, not a counter.** Every number on `/ops` is
+derived on load from what picking wrote back. A counter incremented alongside a
+write would be a second source of truth, and two sources disagree silently -
+usually in front of the person being shown the dashboard.
 
 Three modules, one rule each:
 
@@ -49,7 +53,9 @@ Three modules, one rule each:
 
 ### 2.1 Stateless. Nash holds the state.
 
-There is no database and no session store. Picking outcomes are written to Nash's `pickedItems`, and the order's transition to `items_pick_complete` is the completion signal.
+There is no database and no session store. Picking outcomes are written back to the order in Nash, and `pick_status: items_pick_complete` is the completion signal.
+
+**Where they land is not where this plan expected.** `pickedItems` is not writable and order `status` is not writable either - both established by probing the live sandbox, not by reading. Outcomes land on `subItems[].metadata` and the run summary on `orderMetadata`. See `T12` in `TRADEOFFS.md` for what that costs.
 
 **Why:** the state already has an owner. A local store would be a second copy of the truth, and the failure mode of two copies is that they disagree - silently, and usually during a demo. Close the tab mid-run and the run is recoverable, because it was never held here.
 
@@ -74,9 +80,15 @@ items[].subItems[]                      the pickable unit
       .preference     "substitute" | "refund"
       .substituteItems[]  { id, sku, quantity }
 
-pickedItems[]
-  .requestedQuantity  .quantity  .status  .weight  .scannedBarcode  .scans[]
+subItems[].metadata            where the outcome actually lands
+  pick_status  requested_quantity  picked_quantity  picked_weight
+  scanned_barcode  scan_override
 ```
+
+The field names above are this app's, because Nash has no first-class picking
+write path. The **statuses** are Nash's. That split is the whole story of the
+write path: the domain model survived contact with the API, the storage location
+did not.
 
 **Consequence:** substitutions are **pre-authorised by the customer at checkout**, the same pattern as Uber Eats. The picker is not choosing a replacement - they are applying a decision already made, which is why the substitution flow is one tap rather than a search.
 
@@ -105,6 +117,8 @@ Real stores run this on rugged handhelds. This is the lightweight web equivalent
 ## 3. Analytics and observability
 
 **Analytics** answers *"how did the shift go"*. **Observability** answers *"what happened to this one order"*. Different consumers, different designs, one stream.
+
+**Built today:** the per-line outcome and the run summary persist on the order, and `/ops` derives every number from them on load. **Designed, not built:** the event stream below. It is the shape this would take, not a claim that it exists.
 
 - **Events:** `run_started` · `item_picked` · `item_partial` · `item_not_picked` · `item_substituted` · `scan_rejected` · `run_completed`
 - **Dimensions:** `ts`, `runId`, `orderId`, `subItemId`, **`channel`**, `storeId`, `pickerId`, `sku`, `requestedQuantity`, `quantity`, `weightKg`, `durationMs`
@@ -138,7 +152,8 @@ Real stores run this on rugged handhelds. This is the lightweight web equivalent
 | Nash's `pickedItems` model | A bespoke picking domain | The platform already models this. A parallel model would need reconciling forever |
 | Seeded demo catalog | Production-shaped data pipeline | The account starts empty. Seeding is the fastest path to a real end-to-end flow |
 | One order at a time | Batch picking | Batching multiplies tote-assignment complexity and demonstrates nothing the single flow does not |
-| Displaying location | Optimising the route | Sequencing is a genuine efficiency lever, but it is not one of the requirements |
+| Using location, not just showing it | Displaying aisle / bay / shelf alone | The join already had the data, so serpentine sequencing was near-free. See `SEQUENCING.md` |
+| A scan gate with a recorded override | A hard block, or no gate | You cannot scan an item that is not on the shelf. A gate with no exit makes out-of-stock unrecordable |
 | Hardcoded picker | Auth and roles | No requirement depends on identity today |
 
 ---
@@ -149,20 +164,32 @@ Nothing is ticked until it has been seen working against the live sandbox. This 
 the honest answer to *"what did you actually build"*, so it is filled in as things land,
 never in advance.
 
-- [ ] Orders fetched from Nash's sandbox, normalised across channels into one queue
-- [ ] Picker walked through each sub-item: name, quantity, image, aisle / bay / shelf
-- [ ] All four outcomes recorded against Nash's own statuses
-- [ ] Completion written back, order reaching `items_pick_complete`
+- [x] **R1** Orders fetched from Nash's sandbox, normalised across channels into one queue
+- [x] **R2** Picker walked through each sub-item: name, quantity, image, aisle / bay / shelf
+- [x] **R3** All four outcomes recorded against Nash's own statuses
+- [x] **R4** Completion written back, order reaching `pick_status: items_pick_complete`
 
-**Verified against the live sandbox so far:**
+Beyond the four requirements:
+
+- [x] **Pick sequencing** - serpentine by aisle, ambient before chilled (`SEQUENCING.md`)
+- [x] **Scan verification** - gated primary action, rejection names the wrong product, overrides recorded
+- [x] **Fulfilment view** - `/ops`, fill rate by channel, plus the aisle cut and the outcome mix
+
+**Verified against the live sandbox:**
 
 | | |
 |---|---|
 | Region | US - `https://api.sandbox.usenash.com/v1`. The AU host rejects this key |
 | Reads | `GET /orders`, `GET /products`, `GET /inventory` all return 200, though none are in the published docs |
 | Store | One - `stl_FHRyQgmDr9DwC8qhkD3r75`, "Carlton" |
-| Catalog | Empty. 0 products, 0 inventory rows, 0 orders. The seed is the demo |
-| Not yet verified | `pickedItems`, `items_pick_complete`, the four picking statuses, `requirements: ["pick_and_pack"]`, and `PATCH /order/{id}` as the write path |
+| Catalog | Seeded. 14 products, per-store inventory with locations, four orders across three channels |
+| Write path | Verified end to end. `pick_status`, `pick_fill_rate` and per-sub-item outcomes all read back from Nash after a run |
+| Disproved | `pickedItems` is not writable, order `status` is not writable, and `PATCH` on `items` **replaces rather than merges** |
+
+**What is not measured**, named rather than filled in with a plausible number:
+units per hour and cycle time both need a run-start timestamp, and scan
+*mismatch* rate needs a per-line reject counter. Override rate and scan-verified
+rate are real, because both persist on the write.
 
 ---
 
@@ -172,8 +199,8 @@ never in advance.
 |---|---|
 | **Batch picking** | Several orders per trip with tote assignment. The single largest throughput lever |
 | **Offline durability** | Service worker plus IndexedDB, so a dead spot never costs a pick |
-| **Pick sequencing** | Serpentine ordering by aisle and bay. Cheap now that location data exists, though aisle values are strings and need a collation strategy |
-| **Learned substitution ranking** | The same event stream becomes training data for which substitutions customers actually accept |
+| **A claim step** | Two pickers can currently open the same run. Nash holds the state, so nothing stops them colliding |
+| **Learned substitution ranking** | The same outcome data becomes training data for which substitutions customers actually accept |
 | **Picker identity** | Per-store accounts, which turns accuracy into a coachable per-person metric |
 
 ---
@@ -189,8 +216,15 @@ never in advance.
 
 ## Running it
 
-Not runnable yet - there is no application scaffold. This section gets filled in when
-`npm run dev` actually boots, not before.
+```bash
+npm install
+cp .env.example .env     # then fill in NASH_API_KEY
+npm run seed             # seeds the catalog and four orders, and is also the reset
+npm run dev              # http://localhost:3010
+npm test                 # 25 tests, no framework
+```
+
+Deployed at **https://onepick-production.up.railway.app**, health at `/api/health`.
 
 Nash sandbox base URL: `https://api.sandbox.usenash.com/v1` (US - verified. The AU host
 rejects this key.)
