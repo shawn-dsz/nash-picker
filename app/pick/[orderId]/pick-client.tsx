@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { PickRow, PickRun } from "@/lib/types";
 import type { Outcome } from "@/lib/outcomes";
-import { STATUS_LABEL } from "@/lib/outcomes";
+import { STATUS_LABEL, statusFor } from "@/lib/outcomes";
 
 /**
  * One item at a time.
@@ -225,7 +225,13 @@ function PickItem({
                 onRecord({
                   subItemId: row.subItemId,
                   sku: row.sku,
-                  status: "picked",
+                  // Through statusFor, not asserted here. Every outcome in
+                  // this file derives from the same rule, so the screen and
+                  // the write path cannot drift apart on what "partial" means.
+                  status: statusFor(
+                    row.requestedQuantity,
+                    row.requestedQuantity,
+                  ),
                   requestedQuantity: row.requestedQuantity,
                   quantity: row.requestedQuantity,
                 })
@@ -243,7 +249,7 @@ function PickItem({
                   onRecord({
                     subItemId: row.subItemId,
                     sku: row.sku,
-                    status: "not_picked",
+                    status: statusFor(row.requestedQuantity, 0),
                     requestedQuantity: row.requestedQuantity,
                     quantity: 0,
                   })
@@ -260,7 +266,13 @@ function PickItem({
                   onRecord({
                     subItemId: row.subItemId,
                     sku: row.sku,
-                    status: "substituted",
+                    // The `true` is what makes this substituted. A full-count
+                    // substitute is still not the thing the customer ordered.
+                    status: statusFor(
+                      row.requestedQuantity,
+                      row.substitution!.items[0].quantity,
+                      true,
+                    ),
                     requestedQuantity: row.requestedQuantity,
                     quantity: row.substitution!.items[0].quantity,
                     substituteSku: row.substitution!.items[0].sku,
@@ -298,12 +310,7 @@ function PickItem({
                   sku: row.sku,
                   // A quantity, never a boolean. 0.94kg against a 1kg order is
                   // neither picked nor not-picked.
-                  status:
-                    got === 0
-                      ? "not_picked"
-                      : got >= row.requestedQuantity
-                        ? "picked"
-                        : "partially_picked",
+                  status: statusFor(row.requestedQuantity, got),
                   requestedQuantity: row.requestedQuantity,
                   quantity: got,
                   weight: row.isWeighted ? got : undefined,
