@@ -11,10 +11,13 @@
 <style>
 /* ============================================================
    OnePick - Part 2, the engineering room.
+
    The brief specified six sections. They are used as literal
-   headings, in order, and marked on every slide that belongs
-   to one, because the structure was handed over rather than
-   invented.
+   headings, in order, and chipped on every slide that belongs
+   to one, because the structure was handed over.
+
+   Every diagram is inline SVG. No mermaid, no CDN, no build
+   step: the deck has to render in a room with no wifi.
    ============================================================ */
 
 :root{
@@ -30,16 +33,15 @@
   --border:#ffffff1a;
   --border-2:#ffffff33;
   --warn:#ffb020;
-  --r-sm:6px; --r-md:12px; --r-lg:20px;
+  --r-sm:6px; --r-md:12px; --r-lg:18px;
 
   --title:clamp(2.1rem,6vw,5.2rem);
-  --h2:clamp(1.35rem,3.3vw,2.7rem);
-  --h3:clamp(.95rem,1.8vw,1.4rem);
-  --body:clamp(.82rem,1.3vw,1.1rem);
-  --small:clamp(.66rem,.92vw,.82rem);
-  --mono:clamp(.64rem,.92vw,.84rem);
-  --pad:clamp(1.4rem,4.2vw,4.6rem);
-  --gap:clamp(.55rem,1.7vh,1.6rem);
+  --h2:clamp(1.25rem,3vw,2.4rem);
+  --body:clamp(.8rem,1.25vw,1.05rem);
+  --small:clamp(.64rem,.9vw,.8rem);
+  --mono:clamp(.62rem,.88vw,.82rem);
+  --pad:clamp(1.2rem,3.6vw,4rem);
+  --gap:clamp(.5rem,1.5vh,1.3rem);
 }
 
 *{box-sizing:border-box}
@@ -54,162 +56,176 @@ body{
 .slide{width:100vw;height:100vh;height:100dvh;overflow:hidden;scroll-snap-align:start;
   display:flex;flex-direction:column;position:relative}
 .inner{flex:1;display:flex;flex-direction:column;justify-content:center;max-height:100%;
-  overflow:hidden;padding:var(--pad);gap:var(--gap);max-width:1280px;margin:0 auto;width:100%}
+  overflow:hidden;padding:var(--pad);gap:var(--gap);max-width:1300px;margin:0 auto;width:100%}
 
 .eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:var(--small);font-weight:600;
   letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
 .eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--signal);flex:none}
 
-/* The six mandated sections, chipped so they are unmistakable. */
-.sect{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;
-  border:1px solid var(--border-2);border-radius:99px;padding:7px 16px;
+.sect{display:inline-flex;align-items:center;gap:11px;align-self:flex-start;
+  border:1px solid var(--border-2);border-radius:99px;padding:6px 15px;
   font-size:var(--small);letter-spacing:.14em;text-transform:uppercase;color:var(--text-2);font-weight:600}
 .sect b{color:var(--signal);font-weight:750}
 
 h1{font-size:var(--title);line-height:.95;letter-spacing:-.035em;font-weight:700;margin:0}
 h2{font-size:var(--h2);line-height:1.06;letter-spacing:-.03em;font-weight:680;margin:0}
-p{margin:0;color:var(--text-2);max-width:64ch}
+p{margin:0;color:var(--text-2);max-width:72ch;font-size:var(--body)}
+p.note{font-size:var(--small);color:var(--text-3);max-width:80ch}
+p.note b{color:var(--text-2);font-weight:600}
 .lead{font-size:clamp(1rem,1.9vw,1.5rem);line-height:1.35;letter-spacing:-.015em;color:var(--text-2);max-width:48ch}
 .sig{color:var(--signal)}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;background:var(--surface-2);
-  border:1px solid var(--border);padding:2px 6px;border-radius:var(--r-sm);color:var(--mist);white-space:nowrap}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;background:var(--surface-2);
+  border:1px solid var(--border);padding:1px 5px;border-radius:var(--r-sm);color:var(--mist);white-space:nowrap}
 
-.grid{display:grid;gap:clamp(.5rem,1.1vw,.95rem)}
+/* ---- inline SVG diagrams ------------------------------------------- */
+.dia{width:100%;height:auto;max-height:56vh;display:block;flex:0 1 auto;min-height:0}
+.dia text{font-family:"Host Grotesk",ui-sans-serif,system-ui,sans-serif}
+.dia .box{fill:var(--surface);stroke:var(--border-2);stroke-width:1.2}
+.dia .box-sig{fill:#c9ff0012;stroke:#c9ff0066;stroke-width:1.4}
+.dia .box-nash{fill:#31486840;stroke:#31486899;stroke-width:1.2}
+.dia .box-warn{fill:#ffb0200f;stroke:#ffb02059;stroke-width:1.3}
+.dia .zone{fill:none;stroke:var(--border);stroke-width:1;stroke-dasharray:5 5}
+.dia .t{fill:#fff;font-size:19px;font-weight:650}
+.dia .ts{fill:#ffffffb3;font-size:15px}
+.dia .tm{fill:#d7f0ee;font-size:14px;font-family:ui-monospace,Menlo,monospace}
+.dia .tl{fill:#ffffff73;font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.dia .tsig{fill:#c9ff00;font-size:19px;font-weight:700}
+.dia .tsig-s{fill:#c9ff00;font-size:14px;font-weight:600}
+.dia .twarn{fill:#ffb020;font-size:18px;font-weight:650}
+.dia .ln{stroke:#ffffff59;stroke-width:1.4;fill:none}
+.dia .ln-sig{stroke:#c9ff00;stroke-width:1.8;fill:none}
+.dia .ln-dash{stroke:#ffffff3d;stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.dia .life{stroke:#ffffff26;stroke-width:1;stroke-dasharray:3 4}
+
+/* ---- cards / grids -------------------------------------------------- */
+.grid{display:grid;gap:clamp(.45rem,1vw,.85rem)}
 .g2{grid-template-columns:repeat(2,1fr)}
 .g3{grid-template-columns:repeat(3,1fr)}
-.g4{grid-template-columns:repeat(4,1fr)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:clamp(.8rem,1.6vw,1.4rem);display:flex;flex-direction:column;gap:.4rem;min-width:0}
+  padding:clamp(.7rem,1.4vw,1.2rem);display:flex;flex-direction:column;gap:.35rem;min-width:0}
 .card .n{font-size:var(--small);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
-.card .v{font-size:clamp(.95rem,1.6vw,1.3rem);font-weight:650;letter-spacing:-.02em;line-height:1.15}
-.card p{font-size:var(--small);line-height:1.45}
+.card .v{font-size:clamp(.92rem,1.5vw,1.22rem);font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.card p{font-size:var(--small);line-height:1.42}
 .card.hot{border-color:#c9ff0059;background:#c9ff000f}
 .card.hot .v{color:var(--signal)}
 .card.warn{border-color:#ffb02047;background:#ffb0200d}
 .card.warn .v{color:var(--warn)}
 
-/* --- the join, drawn in boxes rather than a diagram library ---------- */
-.join{display:flex;align-items:stretch;gap:clamp(.45rem,1.2vw,1rem);flex-wrap:nowrap}
-.node{flex:1;min-width:0;border:1px solid var(--border);border-radius:var(--r-md);
-  background:var(--surface);padding:clamp(.6rem,1.3vw,1.1rem);display:flex;flex-direction:column;gap:.3rem}
-.node .k{font-size:var(--small);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
-.node .v{font-weight:650;font-size:clamp(.85rem,1.4vw,1.1rem);letter-spacing:-.02em}
-.node .f{font-family:ui-monospace,Menlo,monospace;font-size:var(--mono);color:var(--mist);line-height:1.5}
-.node.out{border-color:var(--signal);background:#c9ff000f}
-.node.out .v{color:var(--signal)}
-.plus{display:flex;align-items:center;color:var(--text-3);font-size:clamp(1rem,2vw,1.6rem);flex:none}
+/* ---- module map ------------------------------------------------------ */
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.4rem,.9vw,.75rem)}
+.mod{border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);
+  padding:clamp(.5rem,1vw,.8rem);display:flex;flex-direction:column;gap:.15rem;min-width:0}
+.mod .f{font-family:ui-monospace,Menlo,monospace;font-size:var(--mono);color:var(--mist);
+  display:flex;justify-content:space-between;gap:.5rem}
+.mod .f i{color:var(--text-3);font-style:normal;font-variant-numeric:tabular-nums}
+.mod .d{font-size:var(--small);color:var(--text-3);line-height:1.35}
+.mod.hot{border-color:#c9ff0047;background:#c9ff000a}
+.mod.hot .f{color:var(--signal)}
 
-/* --- rows: decisions, tradeoffs, actions ---------------------------- */
+/* ---- rows ------------------------------------------------------------ */
 .rows{display:flex;flex-direction:column;gap:0}
-.row{display:flex;gap:clamp(.7rem,1.8vw,1.6rem);align-items:baseline;
-  padding:clamp(.42rem,1.05vh,.75rem) 0;border-bottom:1px solid var(--border)}
+.row{display:flex;gap:clamp(.6rem,1.6vw,1.4rem);align-items:baseline;
+  padding:clamp(.35rem,.9vh,.62rem) 0;border-bottom:1px solid var(--border)}
 .row:last-child{border-bottom:none}
-.row .k{font-size:var(--small);font-weight:700;color:var(--signal);min-width:3ch;flex:none;
-  font-variant-numeric:tabular-nums}
-.row .t{font-weight:650;min-width:min(26vw,17ch);font-size:clamp(.82rem,1.32vw,1.05rem);flex:none}
-.row .d{color:var(--text-2);font-size:var(--small);line-height:1.42}
+.row .k{font-size:var(--small);font-weight:700;color:var(--signal);min-width:3ch;flex:none;font-variant-numeric:tabular-nums}
+.row .t{font-weight:650;min-width:min(24vw,16ch);font-size:clamp(.8rem,1.28vw,1.02rem);flex:none}
+.row .d{color:var(--text-2);font-size:var(--small);line-height:1.4}
 .row .d b{color:var(--text);font-weight:600}
 
-/* --- a tradeoff stated as chose / cost ------------------------------ */
-.trade{display:flex;flex-direction:column;gap:clamp(.35rem,.95vh,.7rem)}
-.tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(.5rem,1.2vw,1rem);
-  border-left:2px solid var(--border-2);padding-left:clamp(.7rem,1.5vw,1.2rem)}
+.trade{display:flex;flex-direction:column;gap:clamp(.3rem,.85vh,.6rem)}
+.tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(.45rem,1.1vw,.9rem);
+  border-left:2px solid var(--border-2);padding-left:clamp(.6rem,1.4vw,1.1rem)}
 .tr.hot{border-left-color:var(--signal)}
-.tr .a{font-size:clamp(.8rem,1.3vw,1.02rem);font-weight:600;line-height:1.3}
-.tr .b{font-size:var(--small);color:var(--text-3);line-height:1.4}
+.tr .a{font-size:clamp(.78rem,1.25vw,1rem);font-weight:600;line-height:1.3}
+.tr .b{font-size:var(--small);color:var(--text-3);line-height:1.38}
 .tr .b span{color:var(--warn)}
 
-/* --- code / payload ------------------------------------------------- */
 pre{margin:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
-  padding:clamp(.7rem,1.5vw,1.2rem);overflow:hidden;font-family:ui-monospace,Menlo,monospace;
-  font-size:var(--mono);line-height:1.65;color:var(--mist)}
+  padding:clamp(.6rem,1.3vw,1.05rem);overflow:hidden;font-family:ui-monospace,Menlo,monospace;
+  font-size:var(--mono);line-height:1.6;color:var(--mist)}
 pre .c{color:var(--text-3)}
 pre .g{color:var(--signal)}
 pre .w{color:var(--warn)}
-
-.stats{display:flex;gap:clamp(.9rem,3.2vw,3.2rem);flex-wrap:wrap}
-.stat .fig{font-size:clamp(1.6rem,4.2vw,3.2rem);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--signal)}
-.stat .lb{font-size:var(--small);color:var(--text-3);margin-top:.35rem;max-width:20ch}
+pre .k{color:#8fb8ff}
 
 .demo-badge{display:inline-flex;align-items:center;gap:12px;align-self:flex-start;background:var(--signal);
   color:var(--bg);font-weight:750;font-size:var(--small);letter-spacing:.16em;text-transform:uppercase;
-  padding:10px 20px;border-radius:99px}
+  padding:9px 18px;border-radius:99px}
 .slide.demo{background:radial-gradient(circle at 22% 30%,#c9ff0014,transparent 55%),
   radial-gradient(circle at 78% 78%,#31486826,transparent 60%),var(--bg)}
-.beats{display:flex;flex-direction:column;gap:clamp(.3rem,.95vh,.65rem);margin:0;padding:0;list-style:none;counter-reset:beat}
-.beats li{display:flex;gap:clamp(.6rem,1.3vw,1rem);align-items:baseline;
-  font-size:clamp(.85rem,1.42vw,1.14rem);line-height:1.35;color:var(--text-2);counter-increment:beat}
+.beats{display:flex;flex-direction:column;gap:clamp(.28rem,.9vh,.6rem);margin:0;padding:0;list-style:none;counter-reset:beat}
+.beats li{display:flex;gap:clamp(.55rem,1.2vw,.95rem);align-items:baseline;
+  font-size:clamp(.82rem,1.35vw,1.1rem);line-height:1.35;color:var(--text-2);counter-increment:beat}
 .beats li::before{content:counter(beat);color:var(--signal);font-weight:700;font-size:var(--small);
   min-width:2ch;flex:none;font-variant-numeric:tabular-nums}
 .beats li strong{color:var(--text);font-weight:650}
 
+.stats{display:flex;gap:clamp(.8rem,3vw,3rem);flex-wrap:wrap}
+.stat .fig{font-size:clamp(1.5rem,3.8vw,2.9rem);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--signal)}
+.stat .lb{font-size:var(--small);color:var(--text-3);margin-top:.3rem;max-width:20ch}
+
 .rail{position:fixed;top:0;left:0;height:2px;background:var(--signal);width:0;z-index:60;transition:width .25s ease}
-.counter{position:fixed;bottom:clamp(11px,2vh,22px);right:clamp(13px,2.2vw,28px);font-size:var(--small);
+.counter{position:fixed;bottom:clamp(10px,1.8vh,20px);right:clamp(12px,2vw,26px);font-size:var(--small);
   color:var(--text-3);font-variant-numeric:tabular-nums;z-index:60;letter-spacing:.1em}
 .counter b{color:var(--text);font-weight:650}
-.time{position:fixed;bottom:clamp(11px,2vh,22px);left:clamp(13px,2.2vw,28px);font-size:var(--small);
+.time{position:fixed;bottom:clamp(10px,1.8vh,20px);left:clamp(12px,2vw,26px);font-size:var(--small);
   color:var(--text-3);z-index:60;letter-spacing:.1em;text-transform:uppercase}
-.hint{position:fixed;bottom:clamp(11px,2vh,22px);left:50%;transform:translateX(-50%);
-  font-size:var(--small);color:var(--text-3);z-index:60;opacity:.55}
+.hint{position:fixed;bottom:clamp(10px,1.8vh,20px);left:50%;transform:translateX(-50%);
+  font-size:var(--small);color:var(--text-3);z-index:60;opacity:.5}
 
 .notes{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#050a24f2;
   border-top:1px solid var(--signal);backdrop-filter:blur(12px);
-  padding:clamp(.85rem,1.9vw,1.3rem) clamp(1rem,3vw,2.4rem);font-size:var(--small);line-height:1.5;
+  padding:clamp(.8rem,1.8vw,1.25rem) clamp(1rem,3vw,2.4rem);font-size:var(--small);line-height:1.5;
   color:var(--text-2);transform:translateY(101%);transition:transform .2s ease;max-height:44vh;overflow-y:auto}
 .notes.on{transform:translateY(0)}
 .notes .hd{font-size:var(--small);letter-spacing:.16em;text-transform:uppercase;color:var(--signal);
-  margin-bottom:.45rem;font-weight:650}
-.notes p{max-width:none;margin:0}
+  margin-bottom:.4rem;font-weight:650}
+.notes p{max-width:none;margin:0;font-size:var(--small)}
 .notes strong{color:var(--text)}
 
-.r{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.r{opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease}
 .slide.seen .r{opacity:1;transform:none}
-.slide.seen .r:nth-child(2){transition-delay:.06s}
-.slide.seen .r:nth-child(3){transition-delay:.12s}
-.slide.seen .r:nth-child(4){transition-delay:.18s}
-.slide.seen .r:nth-child(5){transition-delay:.24s}
+.slide.seen .r:nth-child(2){transition-delay:.05s}
+.slide.seen .r:nth-child(3){transition-delay:.1s}
+.slide.seen .r:nth-child(4){transition-delay:.15s}
+.slide.seen .r:nth-child(5){transition-delay:.2s}
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .r{opacity:1;transform:none;transition:none}
   .rail{transition:none}
 }
-@media (max-height:700px){
-  :root{--pad:clamp(1rem,3vw,2.1rem);--gap:clamp(.38rem,1.1vh,.9rem);
-        --title:clamp(1.6rem,4.8vw,2.9rem);--h2:clamp(1.1rem,2.8vw,1.9rem)}
+@media (max-height:760px){
+  :root{--pad:clamp(.9rem,2.6vw,2rem);--gap:clamp(.34rem,1vh,.8rem);
+        --title:clamp(1.6rem,4.6vw,2.8rem);--h2:clamp(1.05rem,2.6vw,1.8rem)}
+  .dia{max-height:50vh}
 }
-@media (max-height:560px){ .hint,.time{display:none} }
-@media (max-width:860px){
-  .g4{grid-template-columns:repeat(2,1fr)}
-  .join{flex-wrap:wrap}
-  .plus{display:none}
+@media (max-height:560px){ .hint,.time{display:none} .dia{max-height:46vh} }
+@media (max-width:900px){
+  .mods{grid-template-columns:repeat(2,1fr)}
 }
-/* Card grids stay two-up as long as they are legible. Collapsing a six-card
-   grid straight to one column is what pushes a slide past the viewport. */
 @media (max-width:760px){
-  .g3,.g4{grid-template-columns:repeat(2,1fr)}
-  .g2{grid-template-columns:1fr}
-  .tr{grid-template-columns:1fr;gap:.15rem}
-  .row{flex-direction:column;gap:.15rem}
+  .g3,.g2{grid-template-columns:repeat(2,1fr)}
+  .mods{grid-template-columns:1fr}
+  .tr{grid-template-columns:1fr;gap:.12rem}
+  .row{flex-direction:column;gap:.12rem}
   .row .t{min-width:0}
   .hint{display:none}
 }
-@media (max-width:520px){
-  .g3,.g4{grid-template-columns:1fr}
-}
+@media (max-width:520px){ .g3,.g2{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 
 <div class="rail" id="rail"></div>
 <div class="time">15-20 min</div>
-<div class="counter"><b id="cur">1</b> / <span id="tot">17</span></div>
+<div class="counter"><b id="cur">1</b> / <span id="tot">21</span></div>
 <div class="hint">&larr; &rarr; to move &middot; N for notes</div>
 
 <main>
 
-<!-- 01 title ---------------------------------------------------------- -->
-<section class="slide" data-notes="<strong>Do not open on the architecture.</strong> Open on the finding, next slide. It reframes everything that follows from 'here is my design' to 'here is your model, driven correctly'.">
+<!-- 01 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Open on the finding, not the architecture.</strong> One line here, then move.">
   <div class="inner">
     <div class="eyebrow r"><span class="dot"></span> Nash &middot; Picker Lite &middot; technical</div>
     <h1 class="r">One<span class="sig">Pick</span></h1>
@@ -219,22 +235,25 @@ pre .w{color:var(--warn)}
 </section>
 
 <!-- 02 the finding ---------------------------------------------------- -->
-<section class="slide" data-notes="<strong>Lead with this.</strong> I went through your API before planning anything. Nash already models picking end to end. The four scenarios in the brief map exactly onto four statuses you already have. So I am not inventing a domain, I am driving yours. Everything after this slide is a consequence of that sentence.">
+<section class="slide" data-notes="<strong>Lead with this.</strong> I read the API before planning anything. Nash already models picking end to end, and the four scenarios in the brief map exactly onto four statuses that already exist. So I am not inventing a domain, I am driving yours. Everything after this slide is a consequence.">
   <div class="inner">
     <div class="eyebrow r"><span class="dot"></span> Read the API before planning anything</div>
     <h2 class="r">The four scenarios were already four statuses</h2>
-    <div class="grid g4 r">
-      <div class="card hot"><div class="n">Brief</div><div class="v">Mark picked</div><p><code>picked</code></p></div>
-      <div class="card hot"><div class="n">Brief</div><div class="v">Partial quantity</div><p><code>partially_picked</code></p></div>
-      <div class="card hot"><div class="n">Brief</div><div class="v">Out of stock</div><p><code>not_picked</code></p></div>
-      <div class="card hot"><div class="n">Brief</div><div class="v">Substitutions</div><p><code>substituted</code></p></div>
-    </div>
-    <p class="r"><code>pick_and_pack</code>, <code>subItems</code> and <code>substitution</code> all already exist. This is a mapping problem, not a domain design problem, and that is the reason there is no database.</p>
+    <pre class="r"><span class="c">// the brief                    // Nash, already in the schema</span>
+mark items picked        &rarr;     <span class="g">picked</span>
+partial quantities       &rarr;     <span class="g">partially_picked</span>
+handle out-of-stock      &rarr;     <span class="g">not_picked</span>
+substitutions            &rarr;     <span class="g">substituted</span>
+
+<span class="c">// and the container for all of it</span>
+order.requirements: [<span class="g">"pick_and_pack"</span>]
+order.items[].subItems[].<span class="k">substitution</span>{ preference, substituteItems[] }</pre>
+    <p class="note r"><b>This is a mapping problem, not a domain design problem.</b> It is also the reason there is no database: the state already has an owner.</p>
   </div>
 </section>
 
-<!-- 03 SECTION 01 - working demo -------------------------------------- -->
-<section class="slide demo" data-notes="<strong>Switch to the app. Keep this to about four minutes.</strong> Engineers want to see the round trip, not the styling. Have devtools network tab open. Show the write, then reload the queue and show it read back from Nash. That is the proof there is no local state.">
+<!-- 03 SECTION 01 - working demo --------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Switch to the app. Four minutes, no more.</strong> Have devtools network open. Engineers want the round trip, not the styling. The moment that matters is reloading the queue and seeing fill rate come back from Nash - that is the proof there is no local state.">
   <div class="inner">
     <div class="sect r"><b>01</b> Working demo</div>
     <div class="demo-badge r">Live &middot; against the sandbox</div>
@@ -243,73 +262,340 @@ pre .w{color:var(--warn)}
       <li><strong>FM-1003.</strong> Sequenced by store layout, not basket order</li>
       <li><strong>Scan a Classic against a Zero line.</strong> Rejected by name</li>
       <li><strong>Substitute, partial, complete.</strong> One <code>PATCH</code>, whole items array</li>
-      <li><strong>Reload the queue.</strong> Fill rate is read back from Nash, not remembered</li>
+      <li><strong>Reload.</strong> Fill rate read back from Nash, not remembered</li>
     </ul>
   </div>
 </section>
 
-<!-- 04 the join ------------------------------------------------------- -->
-<section class="slide" data-notes="<strong>The load-bearing sentence:</strong> location lives on inventory, not on the order, so rendering one pick row takes three resources and the app owns that join. If they push on N+1: catalog and inventory are fetched once per order and joined in memory, not once per item.">
+<!-- 04 SECTION 02 - requirement to mechanism ---------------------------- -->
+<section class="slide" data-notes="<strong>This is the traceability slide. Walk it top to bottom, one line each.</strong> The top four are the brief's requirements, the bottom three are the pains FreshMart named on the call. Every row names the mechanism and the file, so nothing on this slide is a claim you cannot open in the editor. The rest of section 02 is just these rows in detail.">
+  <div class="inner">
+    <div class="sect r"><b>02</b> Architecture and key decisions</div>
+    <h2 class="r">Every requirement, and the thing that satisfies it</h2>
+    <div class="rows r">
+      <div class="row"><span class="k">R1</span><span class="t">Fetch orders</span><span class="d">Summary list, then a detail fetch per order. Deduped newest-wins on <code>externalId</code>, filtered to <code>pick_and_pack</code> &middot; <b>adapter.getQueue</b></span></div>
+      <div class="row"><span class="k">R2</span><span class="t">Name, qty, location</span><span class="d">The three-way join. Location lives on per-store inventory, so it needs all three resources &middot; <b>adapter.getPickRun</b></span></div>
+      <div class="row"><span class="k">R3</span><span class="t">Four scenarios</span><span class="d">Status derived from quantities, never a flag. One rule, one place, so the UI cannot disagree with the write &middot; <b>outcomes.statusFor</b></span></div>
+      <div class="row"><span class="k">R4</span><span class="t">Update Nash</span><span class="d">Read-then-PATCH the whole items array, because PATCH replaces rather than merges &middot; <b>pick-write.writeRun</b></span></div>
+      <div class="row"><span class="k">P1</span><span class="t">Accuracy</span><span class="d">UPC gate before the pick can be recorded. Blocks on mismatch, override is allowed and <b>recorded</b> &middot; <b>ScanGate</b></span></div>
+      <div class="row"><span class="k">P2</span><span class="t">Speed</span><span class="d">Serpentine walk order, and <b>zero network calls between items</b> &mdash; the run buffers and flushes once &middot; <b>sequence.ts</b></span></div>
+      <div class="row"><span class="k">P3</span><span class="t">Substitutions</span><span class="d">Pre-authorised at checkout, confirmed in one tap, and verified against the <b>substitute's own barcode</b> &middot; <b>adapter + ScanGate</b></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 SECTION 02 - system architecture --------------------------------- -->
+<section class="slide" data-notes="<strong>The boundary is the point of this slide.</strong> The browser never talks to Nash. Route handlers proxy, the key stays server-side, and `server-only` makes an accidental client import a build failure rather than a leak. Also: no database anywhere on this diagram.">
+  <div class="inner">
+    <div class="sect r"><b>02</b> Architecture and key decisions</div>
+    <h2 class="r">One deployable, one boundary, no database</h2>
+    <svg class="dia r" viewBox="0 0 1000 300" role="img" aria-label="Browser talks to Next route handlers, which talk to the Nash API. The API key stays server-side.">
+      <!-- zones -->
+      <rect class="zone" x="12" y="52" width="268" height="212" rx="14"/>
+      <rect class="zone" x="352" y="52" width="368" height="212" rx="14"/>
+      <rect class="zone" x="792" y="52" width="196" height="212" rx="14"/>
+      <text class="tl" x="26" y="38">Device</text>
+      <text class="tl" x="366" y="38">OnePick &middot; one Next app</text>
+      <text class="tl" x="806" y="38">Platform</text>
+
+      <!-- device -->
+      <rect class="box" x="34" y="76" width="224" height="72" rx="10"/>
+      <text class="t" x="52" y="106">Handheld browser</text>
+      <text class="tm" x="52" y="130">pick-client.tsx</text>
+      <rect class="box" x="34" y="164" width="224" height="76" rx="10"/>
+      <text class="ts" x="52" y="192">Run state buffered</text>
+      <text class="ts" x="52" y="214">in memory, flushed</text>
+      <text class="ts" x="52" y="234">once at completion</text>
+
+      <!-- server -->
+      <rect class="box" x="374" y="76" width="324" height="68" rx="10"/>
+      <text class="t" x="392" y="104">Route handlers</text>
+      <text class="tm" x="392" y="128">/api/orders  /api/pick  /api/ops</text>
+      <rect class="box-sig" x="374" y="158" width="324" height="66" rx="10"/>
+      <text class="tsig" x="392" y="186">lib/ &mdash; pure rules + the join</text>
+      <text class="tm" x="392" y="210">adapter &middot; sequence &middot; outcomes &middot; pick-payload</text>
+      <rect class="box-warn" x="374" y="234" width="324" height="30" rx="8"/>
+      <text class="twarn" x="392" y="255" style="font-size:15px">NASH_API_KEY &mdash; server-only, never bundled</text>
+
+      <!-- nash -->
+      <rect class="box-nash" x="814" y="76" width="152" height="188" rx="10"/>
+      <text class="t" x="832" y="106">Nash API</text>
+      <text class="tm" x="832" y="134">/orders</text>
+      <text class="tm" x="832" y="156">/order/{id}</text>
+      <text class="tm" x="832" y="178">/products</text>
+      <text class="tm" x="832" y="200">/inventory</text>
+      <text class="ts" x="832" y="234">the system</text>
+      <text class="ts" x="832" y="252">of record</text>
+
+      <!-- arrows -->
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ffffff59"/>
+        </marker>
+      </defs>
+      <path class="ln" d="M258 112 L368 112" marker-end="url(#a)"/>
+      <text class="ts" x="266" y="102" style="font-size:13px">fetch /api/*</text>
+      <path class="ln" d="M704 112 L808 112" marker-end="url(#a)"/>
+      <text class="ts" x="710" y="102" style="font-size:13px">Bearer</text>
+      <path class="ln" d="M808 196 L704 196" marker-end="url(#a)"/>
+      <path class="ln" d="M368 196 L264 196" marker-end="url(#a)"/>
+      <text class="ts" x="272" y="186" style="font-size:13px">OnePick types only</text>
+    </svg>
+    <p class="note r"><b>No database, no queue, no cache.</b> A second copy of pick state would need reconciling with Nash forever, and reconciliation bugs are the expensive kind.</p>
+  </div>
+</section>
+
+<!-- 05 the join -------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>The load-bearing sentence:</strong> location lives on inventory, not on the order, so rendering one pick row takes three resources and the app owns that join. Point at the two join keys - inventory joins on the product's EXTERNAL id, not its Nash id, which is the kind of thing you only find by trying it.">
   <div class="inner">
     <div class="sect r"><b>02</b> Architecture and key decisions</div>
     <h2 class="r">One pick row is a three-way join</h2>
-    <div class="join r">
-      <div class="node"><div class="k">Order</div><div class="v">What was bought</div><div class="f">subItems[]<br>sku, count<br>substitution</div></div>
-      <div class="plus">+</div>
-      <div class="node"><div class="k">Catalog</div><div class="v">What it is</div><div class="f">name, image<br>identifiers[]<br>WEIGHTED</div></div>
-      <div class="plus">+</div>
-      <div class="node"><div class="k">Inventory</div><div class="v">Where it is here</div><div class="f">aisle, bay<br>shelf<br>quantity</div></div>
-      <div class="plus">=</div>
-      <div class="node out"><div class="k">OnePick</div><div class="v">PickRow</div><div class="f">one screen<br>one decision<br>one tap</div></div>
-    </div>
-    <p class="r">Inventory joins on <code>externalProductId</code>, not the Nash product id. Every identity mismatch in this join returns <strong style="color:var(--text)">200 with an empty result</strong>, never an error, so the join is instrumented rather than trusted.</p>
+    <svg class="dia r" viewBox="0 0 1000 320" role="img" aria-label="Order, products and inventory join into a single PickRow.">
+      <defs>
+        <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ffffff59"/>
+        </marker>
+        <marker id="bs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#c9ff00"/>
+        </marker>
+      </defs>
+
+      <rect class="box-nash" x="12" y="16" width="250" height="80" rx="10"/>
+      <text class="tl" x="30" y="40">Order</text>
+      <text class="t" x="30" y="66" style="font-size:17px">what was bought</text>
+      <text class="tm" x="30" y="86">subItems[].sku, count</text>
+
+      <rect class="box-nash" x="12" y="120" width="250" height="80" rx="10"/>
+      <text class="tl" x="30" y="144">Catalog</text>
+      <text class="t" x="30" y="170" style="font-size:17px">what it is</text>
+      <text class="tm" x="30" y="190">name, image, identifiers[]</text>
+
+      <rect class="box-nash" x="12" y="224" width="250" height="80" rx="10"/>
+      <text class="tl" x="30" y="248">Inventory</text>
+      <text class="t" x="30" y="274" style="font-size:17px">where it is, in this store</text>
+      <text class="tm" x="30" y="294">aisle, bay, shelf, quantity</text>
+
+      <!-- join keys -->
+      <path class="ln-dash" d="M150 96 L150 120" marker-end="url(#b)"/>
+      <text class="tm" x="162" y="114" style="fill:#c9ff00">sku &rarr; sku</text>
+      <path class="ln-dash" d="M150 200 L150 224" marker-end="url(#b)"/>
+      <text class="tm" x="162" y="218" style="fill:#c9ff00">externalIdentifier &rarr; externalProductId</text>
+
+      <!-- converge -->
+      <path class="ln" d="M262 56 C 400 56, 420 140, 560 152" marker-end="url(#b)"/>
+      <path class="ln" d="M262 160 L560 160" marker-end="url(#b)"/>
+      <path class="ln" d="M262 264 C 400 264, 420 180, 560 170" marker-end="url(#b)"/>
+
+      <rect class="box-sig" x="572" y="70" width="416" height="180" rx="12"/>
+      <text class="tsig" x="594" y="102">PickRow</text>
+      <text class="tm" x="594" y="128">name &middot; imageUrl &middot; requestedQuantity</text>
+      <text class="tm" x="594" y="152">location { aisle, bay, shelf }</text>
+      <text class="tm" x="594" y="176">barcode &middot; isWeighted &middot; inStock &middot; onHand</text>
+      <text class="tm" x="594" y="200">substitution.items[] { sku, name, barcode }</text>
+      <text class="ts" x="594" y="228" style="font-size:13px;fill:#c9ff00">no channel field &mdash; channel-blind by construction</text>
+    </svg>
+    <p class="note r"><b>Every identity mismatch in this join returns HTTP 200 with an empty result, never an error.</b> So a join miss is logged rather than swallowed &mdash; an empty aisle column reads as missing data, not as a bug.</p>
   </div>
 </section>
 
-<!-- 05 the boundary --------------------------------------------------- -->
-<section class="slide" data-notes="<strong>If they call the adapter a god object:</strong> it is one module with one job, be the only place that knows Nash's shape. The alternative is that shape leaking into every component, so a schema surprise becomes a refactor instead of one file. Then point at the next slide, because it earned its keep the same day.">
+<!-- 06 the call sequence ------------------------------------------------ -->
+<section class="slide" data-notes="<strong>Two things to point at.</strong> One: the three reads for a run are parallel, one round trip not three. Two: the picker's taps touch no network at all - that is deliberate, a picker never waits on a call between items. And the write reads first, because PATCH replaces the items array.">
   <div class="inner">
     <div class="sect r"><b>02</b> Architecture and key decisions</div>
-    <h2 class="r">One module knows Nash's shape</h2>
-    <div class="grid g2 r">
-      <div class="card hot"><div class="n">Boundary</div><div class="v">lib/adapter.ts</div><p>The only file that knows Nash's payload. Everything downstream sees OnePick types</p></div>
-      <div class="card"><div class="n">Boundary</div><div class="v">Route handlers</div><p>The browser never talks to Nash. The key stays server-side, enforced by <code>server-only</code></p></div>
-      <div class="card"><div class="n">Purity</div><div class="v">Rules vs network</div><p>Outcome mapping, sequencing and the payload transform are pure, credential-free and tested</p></div>
-      <div class="card"><div class="n">Product</div><div class="v">Channel-blind by construction</div><p>Channel is normalised in the adapter and absent from <code>PickRow</code>. The picker cannot pick differently by channel because they are never told it</p></div>
-    </div>
+    <h2 class="r">One run, end to end</h2>
+    <svg class="dia r" viewBox="0 0 1000 340" role="img" aria-label="Sequence diagram of one picking run across picker, browser, server and Nash.">
+      <defs>
+        <marker id="c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ffffff8c"/>
+        </marker>
+        <marker id="cs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#c9ff00"/>
+        </marker>
+      </defs>
+      <!-- lifelines -->
+      <text class="tl" x="20" y="20">Picker</text>
+      <text class="tl" x="212" y="20">Browser</text>
+      <text class="tl" x="470" y="20">Server</text>
+      <text class="tl" x="828" y="20">Nash</text>
+      <line class="life" x1="48" y1="32" x2="48" y2="330"/>
+      <line class="life" x1="250" y1="32" x2="250" y2="330"/>
+      <line class="life" x1="506" y1="32" x2="506" y2="330"/>
+      <line class="life" x1="856" y1="32" x2="856" y2="330"/>
+
+      <path class="ln" d="M48 56 L244 56" marker-end="url(#c)"/>
+      <text class="ts" x="60" y="48" style="font-size:13px">opens the queue</text>
+
+      <path class="ln" d="M506 84 L850 84" marker-end="url(#c)"/>
+      <text class="ts" x="516" y="76" style="font-size:13px">GET /orders &rarr; dedupe on externalId, newest wins</text>
+
+      <path class="ln" d="M506 112 L850 112" marker-end="url(#c)"/>
+      <text class="ts" x="516" y="104" style="font-size:13px">GET /order/{id} &times; N &rarr; only pick_and_pack survives</text>
+
+      <path class="ln-sig" d="M506 152 L850 152" marker-end="url(#cs)"/>
+      <text class="tsig-s" x="516" y="144">GET order + products + inventory &mdash; in parallel</text>
+      <text class="ts" x="516" y="170" style="font-size:12px">then join, then sequence into walk order</text>
+
+      <rect class="box-sig" x="86" y="192" width="330" height="52" rx="9"/>
+      <text class="tsig" x="104" y="216" style="font-size:16px">scan &middot; tap &middot; scan &middot; tap</text>
+      <text class="ts" x="104" y="236" style="font-size:12.5px">no network on any of it</text>
+
+      <path class="ln" d="M250 268 L500 268" marker-end="url(#c)"/>
+      <text class="ts" x="262" y="260" style="font-size:13px">POST /api/pick &mdash; once, at completion</text>
+
+      <path class="ln" d="M506 296 L850 296" marker-end="url(#c)"/>
+      <text class="ts" x="516" y="288" style="font-size:13px">GET /order/{id} &mdash; read first, PATCH replaces</text>
+
+      <path class="ln-sig" d="M506 324 L850 324" marker-end="url(#cs)"/>
+      <text class="tsig-s" x="516" y="316">PATCH /order/{id} &mdash; whole items array + orderMetadata</text>
+    </svg>
   </div>
 </section>
 
-<!-- 06 the payoff story ----------------------------------------------- -->
-<section class="slide" data-notes="<strong>This is the moment to land in Part 2.</strong> Tell it as a story, slowly. Planned the whole write path against pickedItems. At 12:30 I probed it instead of assuming, and it does not exist. It cost twenty minutes rather than the afternoon because the mapping was already behind one function. That decision paid for itself the same day I made it.">
+<!-- 07 what we built ---------------------------------------------------- -->
+<section class="slide" data-notes="<strong>This is the codebase, not a summary of it.</strong> Roughly 3,600 lines. Point at the lib column: those five files are pure, have no credentials and no fetch, and are where all 34 tests live. The split is not a testing convenience, it is the same boundary the architecture already draws.">
   <div class="inner">
     <div class="sect r"><b>02</b> Architecture and key decisions</div>
-    <h2 class="r">The boundary paid for itself in one day</h2>
-    <div class="trade r">
-      <div class="tr"><div class="a">Planned against <code>pickedItems</code>, as documented</div><div class="b">The docs describe it on the <span>response</span>, never the request</div></div>
-      <div class="tr hot"><div class="a">Probed it at 12:30 rather than at 14:30</div><div class="b"><span>Not an argument on update.</span> Order <code>status</code> is not writable either</div></div>
-      <div class="tr"><div class="a">Outcomes moved to <code>subItems[].metadata</code></div><div class="b">One function changed. Not the architecture</div></div>
+    <h2 class="r">What was actually built</h2>
+    <div class="mods r">
+      <div class="mod hot"><div class="f">lib/adapter.ts<i>281</i></div><div class="d">The three-way join, channel normalisation, the queue</div></div>
+      <div class="mod hot"><div class="f">lib/sequence.ts<i>198</i></div><div class="d">Serpentine walk order + the measured route gain</div></div>
+      <div class="mod hot"><div class="f">lib/outcomes.ts<i>70</i></div><div class="d">The four statuses, derived from quantities</div></div>
+      <div class="mod hot"><div class="f">lib/pick-payload.ts<i>62</i></div><div class="d">Outcomes &rarr; Nash payload. Pure, so it is testable</div></div>
+      <div class="mod hot"><div class="f">lib/dedupe.ts<i>54</i></div><div class="d">Newest-wins per externalId, on real timestamps</div></div>
+      <div class="mod"><div class="f">lib/pick-write.ts<i>95</i></div><div class="d">Read-then-PATCH. The only writer</div></div>
+      <div class="mod"><div class="f">lib/metrics.ts<i>381</i></div><div class="d">Fulfilment report. Stretch, and it is a customer story &mdash; derived from Nash, never stored</div></div>
+      <div class="mod"><div class="f">lib/nash.ts<i>124</i></div><div class="d">One client. Auth, base URL, error shaping</div></div>
+      <div class="mod"><div class="f">lib/types.ts<i>213</i></div><div class="d">Nash shapes and OnePick shapes, kept apart</div></div>
+      <div class="mod"><div class="f">pick-client.tsx<i>846</i></div><div class="d">The pick screen, scan gate and run summary</div></div>
+      <div class="mod"><div class="f">ops/page.tsx<i>456</i></div><div class="d">The fulfilment view. Built after the core was stable, demoed on the customer deck</div></div>
+      <div class="mod"><div class="f">app/api/*<i>~110</i></div><div class="d">Three route handlers. The whole server surface</div></div>
     </div>
-    <p class="r">Probing the write path before building against it is the single highest-value hour of the day. The three API facts on the next slide were all found the same way.</p>
+    <p class="note r"><b>The lime files are pure</b> &mdash; no credentials, no fetch, no Next runtime. <code>pick-write.ts</code> imports <code>server-only</code>, which is why the transform was split out of it.</p>
   </div>
 </section>
 
-<!-- 07 what the API actually does ------------------------------------- -->
-<section class="slide" data-notes="<strong>These are all undocumented and all found by probing.</strong> The PATCH one is the dangerous one: it returns 200 for the destructive version exactly as it does for the correct one. Say plainly that on a real order that would have been damage, not a lesson.">
+<!-- 08 the data model --------------------------------------------------- -->
+<section class="slide" data-notes="<strong>The thing to point at is what is NOT here:</strong> there is no picked boolean anywhere. A customer orders 1kg of bananas and the picker weighs 0.94kg - that is neither picked nor not-picked, and a boolean makes the most common real case unrepresentable. Nash's own WEIGHTED attribute is the tell that this is the intended reading.">
   <div class="inner">
     <div class="sect r"><b>02</b> Architecture and key decisions</div>
-    <h2 class="r">Four things the docs do not say</h2>
+    <h2 class="r">The model, and the boolean that is not in it</h2>
+    <pre class="r"><span class="k">type</span> PickStatus = <span class="g">"picked"</span> | <span class="g">"partially_picked"</span> | <span class="g">"not_picked"</span> | <span class="g">"substituted"</span>;
+
+<span class="k">type</span> Outcome = {
+  subItemId: string;  sku: string;  status: PickStatus;
+  requestedQuantity: number;
+  quantity: number;          <span class="c">// what is physically in the tote</span>
+  weight?: number;           <span class="c">// WEIGHTED products only</span>
+  substituteSku?: string;    <span class="c">// substituted only</span>
+  scannedBarcode?: string;   <span class="c">// what was scanned, never what was expected</span>
+  scanOverride?: boolean;    <span class="c">// bypassed a failed or missing scan</span>
+};
+
+<span class="c">// one rule, one place. The UI cannot disagree with the write path.</span>
+statusFor(requested, got, substituted) &rarr; PickStatus</pre>
+    <p class="note r"><b>There is no <code>picked: boolean</code> anywhere, deliberately.</b> 0.94kg against a 1kg order is the case a boolean cannot express, and it is the ordinary case in a deli aisle.</p>
+  </div>
+</section>
+
+<!-- 09 the scan gate ---------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Two decisions to defend here.</strong> One: not_picked is never gated - you cannot scan an item that is not there, and gating it would turn a safety feature into the reason the data is wrong. Two: a row with no barcode on file is not gated either, because a picker blocked by missing catalog data works around the app rather than stopping.">
+  <div class="inner">
+    <div class="sect r"><b>02</b> Architecture and key decisions</div>
+    <h2 class="r">The scan gate</h2>
+    <svg class="dia r" viewBox="0 0 1000 280" role="img" aria-label="State machine: waiting, verified, wrong, overridden.">
+      <defs>
+        <marker id="d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ffffff59"/>
+        </marker>
+        <marker id="ds" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#c9ff00"/>
+        </marker>
+      </defs>
+
+      <rect class="box" x="24" y="104" width="188" height="66" rx="10"/>
+      <text class="t" x="46" y="134" style="font-size:17px">waiting</text>
+      <text class="ts" x="46" y="156" style="font-size:13px">primary action locked</text>
+
+      <rect class="box-sig" x="404" y="16" width="212" height="66" rx="10"/>
+      <text class="tsig" x="426" y="46" style="font-size:17px">verified</text>
+      <text class="ts" x="426" y="68" style="font-size:13px">unlocked, barcode recorded</text>
+
+      <rect class="box-warn" x="404" y="190" width="212" height="66" rx="10"/>
+      <text class="twarn" x="426" y="220" style="font-size:17px">wrong</text>
+      <text class="ts" x="426" y="242" style="font-size:13px">names what was scanned</text>
+
+      <rect class="box-warn" x="736" y="190" width="240" height="66" rx="10"/>
+      <text class="twarn" x="758" y="220" style="font-size:17px">overridden</text>
+      <text class="ts" x="758" y="242" style="font-size:13px">unlocked, scan_override: true</text>
+
+      <path class="ln-sig" d="M212 122 C 300 122, 320 52, 398 50" marker-end="url(#ds)"/>
+      <text class="tsig-s" x="238" y="88">match</text>
+      <path class="ln" d="M212 152 C 300 152, 320 222, 398 224" marker-end="url(#d)"/>
+      <text class="ts" x="238" y="200" style="font-size:13px">mismatch, or unknown code</text>
+      <path class="ln" d="M616 224 L730 224" marker-end="url(#d)"/>
+      <text class="ts" x="624" y="214" style="font-size:13px">override</text>
+      <path class="ln-dash" d="M470 190 C 440 150, 300 150, 216 146" marker-end="url(#d)"/>
+      <text class="ts" x="290" y="166" style="font-size:13px">rescan</text>
+
+      <rect class="zone" x="24" y="16" width="340" height="62" rx="10"/>
+      <text class="tl" x="44" y="40">Never gated</text>
+      <text class="ts" x="44" y="64" style="font-size:13px">not_picked &middot; and any row with no barcode on file</text>
+    </svg>
+    <p class="note r"><b>A wedge scanner types the digits and sends Enter</b>, so a focused input is the production mechanism, not a stand-in. A phone camera would feed this same resolution path.</p>
+  </div>
+</section>
+
+<!-- 10 sequencing -------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Why this is not just a sort:</strong> aisle is a string, and a real catalog mixes '2', '4', 'Produce', 'Frozen'. There is no comparison that orders those, so it needs a per-store layout - that is config, and pretending it can be derived is the mistake. Frozen last is cold chain, not distance: optimising purely for walking gives a shorter route and warmer ice cream.">
+  <div class="inner">
+    <div class="sect r"><b>02</b> Architecture and key decisions</div>
+    <h2 class="r">Serpentine, over a layout the store owns</h2>
+    <svg class="dia r" viewBox="0 0 1000 250" role="img" aria-label="A serpentine walk alternating direction each aisle.">
+      <defs>
+        <marker id="e" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#c9ff00"/>
+        </marker>
+      </defs>
+      <g>
+        <rect class="box" x="30" y="40" width="118" height="140" rx="8"/>
+        <rect class="box" x="188" y="40" width="118" height="140" rx="8"/>
+        <rect class="box" x="346" y="40" width="118" height="140" rx="8"/>
+        <rect class="box" x="504" y="40" width="118" height="140" rx="8"/>
+        <rect class="box" x="662" y="40" width="118" height="140" rx="8"/>
+        <rect class="box-nash" x="820" y="40" width="150" height="140" rx="8"/>
+      </g>
+      <text class="ts" x="52" y="204" style="font-size:14px">Produce</text>
+      <text class="ts" x="214" y="204" style="font-size:14px">Bakery</text>
+      <text class="ts" x="382" y="204" style="font-size:14px">Aisle 2</text>
+      <text class="ts" x="540" y="204" style="font-size:14px">Aisle 4</text>
+      <text class="ts" x="690" y="204" style="font-size:14px">Chilled</text>
+      <text class="tsig-s" x="856" y="204">Frozen &mdash; last</text>
+
+      <path class="ln-sig" d="M62 58 L62 162 L216 162 L216 58 L374 58 L374 162 L532 162 L532 58 L690 58 L690 162 L890 162" marker-end="url(#e)"/>
+      <text class="tl" x="30" y="26">Walk order, not basket order</text>
+      <text class="ts" x="828" y="236" style="font-size:13px">cold chain, not distance</text>
+    </svg>
+    <p class="note r"><b>Bays sort naturally, so B2 comes before B10</b> &mdash; the bug a plain string sort makes quietly. The gain is measured against the basket as ordered and shown only when it is real: on a small basket it is sometimes zero, and claiming a saving that was not made is worse than reporting none.</p>
+  </div>
+</section>
+
+<!-- 11 API findings ------------------------------------------------------ -->
+<section class="slide" data-notes="<strong>All five found by probing, none of them documented.</strong> Number one is the dangerous one: it returns 200 for the destructive version exactly as it does for the correct one. On a real order that would have been damage, not a lesson. Number five is the one that reshaped the write path, and it cost twenty minutes rather than the afternoon because the mapping was already behind one pure function.">
+  <div class="inner">
+    <div class="sect r"><b>02</b> Architecture and key decisions</div>
+    <h2 class="r">Five things the docs do not say</h2>
     <div class="rows r">
-      <div class="row"><span class="k">01</span><span class="t">PATCH replaces</span><span class="d"><b><code>items</code> is replaced, not merged.</b> A partial send silently destroys the rest of the basket, and returns 200 either way. So the write reads the order first and sends the whole array</span></div>
+      <div class="row"><span class="k">01</span><span class="t">PATCH replaces</span><span class="d"><b><code>items</code> is replaced, not merged.</b> A partial send silently destroys the rest of the basket and returns 200 either way. So the write reads the order first and sends the whole array</span></div>
       <div class="row"><span class="k">02</span><span class="t">Two envelope shapes</span><span class="d"><code>/orders</code> returns <code>{results,totalCount}</code>. <code>/products</code> and <code>/inventory</code> return <code>{&lt;name&gt;,totalResults}</code></span></div>
-      <div class="row"><span class="k">03</span><span class="t">Summary vs detail</span><span class="d"><code>GET /orders</code> has no items and no requirements. And <code>itemsCount</code> is a <b>string</b>, so arithmetic on it concatenates silently</span></div>
-      <div class="row"><span class="k">04</span><span class="t">Orders are append-only</span><span class="d">Cancel and delete are both 404, and <code>status</code> is refused on PATCH. Correct for a fulfilment system. It means the demo reset supersedes rather than removes</span></div>
+      <div class="row"><span class="k">03</span><span class="t">Summary vs detail</span><span class="d"><code>GET /orders</code> carries no items and no requirements. And <code>itemsCount</code> is a <b>string</b>, so arithmetic on it concatenates silently</span></div>
+      <div class="row"><span class="k">04</span><span class="t">Append-only orders</span><span class="d">Cancel and delete are both 404 and <code>status</code> is refused on PATCH. Correct for a fulfilment system, and it means the demo reset supersedes rather than removes</span></div>
+      <div class="row"><span class="k">05</span><span class="t">No <code>pickedItems</code></span><span class="d"><b>Planned the whole write path against it. It is a response field, not a request one.</b> Probed at 12:30 rather than 14:30, so it cost one function instead of the architecture</span></div>
     </div>
   </div>
 </section>
 
-<!-- 08 what gets written ---------------------------------------------- -->
-<section class="slide" data-notes="<strong>Read the payload out loud.</strong> Then concede the weakness before they raise it: this is my schema in a generic field. Next slide is the defence, so do not defend it here.">
+<!-- 12 the written payload ----------------------------------------------- -->
+<section class="slide" data-notes="<strong>Read the payload out loud, it is real and pulled from the sandbox.</strong> Then concede the weakness before they raise it - this is my schema in a generic field. The next slide is the defence, so do not defend it here.">
   <div class="inner">
     <div class="sect r"><b>02</b> Architecture and key decisions</div>
     <h2 class="r">What a completed run leaves behind</h2>
@@ -320,29 +606,29 @@ orderMetadata: {
   pick_completed_at: <span class="g">"2026-08-06T03:11:35.409Z"</span>
 }
 subItems[0].metadata: {
-  pick_status:    <span class="g">"substituted"</span>,      substitute_sku: <span class="g">"DRY-PAS-200"</span>,
+  pick_status:     <span class="g">"substituted"</span>,     substitute_sku:     <span class="g">"DRY-PAS-200"</span>,
   picked_quantity: <span class="g">"1"</span>,               requested_quantity: <span class="g">"1"</span>,
-  scanned_barcode: <span class="g">"930000001029"</span>     <span class="c">// verified at the shelf</span>
+  scanned_barcode: <span class="g">"930000001029"</span>    <span class="c">// verified at the shelf</span>
 }</pre>
-    <p class="r"><code>items_pick_complete</code> is <strong style="color:var(--warn)">this app's convention, not a platform status</strong>. Nash will not dispatch off it, and the app says so on screen rather than claiming a handoff that has not happened.</p>
+    <p class="note r"><b><code>items_pick_complete</code> is this app's convention, not a platform status.</b> Nash will not dispatch off it, and the app says so on screen rather than claiming a handoff that has not happened.</p>
   </div>
 </section>
 
-<!-- 09 SECTION 03 - tradeoffs ----------------------------------------- -->
-<section class="slide" data-notes="<strong>The sharpest question available, so ask it yourself.</strong> Concede the specific thing: it is strictly worse than a real picking field. Hold the general thing: there is still one copy of the truth. Postgres would mean owning reconciliation between my pick state and Nash's order state forever, and that is the bug class that bites in production.">
+<!-- 13 SECTION 03 - the sharp question ----------------------------------- -->
+<section class="slide" data-notes="<strong>Ask the sharpest question yourself.</strong> Concede the specific thing: strictly worse than a real picking field. Hold the general thing: still one copy of the truth. Postgres would mean owning reconciliation between my pick state and Nash's order state forever, and that is the bug class that bites in production.">
   <div class="inner">
     <div class="sect r"><b>03</b> Tradeoffs</div>
     <h2 class="r">&ldquo;Metadata is your own database, but worse&rdquo;</h2>
     <div class="grid g2 r">
-      <div class="card warn"><div class="n">The fair hit</div><div class="v">It is my schema in someone else's untyped field</div><p>No validation, no consumer, and Nash's own systems cannot act on it</p></div>
+      <div class="card warn"><div class="n">The fair hit</div><div class="v">My schema, in someone else's untyped field</div><p>No validation, no consumer, and Nash's own systems cannot act on it</p></div>
       <div class="card hot"><div class="n">What it keeps</div><div class="v">One copy of the truth</div><p>A second store means owning reconciliation forever. Metadata is a worse container with the same ownership model</p></div>
     </div>
-    <p class="r">The real fix is a first-class picking field on the Nash side. If you built one, this app consumes it in an afternoon, because the mapping is one pure function.</p>
+    <p class="note r">The real fix is a first-class picking field on the Nash side. <b>If you built one, this app consumes it in an afternoon</b>, because the mapping is one pure function with eleven tests around it.</p>
   </div>
 </section>
 
-<!-- 10 tradeoffs ------------------------------------------------------ -->
-<section class="slide" data-notes="<strong>Every line is chose-this, cost-that.</strong> Do not soften the costs. The batch-write one is the weakest: an outcome is not durable until the run completes, and the fix is a write-ahead queue on the device, not a per-tap write.">
+<!-- 14 tradeoffs ---------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Every line is chose-this, cost-that. Do not soften the costs.</strong> The batch write is the weakest: an outcome is not durable until the run completes, and the fix is a write-ahead queue on the device rather than a per-tap write.">
   <div class="inner">
     <div class="sect r"><b>03</b> Tradeoffs</div>
     <h2 class="r">What each choice cost</h2>
@@ -350,15 +636,16 @@ subItems[0].metadata: {
       <div class="tr hot"><div class="a">Stateless. Nash owns the state</div><div class="b">No offline. <span>Latency lands in the picker's hand</span></div></div>
       <div class="tr"><div class="a">One write per run, not per tap</div><div class="b"><span>An outcome is not durable until the run completes.</span> Forced by PATCH replacing</div></div>
       <div class="tr"><div class="a">Quantity everywhere, never a boolean</div><div class="b">Every outcome control is more complex than a checkbox</div></div>
-      <div class="tr"><div class="a">Fetch the catalog once and index by SKU</div><div class="b">Correct at 14 products. <span>Wrong at 40,000</span>, where it needs a SKU filter</div></div>
-      <div class="tr"><div class="a">Polling at 30s, no socket</div><div class="b"><span>Oversampled ~28x</span> against an order arriving every ~14 min</div></div>
+      <div class="tr"><div class="a">Catalog fetched once, indexed by SKU</div><div class="b">Correct at 14 products. <span>Wrong at 40,000</span>, where it needs a SKU filter</div></div>
+      <div class="tr"><div class="a">UPC map shipped to the device</div><div class="b"><span>The whole catalog crosses the wire</span> &mdash; bought so a scan needs no round trip</div></div>
+      <div class="tr"><div class="a">Polling at 30s, no socket</div><div class="b"><span>Oversampled ~28&times;</span> against an order arriving every ~14 min</div></div>
       <div class="tr"><div class="a">I seeded the data myself</div><div class="b"><span>Every payload this app has seen was written by me</span></div></div>
     </div>
   </div>
 </section>
 
-<!-- 11 the polling answer --------------------------------------------- -->
-<section class="slide" data-notes="<strong>Only open this if they ask about real-time.</strong> The reframe: polling is not unsophisticated, it is oversampled. Then the part most people miss - a socket on its own buys nothing, because the browser is not the bottleneck. Nash telling us something changed is. Build the webhook first.">
+<!-- 15 polling ------------------------------------------------------------ -->
+<section class="slide" data-notes="<strong>Only open this if they ask about real-time.</strong> The reframe: polling is not unsophisticated, it is oversampled. Then the part most people miss - a socket on its own buys nothing, because the browser is not the bottleneck. Nash telling us something changed is.">
   <div class="inner">
     <div class="sect r"><b>03</b> Tradeoffs</div>
     <h2 class="r">&ldquo;Shouldn't this be a WebSocket?&rdquo;</h2>
@@ -366,92 +653,83 @@ subItems[0].metadata: {
 socket    browser <span class="g">◀─push───</span> server <span class="w">──poll──▶</span> Nash   <span class="c">← still polling</span>
 correct   browser <span class="g">◀─push───</span> server <span class="g">◀─hook───</span> Nash   <span class="c">← nothing polls</span></pre>
     <p class="r">A socket moves the poll one hop back. <strong style="color:var(--text)">The first thing to build is a webhook subscription, not a transport.</strong> And when the transport comes, SSE over WebSocket: the traffic is one-directional and SSE reconnects itself, which matters more than speed in a building that drops signal in the freezer aisle.</p>
-    <p class="r" style="font-size:var(--small)">What actually needs to be real-time is not new orders. It is two pickers opening the same order, and that is a locking problem, not a transport problem.</p>
+    <p class="note r">What actually needs to be real-time is not new orders. <b>It is two pickers opening the same order</b>, and that is a locking problem, not a transport problem.</p>
   </div>
 </section>
 
-<!-- 12 SECTION 04 - current state ------------------------------------- -->
-<section class="slide" data-notes="<strong>Everything on this slide has been seen working against the live sandbox.</strong> Nothing here is 'code exists'. If asked about coverage: thin and deliberate. Tests sit on the transforms that would fail silently, not on rendering.">
+<!-- 16 SECTION 04 - built and tested -------------------------------------- -->
+<section class="slide" data-notes="<strong>Coverage is thin and deliberate.</strong> Tests sit on the transforms that fail silently, not on rendering. The mutation check is the line worth saying: I broke each rule on purpose and confirmed the suite went red, because a test that cannot fail is decoration.">
   <div class="inner">
     <div class="sect r"><b>04</b> Current state</div>
-    <h2 class="r">Verified against the live sandbox</h2>
-    <div class="stats r">
-      <div class="stat"><div class="fig">4/4</div><div class="lb">Brief requirements, end to end</div></div>
-      <div class="stat"><div class="fig">4</div><div class="lb">Outcomes, all persisting to Nash</div></div>
-      <div class="stat"><div class="fig">25+</div><div class="lb">Tests, no framework and no new dependency</div></div>
-      <div class="stat"><div class="fig">0</div><div class="lb">Databases, queues or new infrastructure</div></div>
+    <h2 class="r">34 tests, on the things that fail silently</h2>
+    <div class="grid g2 r">
+      <div class="card hot"><div class="n">11 tests</div><div class="v">pick-payload</div><p>Sub-items with no outcome survive the replacement. Existing metadata is preserved. An unknown sub-item does not invent one</p></div>
+      <div class="card hot"><div class="n">9 tests</div><div class="v">sequence</div><p>B2 before B10. Direction alternates per aisle <i>visited</i>. Frozen last. Sequencing never adds or drops a row</p></div>
+      <div class="card hot"><div class="n">8 tests</div><div class="v">outcomes</div><p>A full-quantity substitution is still <code>substituted</code>. 0.94kg of 1kg is partial. Negative quantity cannot produce a pick</p></div>
+      <div class="card hot"><div class="n">6 tests</div><div class="v">dedupe</div><p>Newest wins across a weekday boundary &mdash; the case a string comparison of RFC-1123 dates gets backwards</p></div>
     </div>
-    <p class="r">Tests cover what fails <strong style="color:var(--text)">silently</strong>: a full-quantity substitution is still <code>substituted</code>; 0.94kg of 1kg is partial; sub-items with no outcome survive the write, because PATCH returns 200 for the destructive version exactly as it does for the correct one. The suite was mutation-checked.</p>
+    <p class="note r"><b>Mutation-checked:</b> dropping unmatched sub-items and disabling the serpentine each turned the suite red. No framework and no new dependency &mdash; Node's own runner over native type stripping.</p>
   </div>
 </section>
 
-<!-- 13 known gaps ----------------------------------------------------- -->
-<section class="slide" data-notes="<strong>Volunteer the gaps.</strong> The ops dashboard names its own unmeasurable metrics on the page rather than filling them with a plausible number. That is the pattern worth pointing at: a dashboard that shows a number it cannot substantiate is worse than one that admits a gap.">
+<!-- 17 known gaps ---------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Volunteer the gaps.</strong> The ops dashboard names its own unmeasurable metrics on the page rather than filling them with a plausible number. A dashboard that shows a number it cannot substantiate is worse than one that admits a gap.">
   <div class="inner">
     <div class="sect r"><b>04</b> Current state</div>
     <h2 class="r">What it cannot do, said out loud</h2>
     <div class="rows r">
       <div class="row"><span class="k">01</span><span class="t">Crash mid-run</span><span class="d">Outcomes buffer on the device and flush at completion, so a crash in aisle six loses the run. <b>The fix is a write-ahead queue, not a per-tap write</b></span></div>
-      <div class="row"><span class="k">02</span><span class="t">Two pickers, one order</span><span class="d">No locking, no claim step. A faster refresh narrows the window and never closes it</span></div>
+      <div class="row"><span class="k">02</span><span class="t">Two pickers, one order</span><span class="d">No locking and no claim step. A faster refresh narrows the window and never closes it</span></div>
       <div class="row"><span class="k">03</span><span class="t">Pick duration</span><span class="d">Nothing stamps run start, so elapsed time is not derivable. <b>The speed claim is a design argument and a route measurement, not a timing</b></span></div>
-      <div class="row"><span class="k">04</span><span class="t">Stale planogram</span><span class="d">Sequencing on stale aisle data sends a picker confidently to the wrong bay, which is worse than no sequencing because they trust it</span></div>
+      <div class="row"><span class="k">04</span><span class="t">Scan mismatch rate</span><span class="d">Overrides are recorded so override rate is real. <b>Rejected scans are not counted</b>, so a true mismatch rate still needs a per-line counter</span></div>
+      <div class="row"><span class="k">05</span><span class="t">Stale planogram</span><span class="d">Sequencing on stale aisle data sends a picker confidently to the wrong bay, which is worse than no sequencing because they trust it</span></div>
     </div>
   </div>
 </section>
 
-<!-- 14 SECTION 05 - future state -------------------------------------- -->
-<section class="slide" data-notes="<strong>Order matters here and it is not the order of difficulty.</strong> Durability first because it is a correctness hole. Then the claim step, because it is the one that costs money in a real store. Batch picking is the biggest throughput lever but it is a release, not a fix.">
+<!-- 18 SECTION 05 - future state -------------------------------------------- -->
+<section class="slide" data-notes="<strong>Order matters and it is not the order of difficulty.</strong> Durability first because it is a correctness hole. Then the claim step, because it is the one that costs money in a real store.">
   <div class="inner">
     <div class="sect r"><b>05</b> Future state</div>
     <h2 class="r">Where this goes</h2>
     <div class="grid g3 r">
-      <div class="card hot"><div class="n">Correctness</div><div class="v">Durable runs</div><p>Service worker plus IndexedDB. The run survives a crash and a dead spot. About half a day</p></div>
-      <div class="card hot"><div class="n">Correctness</div><div class="v">Claim step</div><p>One server-side call so two pickers cannot work the same order. Small, and the first thing a pilot needs</p></div>
-      <div class="card"><div class="n">Throughput</div><div class="v">Batch picking</div><p>Several orders in one trip, sequenced together. The biggest lever in the product and the obvious next release</p></div>
+      <div class="card hot"><div class="n">Correctness</div><div class="v">Durable runs</div><p>Service worker plus IndexedDB. The run survives a crash and a dead spot</p></div>
+      <div class="card hot"><div class="n">Correctness</div><div class="v">Claim step</div><p>One server-side call so two pickers cannot work the same order</p></div>
+      <div class="card"><div class="n">Throughput</div><div class="v">Batch picking</div><p>Several orders in one trip, sequenced together. The biggest lever in the product</p></div>
       <div class="card"><div class="n">Freshness</div><div class="v">Order webhooks</div><p>Nash pushes changes. Nothing polls. SSE to the device after that, not before</p></div>
-      <div class="card"><div class="n">Trust</div><div class="v">Planogram feed</div><p>Per-store aisle data with a staleness signal, so sequencing degrades visibly instead of silently</p></div>
-      <div class="card"><div class="n">Platform</div><div class="v">First-class picking field</div><p>Your side, not mine. It replaces the metadata convention and this app consumes it in an afternoon</p></div>
+      <div class="card"><div class="n">Trust</div><div class="v">Planogram feed</div><p>Per-store aisle data with a staleness signal, so sequencing degrades visibly</p></div>
+      <div class="card"><div class="n">Platform</div><div class="v">First-class picking field</div><p>Your side. It replaces the metadata convention and this app consumes it in an afternoon</p></div>
     </div>
   </div>
 </section>
 
-<!-- 15 SECTION 06 - next action items --------------------------------- -->
-<section class="slide" data-notes="<strong>These are next week, not someday.</strong> Each has an owner and a size. Item 1 and 2 are mine, item 5 is a question for Nash. Offer the pilot shape: one store, one week, and fill rate by channel stops being a guess.">
+<!-- 19 SECTION 06 - next actions -------------------------------------------- -->
+<section class="slide" data-notes="<strong>Next week, not someday.</strong> Each has a size. Item five is a question for Nash rather than work for me. Offer the pilot shape: one store, one week, and fill rate by channel stops being a guess.">
   <div class="inner">
     <div class="sect r"><b>06</b> Next action items</div>
     <h2 class="r">Next week, in order</h2>
     <div class="rows r">
       <div class="row"><span class="k">01</span><span class="t">Durable runs</span><span class="d">Write-ahead queue on the device. Closes the only correctness hole in the product &middot; <b>~half a day</b></span></div>
       <div class="row"><span class="k">02</span><span class="t">Claim step</span><span class="d">Server-side lock on an order so two pickers cannot collide &middot; <b>~2 hours</b></span></div>
-      <div class="row"><span class="k">03</span><span class="t">Run start stamp</span><span class="d">One field. Turns cycle time and units-per-hour from a gap into a real number &middot; <b>~1 hour</b></span></div>
-      <div class="row"><span class="k">04</span><span class="t">Catalog by SKU filter</span><span class="d">Removes the fetch-everything join before it becomes a problem &middot; <b>~2 hours</b></span></div>
+      <div class="row"><span class="k">03</span><span class="t">Run start stamp</span><span class="d">One field. Turns cycle time and units-per-hour from a named gap into a real number &middot; <b>~1 hour</b></span></div>
+      <div class="row"><span class="k">04</span><span class="t">Scan reject counter</span><span class="d">Makes mismatch rate derivable, which is the accuracy number FreshMart actually asked for &middot; <b>~1 hour</b></span></div>
       <div class="row"><span class="k">05</span><span class="t">Ask Nash</span><span class="d">Is there an internal picking write path? If so, one pure function changes &middot; <b>a conversation</b></span></div>
       <div class="row"><span class="k">06</span><span class="t">Pilot</span><span class="d">One store, one week, instrumented. Then the accuracy number is measured rather than promised</span></div>
     </div>
   </div>
 </section>
 
-<!-- 16 the line ------------------------------------------------------- -->
-<section class="slide" data-notes="<strong>If there is one moment to land, this is it.</strong> Say it slowly, then stop talking. It is the whole assessment in one story: parse a spec, make an assumption, test it, be wrong, and have already built the thing that makes being wrong cheap.">
-  <div class="inner">
-    <div class="eyebrow r"><span class="dot"></span> The day in one story</div>
-    <h2 class="r" style="max-width:22ch">Being wrong cost twenty minutes, not the afternoon</h2>
-    <p class="lead r">I planned the whole write path against a field that does not exist. The reason that was cheap is that I had already decided the adapter would be the only thing that knew Nash's shape.</p>
-    <p class="r">That decision paid for itself in the same day I made it.</p>
-  </div>
-</section>
-
-<!-- 17 close ---------------------------------------------------------- -->
-<section class="slide" data-notes="<strong>Close, then hand over to questions.</strong> If asked something you did not look at: I did not look at that today, my boundary was the four requirements plus the join. What would it change? 'I don't know' followed by how you would find out is a scoring answer. Bluffing is the only version that loses.">
+<!-- 20 close ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Close, then take questions.</strong> If asked about something you did not touch: I did not look at that today, my boundary was the four requirements plus the join - what would it change? 'I don't know' followed by how you would find out is a scoring answer. Bluffing is the only version that loses.">
   <div class="inner">
     <div class="eyebrow r"><span class="dot"></span> Where everything lives</div>
     <h2 class="r">Questions</h2>
     <div class="grid g3 r">
       <div class="card"><div class="n">Scope</div><div class="v">SCOPE.md</div><p>Built, stretch, and deliberately not built. Every exclusion has a trigger for changing my mind</p></div>
       <div class="card"><div class="n">Decisions</div><div class="v">DECISIONS.md</div><p>What was decided, what was rejected, and how reversible each one is</p></div>
-      <div class="card"><div class="n">Progress</div><div class="v">BUILD-PLAN.md</div><p>The checklist. Nothing ticked until it was seen working against the live sandbox</p></div>
+      <div class="card"><div class="n">Data flow</div><div class="v">dataflow.html</div><p>Every field, where it comes from and where it goes. One sub-item through six calls</p></div>
     </div>
-    <p class="r" style="font-size:var(--small)">Source, decision log and the full API findings are in the repository. <code>git log</code> is one commit per increment, which is the audit trail for the day.</p>
+    <p class="note r"><code>git log</code> is one commit per increment, which is the audit trail for the day.</p>
   </div>
 </section>
 
@@ -460,7 +738,7 @@ correct   browser <span class="g">◀─push───</span> server <span class=
 <div class="notes" id="notes"><div class="hd">Speaker notes</div><div id="notesBody"></div></div>
 
 <script>
-/* Same controller as the customer deck: scroll-snap moves, this syncs. */
+/* Scroll-snap moves the deck; this syncs chrome, reveals and notes. */
 (function () {
   const slides = [...document.querySelectorAll('.slide')];
   const rail = document.getElementById('rail');
@@ -486,10 +764,9 @@ correct   browser <span class="g">◀─push───</span> server <span class=
   function sync() {
     cur.textContent = index + 1;
     rail.style.width = ((index + 1) / slides.length) * 100 + '%';
-    notesBody.innerHTML =
-      slides[index].dataset.notes
-        ? '<p>' + slides[index].dataset.notes + '</p>'
-        : '<p style="color:var(--text-3)">No notes on this slide.</p>';
+    notesBody.innerHTML = slides[index].dataset.notes
+      ? '<p>' + slides[index].dataset.notes + '</p>'
+      : '<p style="color:var(--text-3)">No notes on this slide.</p>';
   }
 
   function go(i) {
@@ -510,8 +787,7 @@ correct   browser <span class="g">◀─push───</span> server <span class=
       case 'End': e.preventDefault(); go(slides.length - 1); break;
       case 'n': case 'N':
         notesOpen = !notesOpen; notes.classList.toggle('on', notesOpen); break;
-      case 'Escape':
-        notesOpen = false; notes.classList.remove('on'); break;
+      case 'Escape': notesOpen = false; notes.classList.remove('on'); break;
     }
   });
 
