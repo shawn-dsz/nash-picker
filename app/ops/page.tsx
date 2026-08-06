@@ -52,6 +52,14 @@ const pct = (v: number | null) =>
 
 const sum = (o: OutcomeCounts) => OUTCOMES.reduce((n, k) => n + o[k], 0);
 
+/** Coarse on purpose. The input is a modelled figure, so "12 min" is as much
+ *  precision as it has earned - "11 min 44 s" would be false confidence. */
+const duration = (seconds: number) => {
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  const mins = Math.round(seconds / 60);
+  return mins < 90 ? `${mins} min` : `${(mins / 60).toFixed(1)} h`;
+};
+
 /** Seeded aisles are a mix of numbers ("4") and names ("Deli"). A bare number
  *  reads as a count next to a named aisle, so numbers get the noun back. */
 const aisleLabel = (a: string) => (/^\d+$/.test(a) ? `Aisle ${a}` : a);
@@ -197,6 +205,41 @@ export default async function OpsPage() {
                     hint={`of ${report.ordersTotal} in the queue`}
                   />
                 </section>
+
+                {/* What sequencing bought, summed over the shift. It is off the
+                    pick screen deliberately: a per-run percentage is noise to
+                    the picker and absent whenever the basket was already
+                    optimal. Here it is a budget line. Shown only when a walk
+                    was measurable at all - a zero would be a claim about a
+                    route nobody walked. */}
+                {report.walk.runsMeasured > 0 && (
+                  <section className="mt-3 grid gap-3 sm:grid-cols-3">
+                    <StatTile
+                      label="Walking saved"
+                      value={duration(report.walk.secondsSaved)}
+                      hint={`Across ${report.walk.runsMeasured} sequenced ${report.walk.runsMeasured === 1 ? "run" : "runs"}`}
+                    />
+                    <StatTile
+                      label="Aisle crossings cut"
+                      value={`${report.walk.positionsSaved}`}
+                      hint={`${report.walk.positionsBefore} walking the basket as ordered · ${report.walk.positionsAfter} sequenced`}
+                    />
+                    {/* The assumption gets its own cell rather than a footnote,
+                        because a time saving nobody can challenge is a time
+                        saving nobody believes. */}
+                    <div className="rounded-xl border border-dashed border-white/15 px-5 py-4">
+                      <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">
+                        How that is worked out
+                      </p>
+                      <p className="mt-2 text-[12px] leading-relaxed text-white/50">
+                        Crossings cut is measured. Turning it into time assumes{" "}
+                        {report.walk.secondsPerPosition}s per crossing - nothing
+                        times a picker yet, so that is a store constant. Time ten
+                        runs and it becomes real.
+                      </p>
+                    </div>
+                  </section>
+                )}
 
                 {/* Scan verification. Shown only once something has been
                     gated - a 0% override rate over zero gated lines is not a

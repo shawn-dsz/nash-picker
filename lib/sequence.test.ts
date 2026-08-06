@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sequence, aisleChanges, travel, routeGain } from "./sequence.ts";
+import {
+  sequence,
+  aisleChanges,
+  travel,
+  routeGain,
+  walkSaving,
+  SECONDS_PER_AISLE_POSITION,
+} from "./sequence.ts";
 import type { PickRow } from "./types.ts";
 
 /**
@@ -139,4 +146,71 @@ test("routeGain measures a real saving against basket order", () => {
   assert.equal(gain.before.travel, 2);
   assert.equal(gain.after.travel, 1);
   assert.equal(gain.saved, 0.5);
+});
+
+/**
+ * The shift total is the number that gets quoted out loud, so the ways it
+ * could lie are worth pinning down: counting a run it never assessed, letting
+ * an unplaceable line inflate the distance, or reporting a gain on a basket
+ * that was already in walk order.
+ */
+
+// Produce is index 0 in the layout and Frozen is index 9, so out-and-back
+// across the store is the clearest possible before/after.
+const outAndBack = () => [
+  row("Produce", "B1"),
+  row("Frozen", "B1"),
+  row("Produce", "B2"),
+];
+
+test("walkSaving converts saved crossings at the stated rate", () => {
+  const walk = walkSaving([outAndBack()]);
+
+  assert.equal(walk.runsMeasured, 1);
+  assert.equal(walk.positionsBefore, 18);
+  assert.equal(walk.positionsAfter, 9);
+  assert.equal(walk.positionsSaved, 9);
+  assert.equal(walk.secondsSaved, 9 * SECONDS_PER_AISLE_POSITION);
+  // The assumption travels with the number so the page can state it.
+  assert.equal(walk.secondsPerPosition, SECONDS_PER_AISLE_POSITION);
+});
+
+test("walkSaving sums across runs", () => {
+  const walk = walkSaving([outAndBack(), outAndBack()]);
+
+  assert.equal(walk.runsMeasured, 2);
+  assert.equal(walk.positionsSaved, 18);
+});
+
+test("a basket already in walk order is a measured zero, not a gain", () => {
+  const walk = walkSaving([
+    [row("Produce", "B1"), row("Produce", "B2"), row("Frozen", "B1")],
+  ]);
+
+  assert.equal(walk.runsMeasured, 1);
+  assert.equal(walk.positionsSaved, 0);
+  assert.equal(walk.secondsSaved, 0);
+});
+
+test("a run with no measurable walk is excluded, not counted as zero saved", () => {
+  // A single-aisle basket was never assessed. Counting it as a run that saved
+  // nothing would drag the shift total down with a run the system had no
+  // opinion about.
+  const walk = walkSaving([[row("2", "B1"), row("2", "B2")]]);
+
+  assert.equal(walk.runsMeasured, 0);
+  assert.equal(walk.positionsBefore, 0);
+  assert.equal(walk.secondsSaved, 0);
+});
+
+test("an unplaceable line drops out of the distance instead of inflating it", () => {
+  // The reporting side joins SKU to aisle and misses sometimes. An earlier
+  // version of aisleRank gave a missing location a huge sentinel, which made
+  // the walk look enormous and produced a fabricated saving.
+  const walk = walkSaving([
+    [row("Produce", "B1"), { location: null }, row("Frozen", "B1")],
+  ]);
+
+  assert.equal(walk.positionsBefore, 9);
+  assert.equal(walk.positionsSaved, 0);
 });

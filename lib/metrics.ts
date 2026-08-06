@@ -31,6 +31,8 @@
 
 import type { Channel, NashOrderDetail, NashSubItem } from "./types";
 import { toChannel } from "./adapter";
+import { walkSaving } from "./sequence";
+export type { WalkSaving } from "./sequence";
 
 /** The four outcomes picking can record. Fixed order - charts depend on it. */
 export const OUTCOMES = [
@@ -124,6 +126,8 @@ export type Report = {
   outcomes: OutcomeCounts;
   byChannel: ChannelMetrics[];
   byAisle: AisleMetrics[];
+  /** What sequencing bought, over the runs that were actually walked. */
+  walk: ReturnType<typeof walkSaving>;
   runs: RunRow[];
   /** Named gaps. Rendered on the page, not hidden. */
   notMeasured: { metric: string; why: string; needs: string }[];
@@ -233,6 +237,23 @@ function readRun(o: NashOrderDetail): Line[] {
   return lines;
 }
 
+/**
+ * The run as a walk, in the order the customer built the basket.
+ *
+ * Only aisle is known on this side - the inventory join gives a SKU its aisle
+ * and nothing finer - and that is enough, because `travel` measures distance
+ * between aisles. Bay and shelf change the order WITHIN an aisle, which is
+ * comfort for the picker and costs no crossings. A line the join cannot locate
+ * gets no location rather than a guessed one, so it drops out of the distance
+ * instead of inflating it.
+ */
+function walkOf(o: NashOrderDetail, aisleBySku: Map<string, string>) {
+  return subItemsOf(o).map((s) => {
+    const aisle = s.sku ? aisleBySku.get(s.sku) : undefined;
+    return { location: aisle ? { aisle } : null };
+  });
+}
+
 /** A line is short if it did not fully fill. Substituted is NOT short - the
  *  customer pre-approved it, so it is a served line, not a failure. */
 const isShort = (s: OutcomeKey) =>
@@ -278,6 +299,10 @@ export function buildReport(
   let unitsPicked = 0;
   let ordersPicked = 0;
 
+  /** One entry per PICKED run. A saving on a run nobody has walked yet has
+   *  not been made, so waiting orders never reach here. */
+  const walked: ReturnType<typeof walkOf>[] = [];
+
   for (const o of orders) {
     const channel = toChannel(o.tags);
     const lines = readRun(o);
@@ -300,6 +325,7 @@ export function buildReport(
     if (picked) {
       c.ordersPicked += 1;
       ordersPicked += 1;
+      walked.push(walkOf(o, aisleBySku));
     }
     c.unitsOrdered += t.requested;
     c.unitsPicked += t.picked;
@@ -375,6 +401,7 @@ export function buildReport(
     outcomes: totals,
     byChannel,
     byAisle,
+    walk: walkSaving(walked),
     runs: runs.sort((a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? "")),
     notMeasured: NOT_MEASURED,
   };

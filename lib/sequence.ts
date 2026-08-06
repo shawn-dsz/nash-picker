@@ -1,4 +1,18 @@
-import type { PickRow } from "./types";
+/**
+ * All anything here needs is a shelf location, so that is all it asks for.
+ *
+ * The pick screen passes full `PickRow`s. The reporting side has only a
+ * SKU-to-aisle join and no bay or shelf, and it still needs the same distance
+ * maths - a second copy of `STORE_LAYOUT` and `aisleRank` living in the metrics
+ * module is exactly how the walk order and the reported saving drift apart.
+ */
+type Located = {
+  location?: {
+    aisle?: string | null;
+    bay?: string | null;
+    shelf?: string | null;
+  } | null;
+};
 
 /**
  * Pick sequencing.
@@ -70,7 +84,7 @@ export const STORE_LAYOUT: string[] = [
 const RANK_UNKNOWN_AISLE = STORE_LAYOUT.length;
 const RANK_NO_LOCATION = STORE_LAYOUT.length + 1;
 
-function aisleRank(aisle: string | undefined): number {
+function aisleRank(aisle: string | null | undefined): number {
   if (!aisle) return RANK_NO_LOCATION;
   const i = STORE_LAYOUT.findIndex(
     (a) => a.toLowerCase() === aisle.toLowerCase(),
@@ -89,8 +103,8 @@ const natural = (a: string, b: string) =>
  * Serpentine: alternate the bay direction each aisle, so the picker walks up
  * one and down the next instead of returning to the head of every aisle.
  */
-export function sequence(rows: PickRow[]): PickRow[] {
-  const byAisle = new Map<number, PickRow[]>();
+export function sequence<T extends Located>(rows: T[]): T[] {
+  const byAisle = new Map<number, T[]>();
 
   for (const row of rows) {
     const rank = aisleRank(row.location?.aisle);
@@ -99,7 +113,7 @@ export function sequence(rows: PickRow[]): PickRow[] {
     else byAisle.set(rank, [row]);
   }
 
-  const ordered: PickRow[] = [];
+  const ordered: T[] = [];
 
   [...byAisle.keys()]
     .sort((a, b) => a - b)
@@ -120,7 +134,7 @@ export function sequence(rows: PickRow[]): PickRow[] {
 }
 
 /** How many aisle changes the walk requires. The number sequencing reduces. */
-export function aisleChanges(rows: PickRow[]): number {
+export function aisleChanges(rows: Located[]): number {
   let changes = 0;
   for (let i = 1; i < rows.length; i++) {
     if (rows[i].location?.aisle !== rows[i - 1].location?.aisle) changes++;
@@ -142,7 +156,7 @@ export function aisleChanges(rows: PickRow[]): number {
  * number exists to support a claim about a saving. Counting a guess towards
  * it would be the same mistake as sorting on a guess.
  */
-export function travel(rows: PickRow[]): number {
+export function travel(rows: Located[]): number {
   const located = rows.filter((r) => r.location?.aisle);
 
   let total = 0;
@@ -154,6 +168,69 @@ export function travel(rows: PickRow[]): number {
   }
   return total;
 }
+
+/**
+ * Seconds spent crossing one aisle position, used to turn saved travel into
+ * saved time on the operations report.
+ *
+ * IT IS A STORE CONSTANT, NOT A MEASUREMENT. Nothing in this system times a
+ * picker. The figure is a laden-trolley walk across one aisle width at roughly
+ * a metre a second, and it is exported rather than inlined so the report can
+ * name it on the page - a time saving whose assumption is hidden is a number
+ * nobody can challenge, which makes it worthless in the meeting where it
+ * matters. A store that wants the real figure times ten runs and changes this
+ * line.
+ */
+export const SECONDS_PER_AISLE_POSITION = 8;
+
+/**
+ * What sequencing bought across a set of runs, summed.
+ *
+ * WHY THE SUM AND NOT THE PER-RUN PERCENTAGE
+ * ------------------------------------------
+ * A picker cannot act on "23% less walking" - it is absent whenever the basket
+ * was already optimal, and a badge that appears on some runs and not others
+ * reads as decoration. Summed over a shift it becomes a budget line: hours the
+ * store did not spend walking. Different audience, different number.
+ *
+ * A basket with no measurable walk - nothing locatable, or everything in one
+ * aisle - is EXCLUDED rather than counted as a run that saved nothing. It was
+ * never assessed, and counting it would drag the total down with a run the
+ * system had no opinion about.
+ */
+export function walkSaving(baskets: Located[][]): WalkSaving {
+  let runsMeasured = 0;
+  let positionsBefore = 0;
+  let positionsAfter = 0;
+
+  for (const basket of baskets) {
+    const before = travel(basket);
+    if (before <= 0) continue;
+    runsMeasured += 1;
+    positionsBefore += before;
+    positionsAfter += travel(sequence(basket));
+  }
+
+  return {
+    runsMeasured,
+    positionsBefore,
+    positionsAfter,
+    positionsSaved: positionsBefore - positionsAfter,
+    secondsSaved: (positionsBefore - positionsAfter) * SECONDS_PER_AISLE_POSITION,
+    secondsPerPosition: SECONDS_PER_AISLE_POSITION,
+  };
+}
+
+export type WalkSaving = {
+  /** Runs where a before/after comparison was possible at all. */
+  runsMeasured: number;
+  positionsBefore: number;
+  positionsAfter: number;
+  positionsSaved: number;
+  secondsSaved: number;
+  /** The conversion, carried so the page can state it rather than imply it. */
+  secondsPerPosition: number;
+};
 
 export type RouteGain = {
   before: { moves: number; travel: number };
@@ -173,7 +250,7 @@ export type RouteGain = {
  * make is worse than one that reports honestly. The number is real or it is
  * not shown.
  */
-export function routeGain(basketOrder: PickRow[]): RouteGain {
+export function routeGain(basketOrder: Located[]): RouteGain {
   const sequenced = sequence(basketOrder);
 
   const before = {

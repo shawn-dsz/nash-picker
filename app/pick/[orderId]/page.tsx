@@ -120,19 +120,19 @@ export default async function PickPage({
  * Names the walk order, because a picker who does not know the list is
  * sequenced will assume it is basket order and second-guess it.
  *
- * The saving is shown only when there is one. `routeGain` refuses to invent a
- * number on a basket that was already optimal, and the UI has to hold the same
- * line - on a four-item basket the honest answer is often "no gain", and
- * showing nothing is correct. A percentage that appears on every order is a
- * percentage nobody believes.
+ * THE SAVING IS DELIBERATELY NOT HERE. It used to show "N% less walking" on
+ * this bar, and it was the wrong audience: the picker cannot act on it, it is
+ * absent whenever the basket was already optimal, and a badge that appears on
+ * some runs and not others reads as decoration rather than information. The
+ * number is still computed on every run - it is summed across the shift on the
+ * operations report, where somebody can actually spend the time it buys back.
+ * What the picker needs from this bar is the route and its length.
  */
 function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }) {
   if (!run) return null;
   const aisles = [
     ...new Set(run.rows.map((r) => r.location?.aisle).filter(Boolean)),
   ];
-  const saved = run.route.saved;
-  const worthShowing = saved !== null && saved > 0;
   const moves = aisleChanges(run.rows);
 
   return (
@@ -146,14 +146,6 @@ function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }
       <span className="shrink-0 font-mono text-[11px] text-white/40">
         {moves} {moves === 1 ? "move" : "moves"}
       </span>
-      {worthShowing && (
-        <span
-          className="shrink-0 rounded bg-[#c9ff00]/15 px-2 py-[3px] text-[11px] font-semibold text-[#c9ff00]"
-          title={`Basket order: ${run.route.before.travel} aisle positions. Sequenced: ${run.route.after.travel}.`}
-        >
-          {Math.round(saved * 100)}% less walking
-        </span>
-      )}
     </div>
   );
 }
