@@ -49,8 +49,8 @@ and locations.
 - [x] **1.2** `scripts/seed/catalog.ts` - 14 products. Two `WEIGHTED`. Three lookalike colas · `feat(seed): catalog`
 - [x] **1.3** Inventory with `location { aisle, bay, shelf }` and per-store price
 - [x] **1.4** `scripts/seed/orders.ts` - four orders, `pick_and_pack` in `requirements` · `feat(seed): orders`
-- [x] **1.5** `npm run seed` - idempotent for the catalog. **Orders are not**, so reset is its own script
-- [x] **1.7** `npm run reset` - four clean orders before a demo · `feat(seed): reset by superseding`
+- [x] **1.5** `npm run seed` - idempotent. Catalog by upsert, orders by release-then-recreate
+- [x] **1.7** `npm run reset` - alias for the seed, which is now repeatable for orders too · `fix(seed): release the reference before deleting`
 - [x] **1.6** Seed asserts the join and the substitution round-trip rather than trusting a 200
 
 **Live in the sandbox:**
@@ -70,12 +70,16 @@ and `substituteItems`.
 catalog is upsert-only, so reset restores quantities rather than removing rows.
 That is how a real store catalog behaves anyway.
 
-**Found:** orders are **append-only**. `POST /order/{id}/cancel` is 404,
-`DELETE /order/{id}` is 404, and `PATCH` refuses `status` outright. Correct
-behaviour for a fulfilment system - a customer's order is not something an
-integration should be able to erase - but it means **reset supersedes rather
-than removes**: re-post the same `externalId` and let the queue's newest-wins
-dedupe hide the picked copies. `npm run reset`.
+**Found:** `POST /order` has **no upsert on externalId** - it always creates.
+Re-seeding left a second `FM-1001`, which Nash flagged `needs_attention` with
+`externalId: "'FM-1001' is used in other order(s)"`, and the queue could then
+serve the invalid copy while the portal showed the real order untouched.
+
+**And `DELETE /order/{id}` is a soft archive.** The order keeps its
+`externalId`, so deleting alone does not free the reference and the next
+create still fails validation. The stale order has to be **renamed to a
+tombstone first, then deleted**. That is what makes `npm run seed` repeatable,
+and it is why `npm run reset` is simply an alias for it.
 
 ---
 
