@@ -83,6 +83,7 @@ export default async function BatchPage() {
           <Cost plan={plan} />
           <Totes plan={plan} />
           <CombinedList plan={plan} />
+          <NotPickableYet />
           <Assumptions plan={plan} />
         </div>
       )}
@@ -238,6 +239,42 @@ function CombinedList({ plan }: { plan: Plan }) {
           );
         })}
       </ul>
+    </section>
+  );
+}
+
+/**
+ * Why there is no "start picking" button, said on the page.
+ *
+ * THIS IS A DESIGN POSITION, NOT A GAP.
+ *
+ * A batch list a picker can work through without tote verification builds
+ * exactly the failure batching introduces. Today the scan gate proves WHAT is
+ * in your hand; carrying four totes means it also has to prove WHERE it goes,
+ * and put-to-wrong-tote is a double error - one order receives another's item
+ * and is simultaneously short its own. One mis-sort, two customers.
+ *
+ * So tote scan is sequenced BEFORE batching on the roadmap, and shipping a
+ * pickable batch screen without it would contradict the reason the scan gate
+ * was built in the first place.
+ */
+function NotPickableYet() {
+  return (
+    <section className="mt-7 rounded-lg border border-[#c9ff00]/30 bg-[#c9ff00]/[0.06] px-4 py-4">
+      <h3 className="text-[10px] uppercase tracking-[0.14em] text-[#c9ff00]">
+        Not pickable yet, on purpose
+      </h3>
+      <p className="mt-2.5 text-[12px] leading-snug text-white/70">
+        Working this list needs a <strong className="text-white">tote scan</strong>{" "}
+        as well as the item scan that already ships. Without it, the right item
+        into the wrong tote is unguarded - and that is a double error: one
+        order gets another&apos;s item and is short its own at the same time.
+      </p>
+      <p className="mt-2.5 text-[12px] leading-snug text-white/50">
+        Which is why tote scan is sequenced before batching on the roadmap.
+        Batching is not blocked by optimisation work. It is blocked by the
+        accuracy work that has to land first.
+      </p>
     </section>
   );
 }

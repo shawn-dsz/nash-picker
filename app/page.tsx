@@ -85,6 +85,12 @@ export default async function QueuePage() {
           >
             Shelf labels
           </Link>
+          <Link
+            href="/batch"
+            className="rounded-lg border border-dashed border-white/25 px-3 py-2 text-[12px] font-semibold text-white/70 active:bg-white/10"
+          >
+            Batch plan
+          </Link>
         </nav>
       </header>
 
