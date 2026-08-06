@@ -1,6 +1,7 @@
 import "server-only";
 import { nash, unwrap } from "./nash";
 import { sequence, routeGain } from "./sequence";
+import { newestByReference } from "./dedupe";
 import type {
   Channel,
   NashInventory,
@@ -62,28 +63,22 @@ export async function getQueue(): Promise<QueueOrder[]> {
   const raw = await nash.get<unknown>("/orders", { limit: 50 });
   const summaries = unwrap<NashOrderSummary>(raw, "orders");
 
-  const candidates = summaries.filter(
-    (o) => o.externalId && o.status !== "archived" && o.status !== "cancelled",
+  // Archived copies are the seed's tombstones. Newest-wins is in its own pure
+  // module so the date comparison can be tested - it is on time rather than on
+  // text, because Nash returns RFC-1123 and the weekday leads the string.
+  const live = newestByReference(
+    summaries.filter(
+      (o) => o.status !== "archived" && o.status !== "cancelled",
+    ),
   );
 
-  const newestByReference = new Map<string, NashOrderSummary>();
-  for (const o of candidates) {
-    const key = o.externalId!;
-    const seen = newestByReference.get(key);
-    if (!seen || (o.createdAt ?? "") > (seen.createdAt ?? "")) {
-      newestByReference.set(key, o);
-    }
-  }
-
   const details = await Promise.allSettled(
-    [...newestByReference.values()].map((o) =>
-      nash.get<NashOrderDetail>(`/order/${o.id}`),
-    ),
+    live.map((o) => nash.get<NashOrderDetail>(`/order/${o.id}`)),
   );
 
   const orders: QueueOrder[] = [];
 
-  for (const [i, o] of [...newestByReference.values()].entries()) {
+  for (const [i, o] of live.entries()) {
     const result = details[i];
     const detail = result.status === "fulfilled" ? result.value : null;
 
