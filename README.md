@@ -4,6 +4,7 @@ A lightweight web picking app for FreshMart, built on Nash's `pick_and_pack` mod
 
 **Live:** https://onepick-production.up.railway.app
 **Health:** https://onepick-production.up.railway.app/api/health
+**Docs:** https://shawn-dsz.github.io/nash-picker/
 
 ---
 
@@ -41,19 +42,26 @@ loses nothing.
 
 ## Docs
 
-Read in this order.
+Read in this order. The HTML ones are published at
+**https://shawn-dsz.github.io/nash-picker/** - open them there, because GitHub
+serves raw source for `.html` rather than rendering it.
 
 | | |
 |---|---|
-| [`docs/plan.html`](docs/plan.html) | The shareable one-pager. Problem, scope, storyline, metrics |
-| [`docs/dataflow.html`](docs/dataflow.html) | Where every field comes from and where every outcome goes |
+| [`plan.html`](https://shawn-dsz.github.io/nash-picker/plan.html) | The shareable one-pager. Problem, scope, storyline, metrics |
+| [`dataflow.html`](https://shawn-dsz.github.io/nash-picker/dataflow.html) | Where every field comes from and where every outcome goes |
+| [`json-flow.html`](https://shawn-dsz.github.io/nash-picker/json-flow.html) | One sub-item through six calls |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | The shape, key decisions, analytics, NFRs, tradeoffs, current state |
 | [`docs/SCOPE.md`](docs/SCOPE.md) | What is built, what is stretch, what is deliberately not built - and what would change my mind |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | D1-D9 with rationale, what was rejected, and how reversible each one is |
 | [`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) | Seven levels, each ending in something demonstrable |
 | [`AGENTS.md`](AGENTS.md) | Working agreements - micro-commits, scope discipline, boundaries |
 
-The HTML docs are self-contained. Open them in a browser.
+The two presentation decks are published alongside them:
+[customer](https://shawn-dsz.github.io/nash-picker/deck-customer.html) and
+[technical](https://shawn-dsz.github.io/nash-picker/deck-technical.html).
+
+Every HTML doc is self-contained - no build step, no CDN.
 
 ---
 
