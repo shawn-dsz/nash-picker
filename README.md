@@ -66,6 +66,44 @@ Every HTML doc is self-contained - no build step, no CDN.
 
 ---
 
+## Routes
+
+Live at **https://onepick-production.up.railway.app**
+
+### Pages
+
+| | |
+|---|---|
+| [`/`](https://onepick-production.up.railway.app/) | **The queue.** One store, every channel, one list. The screen that proves three devices became one - it is the only place the channel badge appears |
+| `/pick/{orderId}` | **The pick run.** One item at a time, sequenced into store walk order rather than basket order. Scan to verify, then record picked, partial, not found or substituted. Writes straight back to Nash |
+| [`/shelf`](https://onepick-production.up.railway.app/shelf) | **Shelf labels.** Every product as a real, scannable Code 128 barcode with its aisle, bay and shelf. Point a camera at it, or print it. This is what makes the scan gate demonstrable rather than described |
+| [`/ops`](https://onepick-production.up.railway.app/ops) | **Fulfilment report.** For the operations manager, not the picker. Fill rate, short-pick rate, scan override rate, walking saved, and a by-aisle breakdown of where picks fail. Plus the metrics that cannot yet be measured, and what each one costs |
+
+The pick screen is built for a handheld: a 420px frame, 64px targets, one decision
+per screen. `/shelf` and `/ops` deliberately break out of it, because neither is
+read one-handed in a cold aisle.
+
+**Scanning** has three ways in, all resolving into the same verification, so
+nothing downstream can tell which was used:
+
+- **Typed or wedge-scanned** - the primary path. Store handhelds emulate a keyboard, so a focused input *is* the production mechanism. Enter or paste both submit
+- **Camera** - live video, or a photo through the OS camera app. Uses the browser's native decoder where it exists and loads ZXing where it does not, so Safari and Firefox work too
+- **Shelf dropdown** - picks the physical item rather than the barcode, for a demo with no handheld attached. It emits that product's real barcode, including the wrong one
+
+### API
+
+Thin route handlers over Nash. They exist so the API key stays on the server.
+
+| | |
+|---|---|
+| `GET /api/health` | Connection check. Reports **counts**, not just ok - both likely failures succeed quietly otherwise |
+| `GET /api/orders` | The queue. Archived and cancelled dropped, deduped on `externalId` |
+| `GET /api/orders/{orderId}` | One run, joined against products and inventory and sequenced |
+| `POST /api/pick` | The write. Records every line's outcome plus the run's fill rate |
+| `GET /api/ops` | The fulfilment report as JSON. Derived from Nash on every call - no counters, no second source of truth |
+
+---
+
 ## Running it
 
 ```bash
