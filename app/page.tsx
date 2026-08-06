@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getQueue, CHANNEL_LABEL } from "@/lib/adapter";
 import type { Channel } from "@/lib/types";
+import QueueRefresh from "./queue-refresh";
 
 // Picking is live data. A cached queue is a wrong queue.
 export const dynamic = "force-dynamic";
@@ -44,6 +45,7 @@ export default async function QueuePage() {
 
   return (
     <main className="flex min-h-dvh flex-col">
+      <QueueRefresh />
       <header className="border-b border-white/10 px-5 pb-5 pt-7">
         <div className="flex items-baseline justify-between">
           <h1 className="text-[28px] font-bold leading-none tracking-tight">
