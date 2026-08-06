@@ -149,7 +149,7 @@ No build cost. The layout stops looking sparse the moment it is framed as a devi
 
 **Cost:** forty minutes of build time, on a four-hour clock, gone. If the plan is wrong it was spent for nothing.
 
-**Flips when:** it does not - the bet is already placed. It paid off if `pick_and_pack` really is the right model, because finding that at hour three would have cost the day. **Judged, not asserted:** the finding that Nash already models picking end to end came out of that block.
+**Flips when:** it does not - the bet is already placed. **Judged, not asserted:** it paid off on the read path and did not on the write path. `subItems` as the pickable unit and pre-authorised substitutions both came out of that block and both held up against the live API. `pickedItems` also came out of that block and does not exist. Reading the docs closely bought a correct domain model and a wrong write path, which is the honest scoreline - see `T12`.
 
 ---
 ## T12 - The model I planned against vs. the API that exists
