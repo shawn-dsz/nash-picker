@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nash-signal:#c9ff00;
+  --nash-accent-dim:#a8d400;
+  --nash-bg:#01051E;
+  --nash-surface:#0a0f28;
+  --nash-surface-2:#1e2535;
+  --nash-surface-3:#262e40;
+  --nash-ocean:#314868;
+  --nash-mist:#d7f0ee;
+  --nash-text:#ffffff;
+  --nash-text-secondary:#ffffffb3;
+  --nash-text-tertiary:#ffffff73;
+  --nash-border:#ffffff1a;
+  --nash-border-2:#ffffff33;
+  --r-sm:4px; --r-md:8px; --r-lg:16px; --r-xl:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--nash-bg);color:var(--nash-text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:72px 32px 128px}
+
+/* masthead */
+header{margin-bottom:72px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:24px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--nash-signal)}
+h1{
+  font-size:clamp(44px,7vw,76px);line-height:.98;letter-spacing:-.035em;
+  font-weight:700;margin:0 0 20px;
+}
+h1 .sig{color:var(--nash-signal)}
+.deck{
+  font-size:clamp(20px,2.4vw,26px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text-secondary);max-width:56ch;margin:0;font-weight:400;
+}
+
+/* sections */
+section{margin-top:80px}
+h2{
+  font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin:0 0 28px;padding-bottom:14px;
+  border-bottom:1px solid var(--nash-border);
+}
+h3{font-size:22px;font-weight:650;letter-spacing:-.015em;margin:36px 0 10px}
+.lead{
+  font-size:clamp(24px,3vw,34px);line-height:1.22;letter-spacing:-.025em;
+  font-weight:650;margin:0 0 16px;max-width:24ch;
+}
+.lead.wide{max-width:34ch}
+p{margin:0 0 14px;color:var(--nash-text-secondary);max-width:70ch}
+p strong{color:var(--nash-text);font-weight:600}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--nash-surface-2);border:1px solid var(--nash-border);
+  padding:2px 7px;border-radius:var(--r-sm);color:var(--nash-mist);
+  white-space:nowrap;
+}
+
+/* quote */
+.quote{
+  border-left:2px solid var(--nash-signal);padding:6px 0 6px 24px;margin:28px 0;
+}
+.quote p{font-size:clamp(19px,2.2vw,24px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text);margin:0;max-width:46ch}
+.quote cite{
+  display:block;font-style:normal;font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--nash-text-tertiary);margin-top:14px;
+}
+
+/* tables */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:15px}
+th{
+  text-align:left;font-size:10px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--nash-text-tertiary);
+  padding:0 20px 12px 0;border-bottom:1px solid var(--nash-border-2);
+}
+td{padding:15px 20px 15px 0;border-bottom:1px solid var(--nash-border);
+  vertical-align:top;color:var(--nash-text-secondary)}
+td:first-child{color:var(--nash-text);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+
+/* cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{
+  background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:26px;
+}
+.card .n{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:12px}
+.card .v{font-size:20px;font-weight:650;letter-spacing:-.02em;line-height:1.25;margin-bottom:12px}
+.card p{font-size:14px;margin:0}
+
+/* metric row */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;
+  background:var(--nash-border);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);overflow:hidden;margin:24px 0}
+.metric{background:var(--nash-bg);padding:24px 22px}
+.metric .k{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:10px}
+.metric .val{font-size:30px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.metric .val.sig{color:var(--nash-signal)}
+
+/* legend pills */
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+  letter-spacing:.03em;padding:7px 14px;border-radius:99px;
+  border:1px solid var(--nash-border-2);color:var(--nash-text-secondary);
+}
+.pill .sw{width:10px;height:10px;border-radius:3px}
+.sw-built{background:var(--nash-signal)}
+.sw-stretch{background:var(--nash-mist)}
+.sw-nash{background:var(--nash-ocean)}
+.sw-out{background:transparent;border:1px dashed var(--nash-border-2)}
+
+/* diagram */
+.diagram{
+  background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:32px 24px;margin:24px 0;overflow-x:auto;
+}
+.diagram .mermaid{text-align:center;min-width:720px}
+.diagram .mermaid svg{max-width:100%;height:auto}
+
+/* Mermaid theme variables override classDef text colour, so force it back.
+   Dark text on the light fills, light text on the dark ones. */
+.mermaid g.built rect,.mermaid g.built polygon{fill:var(--nash-signal)!important;stroke:var(--nash-signal)!important}
+.mermaid g.built .nodeLabel,.mermaid g.built .nodeLabel *,.mermaid g.built text,.mermaid g.built tspan{
+  fill:#01051E!important;color:#01051E!important;font-weight:600!important}
+
+.mermaid g.stretch rect,.mermaid g.stretch polygon{fill:var(--nash-mist)!important;stroke:var(--nash-mist)!important}
+.mermaid g.stretch .nodeLabel,.mermaid g.stretch .nodeLabel *,.mermaid g.stretch text,.mermaid g.stretch tspan{
+  fill:#01051E!important;color:#01051E!important;font-weight:600!important}
+
+.mermaid g.nash rect,.mermaid g.nash polygon{fill:var(--nash-ocean)!important;stroke:#4a648a!important}
+.mermaid g.nash .nodeLabel,.mermaid g.nash .nodeLabel *,.mermaid g.nash text,.mermaid g.nash tspan{
+  fill:#ffffff!important;color:#ffffff!important}
+
+.mermaid g.out rect,.mermaid g.out polygon{fill:transparent!important;stroke:#ffffff4d!important;stroke-dasharray:5 4!important}
+.mermaid g.out .nodeLabel,.mermaid g.out .nodeLabel *,.mermaid g.out text,.mermaid g.out tspan{
+  fill:#ffffff8c!important;color:#ffffff8c!important}
+
+.mermaid .cluster rect{fill:#01051E!important;stroke:#ffffff26!important}
+.mermaid .cluster text,.mermaid .cluster .nodeLabel{fill:#ffffff8c!important;color:#ffffff8c!important;
+  font-size:12px!important;letter-spacing:.08em!important;text-transform:uppercase!important}
+.mermaid .edgePath path,.mermaid .flowchart-link{stroke:#ffffff59!important}
+.mermaid marker path{fill:#ffffff59!important;stroke:#ffffff59!important}
+
+/* timeline */
+.tl{margin:24px 0;border-left:1px solid var(--nash-border);padding-left:0}
+.tl-row{display:grid;grid-template-columns:88px 1fr;gap:22px;padding:14px 0 14px 24px;
+  position:relative;border-bottom:1px solid var(--nash-border)}
+.tl-row:last-child{border-bottom:none}
+.tl-row::before{content:"";position:absolute;left:-4px;top:22px;width:7px;height:7px;
+  border-radius:99px;background:var(--nash-surface-3);border:1px solid var(--nash-border-2)}
+.tl-row.gate::before{background:var(--nash-signal);border-color:var(--nash-signal)}
+.tl-time{font-variant-numeric:tabular-nums;font-weight:650;color:var(--nash-text);font-size:15px}
+.tl-what{color:var(--nash-text-secondary);font-size:15px}
+.tl-row.gate .tl-what{color:var(--nash-text);font-weight:600}
+
+ol,ul{color:var(--nash-text-secondary);padding-left:22px;max-width:70ch}
+li{margin:9px 0}
+li strong{color:var(--nash-text)}
+
+footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--nash-border);
+  font-size:13px;color:var(--nash-text-tertiary)}
+
+@media (max-width:640px){
+  .wrap{padding:48px 20px 80px}
+  .tl-row{grid-template-columns:1fr;gap:4px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow"><span class="dot"></span> Nash &middot; Picker Lite &middot; FreshMart</div>
+  <h1>One<span class="sig">Pick</span></h1>
+  <p class="deck">Three devices become one queue.</p>
+</header>
+
+<section>
+  <h2>01 &mdash; The problem, in FreshMart's words</h2>
+  <div class="quote">
+    <p>"Orders come from multiple channels managed on different systems. Our pickers juggle multiple screens and we have no unified view of fulfillment."</p>
+    <cite>FreshMart &middot; 50 stores</cite>
+  </div>
+  <p>A picker on the floor today carries three devices &mdash; one for Uber, one for DoorDash, one for the first-party site. Three queues, three interfaces, and no single view of what the store owes anyone.</p>
+  <p class="lead wide">OnePick is one web app, one queue, one device.</p>
+</section>
+
+<section>
+  <h2>02 &mdash; What I found in your API</h2>
+  <p class="lead">Nash already models picking end to end. I'm driving your model, not inventing one.</p>
+  <table>
+    <tr><th>The brief says</th><th>Nash already calls it</th></tr>
+    <tr><td>Mark items picked</td><td><code>picked</code></td></tr>
+    <tr><td>Partial quantities</td><td><code>partially_picked</code> &mdash; <code>quantity</code> below <code>requestedQuantity</code></td></tr>
+    <tr><td>Out of stock</td><td><code>not_picked</code></td></tr>
+    <tr><td>Substitutions</td><td><code>substituted</code>, driven by <code>subItems[].substitution</code></td></tr>
+  </table>
+  <p><code>pick_and_pack</code> in <code>order.requirements</code>, <code>subItems[]</code> as the pickable unit, <code>items_pick_complete</code> as the completion signal. <strong>So the four scenarios aren't a design problem, they're a mapping problem.</strong></p>
+</section>
+
+<section>
+  <h2>03 &mdash; Two decisions worth your input</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="n">Decision 01 &middot; State</div>
+      <div class="v">Stateless. Nash holds the state.</div>
+      <p>No database, no session store. Outcomes are written to <code>pickedItems</code>. Two copies of the truth eventually disagree &mdash; and if the tab closes, the run is still recoverable.</p>
+    </div>
+    <div class="card">
+      <div class="n">Decision 02 &middot; Substitutions</div>
+      <div class="v">Applied, never chosen.</div>
+      <p>The customer decided at checkout. The picker confirms in one tap and never searches. Honouring <code>refund</code> matters as much as honouring <code>substitute</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>04 &mdash; Scope</h2>
+  <div class="legend">
+    <span class="pill"><span class="sw sw-built"></span> Built today</span>
+    <span class="pill"><span class="sw sw-stretch"></span> Stretch, if the core is stable</span>
+    <span class="pill"><span class="sw sw-out"></span> Deliberately not building</span>
+    <span class="pill"><span class="sw sw-nash"></span> Nash &mdash; used, not rebuilt</span>
+  </div>
+
+  <div class="diagram">
+<pre class="mermaid">
+flowchart LR
+  classDef built   fill:#c9ff00,stroke:#c9ff00,color:#01051E
+  classDef stretch fill:#d7f0ee,stroke:#d7f0ee,color:#01051E
+  classDef out     fill:#01051E,stroke:#ffffff4d,color:#ffffff8c,stroke-dasharray:5 4
+  classDef nash    fill:#314868,stroke:#4a648a,color:#ffffff
+
+  subgraph ch[" Three channels, three devices today "]
+    direction TB
+    web["First-party web"]:::nash
+    dd["DoorDash"]:::nash
+    ub["Uber"]:::nash
+  end
+
+  subgraph np[" Nash platform "]
+    direction TB
+    ord["Orders API"]:::nash
+    cat["Product catalog"]:::nash
+    inv["Store inventory"]:::nash
+  end
+
+  subgraph op[" OnePick - what I build "]
+    direction TB
+    route["Route handlers"]:::built
+    adapt["Adapter - join and normalise"]:::built
+    queue["Unified order queue"]:::built
+    pick["Picker screen"]:::built
+    out4["Four outcomes"]:::built
+    done["Write pickedItems"]:::built
+    scan["Scan verification"]:::stretch
+    ops["Fill rate by channel"]:::stretch
+    route --> adapt --> queue --> pick --> out4 --> done
+    pick -.-> scan
+    out4 -.-> ops
+  end
+
+  disp["Dispatch and delivery"]:::out
+
+  web --> ord
+  dd --> ord
+  ub --> ord
+  ord --> route
+  cat --> route
+  inv --> route
+  done --> disp
+</pre>
+<p style="text-align:center;font-size:13px;color:var(--nash-text-tertiary);margin:14px 0 0">
+  Dashed = deliberately not building. <strong style="color:var(--nash-text-secondary)">OnePick ends at <code>items_pick_complete</code>. Dispatch is Nash.</strong>
+</p>
+  </div>
+
+  <h3>Not building &mdash; each with a reason and a trigger</h3>
+  <table>
+    <tr><th>Excluded</th><th>Why</th><th>What would change my mind</th></tr>
+    <tr><td>Database</td><td>Nash owns this state</td><td>Multi-device handoff, or offline durability</td></tr>
+    <tr><td>Batch picking</td><td>Biggest throughput lever, but it's release two</td><td>Once accuracy is solved and throughput binds</td></tr>
+    <tr><td>Route sequencing</td><td>The brief displays location, it doesn't compute it</td><td>When throughput becomes the constraint</td></tr>
+    <tr><td>Indoor navigation</td><td>Needs beacons and a mapped store</td><td>Never &mdash; not in a lightweight web app</td></tr>
+    <tr><td>Auth and roles</td><td>No requirement depends on identity today</td><td>When accuracy becomes a per-picker metric</td></tr>
+    <tr><td>Dispatch and delivery</td><td>This is you</td><td>Never</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>05 &mdash; The demo storyline</h2>
+  <p>The sandbox starts empty, so the seed data is a design surface. <strong>Four orders, three channels, each demonstrating exactly one thing.</strong></p>
+  <table>
+    <tr><th>Order</th><th>Channel</th><th>Demonstrates</th></tr>
+    <tr><td>A</td><td>Web</td><td>Clean pick, end to end</td></tr>
+    <tr><td>B</td><td>DoorDash</td><td><strong>Partial quantity</strong> &mdash; 1kg bananas, <code>WEIGHTED</code>, picker weighs 0.94kg</td></tr>
+    <tr><td>C</td><td>Uber</td><td><strong>Substitution</strong> &mdash; Diet Coke out of stock, customer pre-approved Coke Zero</td></tr>
+    <tr><td>D</td><td>Web</td><td><strong>Not picked</strong> &mdash; customer chose <code>refund</code>, no substitute allowed</td></tr>
+  </table>
+  <div class="quote">
+    <p>"I ordered a Diet Coke and they gave me a Coke."</p>
+    <cite>The accuracy failure &mdash; seeded deliberately as three lookalike SKUs on one bay</cite>
+  </div>
+</section>
+
+<section>
+  <h2>06 &mdash; The metric</h2>
+  <p class="lead">Order fill rate.<br>Units delivered over units ordered.</p>
+  <p>One number that absorbs every unhappy outcome: not picked, partially picked, and a declined substitution all reduce it. FreshMart already reports against it, so it's recognised rather than invented.</p>
+  <div class="metrics">
+    <div class="metric"><div class="k">Accuracy</div><div class="val sig">Scan-verified rate</div></div>
+    <div class="metric"><div class="k">Speed</div><div class="val">Units / hour</div></div>
+    <div class="metric"><div class="k">Substitutions</div><div class="val">Acceptance rate</div></div>
+    <div class="metric"><div class="k">Headline</div><div class="val sig">Fill rate</div></div>
+  </div>
+  <p><strong>The cut that matters is by channel.</strong> Web filling at 96% while marketplace fills at 89% is invisible when the channels live on separate devices. That comparison is the whole point of unifying them.</p>
+</section>
+
+<section>
+  <h2>07 &mdash; The rest of the day</h2>
+  <div class="tl">
+    <div class="tl-row"><div class="tl-time">12:25</div><div class="tl-what">Seed the sandbox &mdash; store, catalog, inventory with locations, four orders</div></div>
+    <div class="tl-row"><div class="tl-time">13:15</div><div class="tl-what">Check-in &mdash; order queue and pick screen working</div></div>
+    <div class="tl-row"><div class="tl-time">14:15</div><div class="tl-what">Check-in &mdash; all four outcomes recording</div></div>
+    <div class="tl-row gate"><div class="tl-time">14:40</div><div class="tl-what">End to end, including <code>items_pick_complete</code>. Hard stop</div></div>
+    <div class="tl-row gate"><div class="tl-time">15:05</div><div class="tl-what">Freeze &mdash; anything unfinished gets cut, not fixed</div></div>
+    <div class="tl-row"><div class="tl-time">15:30</div><div class="tl-what">Present</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>08 &mdash; Two things I'd like from you</h2>
+  <ol>
+    <li>Should <strong>channel</strong> live on <code>tags</code>, on <code>orderMetadata</code>, or is there something internal you'd rather I used?</li>
+    <li>Is <code>PATCH /v1/order</code> the right way to write <code>pickedItems</code>, or is there a picking-specific path that isn't in the public docs?</li>
+  </ol>
+</section>
+
+<footer>
+  Scope, architecture and the decision log with rationale live in the repo under <code>docs/</code>.
+</footer>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:"base",
+    themeVariables:{
+      background:"#0a0f28",
+      primaryColor:"#0a0f28",
+      primaryTextColor:"#01051E",
+      primaryBorderColor:"#ffffff33",
+      lineColor:"#ffffff59",
+      secondaryColor:"#1e2535",
+      tertiaryColor:"#01051E",
+      fontFamily:"Host Grotesk, system-ui, sans-serif",
+      fontSize:"14px",
+      clusterBkg:"#01051E",
+      clusterBorder:"#ffffff26",
+      titleColor:"#ffffffb3",
+      edgeLabelBackground:"#0a0f28"
+    },
+    flowchart:{curve:"basis",padding:16,nodeSpacing:26,rankSpacing:60,htmlLabels:false,useMaxWidth:true}
+  });
+</script>
+</body>
+</html>
