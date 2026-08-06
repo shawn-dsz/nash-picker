@@ -86,3 +86,68 @@ test("the symbol is start, data, checksum, stop - in that order", () => {
   assert.equal(symbols.at(-1), 106, "stop");
   assert.equal(symbols.length, 1 + 6 + 1 + 1);
 });
+
+/**
+ * ENCODER AND FALLBACK DECODER, AGREEING.
+ *
+ * The scan gate has two decoders under it: the browser's native
+ * BarcodeDetector, and ZXing for Safari and Firefox where the native one does
+ * not exist. The native path was verified against these same symbols in a real
+ * browser. This covers the other one, and it runs in CI rather than needing
+ * someone to remember.
+ *
+ * It rasterises the bars into pixels and decodes them, so an off-by-one in a
+ * run length or a wrong checksum shows up as a failed decode - which is the
+ * only way to catch it, because a wrong barcode still looks like a barcode.
+ */
+
+/** The symbol as one luminance byte per pixel: black bars on white. */
+function raster(value: string, module = 3, height = 40) {
+  const { bars, width } = code128(value);
+  const w = width * module;
+  const pixels = new Uint8ClampedArray(w * height).fill(255);
+
+  for (const bar of bars) {
+    for (let x = bar.x * module; x < (bar.x + bar.width) * module; x++) {
+      for (let y = 0; y < height; y++) pixels[y * w + x] = 0;
+    }
+  }
+
+  return { pixels, width: w, height };
+}
+
+test("ZXing reads back exactly what the encoder wrote", async () => {
+  const {
+    MultiFormatReader,
+    BinaryBitmap,
+    HybridBinarizer,
+    RGBLuminanceSource,
+    DecodeHintType,
+    BarcodeFormat,
+  } = await import("@zxing/library");
+
+  const hints = new Map();
+  hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.CODE_128]);
+  hints.set(DecodeHintType.TRY_HARDER, true);
+  const reader = new MultiFormatReader();
+  reader.setHints(hints);
+
+  // Every seeded barcode, plus the awkward cases: odd length forces subset B,
+  // and a non-digit string exercises it end to end.
+  const values = [
+    "930000000011", "930000000028", "930000001005", "930000001012",
+    "930000001029", "930000002002", "930000002019", "930000002026",
+    "930000002033", "930000003009", "930000003016", "930000003023",
+    "930000004003", "930000005006",
+    "12345", "PRD-BAN-001",
+  ];
+
+  for (const value of values) {
+    const { pixels, width, height } = raster(value);
+    const source = new RGBLuminanceSource(pixels, width, height);
+    const result = reader.decodeWithState(
+      new BinaryBitmap(new HybridBinarizer(source)),
+    );
+    assert.equal(result.getText(), value, `round trip failed for ${value}`);
+  }
+});
