@@ -1,11 +1,15 @@
 # API flow - every call, and why it exists
 
-Four flows. The browser is in none of them - it only ever talks to this app's own route handlers, so the API key never leaves the server.
+**There is no data fetching in the browser on the read path.** The queue and the pick screen are async server components - they call the adapter directly, in process, and the browser receives rendered HTML. No client fetch, no client-side order state, no HTTP hop.
 
 ```
-browser ──▶ route handler (BFF) ──▶ adapter ──▶ Nash
-                  key lives here      knows Nash's shape
+READ    server component ──▶ adapter ──▶ Nash        (in process, no HTTP)
+WRITE   client component ──▶ POST /api/pick ──▶ Nash (HTTP, because a tap starts it)
 ```
+
+That asymmetry is the point. A route handler is only needed when the browser has to *initiate* something, and the only thing the browser initiates is the write at the end of a run. Reads never leave the server, so the key is not merely hidden from the bundle - it is never on a code path the browser can reach.
+
+> **Note:** `GET /api/orders`, `GET /api/orders/[orderId]` and `GET /api/health` exist and work, but nothing in the app calls them. The first two are genuinely unused - server components made them redundant. `/api/health` is a deliberate diagnostic, meant for `curl` and not for the UI.
 
 ---
 
@@ -19,16 +23,19 @@ flowchart LR
   classDef nash fill:#1d4ed8,stroke:#172554,stroke-width:2px,color:#ffffff
   classDef seed fill:#b45309,stroke:#451a03,stroke-width:2px,color:#ffffff
 
-  subgraph browser["Browser - no key, no CORS, never touches Nash"]
-    queue["Queue<br/>app/page.tsx"]:::br
-    pick["Pick screen<br/>pick-client.tsx"]:::br
+  subgraph browser["Browser - holds outcome state only, never fetches order data"]
+    queue["Queue HTML<br/>+ QueueRefresh (client)<br/>router.refresh() on focus / 30s"]:::br
+    pick["pick-client.tsx (client)<br/>outcomes in useState"]:::br
   end
 
-  subgraph bff["Route handlers - the key stays here"]
-    rOrders["GET /api/orders"]:::bff
-    rOrder["GET /api/orders/[orderId]"]:::bff
+  subgraph server["Server components - call the adapter in process"]
+    sQueue["app/page.tsx<br/>getQueue()"]:::mod
+    sPick["app/pick/[orderId]/page.tsx<br/>getPickRun()"]:::mod
+  end
+
+  subgraph bff["Route handler - only for what the browser initiates"]
     rPick["POST /api/pick"]:::bff
-    rHealth["GET /api/health"]:::bff
+    rHealth["GET /api/health<br/>diagnostic, not used by the UI"]:::bff
   end
 
   subgraph lib["Modules"]
@@ -48,9 +55,12 @@ flowchart LR
 
   seed["scripts/seed<br/>one-off, before the demo"]:::seed
 
-  queue --> rOrders --> adapter
-  pick  --> rOrder  --> adapter
-  pick  --> rPick   --> write
+  sQueue --> adapter
+  sPick  --> adapter
+  sQueue -->|"rendered HTML"| queue
+  sPick  -->|"rendered HTML"| pick
+  queue  -.->|"router.refresh()<br/>re-runs the server component"| sQueue
+  pick   -->|"outcomes[] on completion"| rPick --> write
 
   adapter --> client
   write   --> client
@@ -67,18 +77,18 @@ flowchart LR
 
 ## Flow 1 - the queue
 
-`GET /api/orders` → `getQueue()`
+`app/page.tsx` is an **async server component**. There is no `fetch` in the browser and no client-side queue.
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant B as Browser
-  participant R as GET /api/orders
+  participant S as app/page.tsx (server)
   participant A as adapter
   participant N as Nash
 
-  B->>R: fetch queue
-  R->>A: getQueue()
+  B->>S: request /
+  S->>A: getQueue()
   A->>N: GET /orders?limit=50
   N-->>A: { results[] } - summaries only,<br/>no items, no requirements
   Note over A: filter: has externalId,<br/>not archived / cancelled<br/>dedupe on externalId
@@ -86,20 +96,33 @@ sequenceDiagram
     A->>N: GET /order/{id}
     N-->>A: full order - requirements, items[], subItems[]
   end
-  Note over A: keep only requirements ⊇ pick_and_pack<br/>channel ← tags "channel:*"<br/>itemCount ← subItems.length
-  A-->>R: QueueOrder[]
-  R-->>B: JSON
+  Note over A: keep only requirements ⊇ pick_and_pack<br/>channel ← tags "channel:*"<br/>itemCount ← subItems.length<br/>pickStatus ← orderMetadata
+  A-->>S: QueueOrder[]
+  S-->>B: rendered HTML
 ```
 
 **Why the second call exists.** `GET /orders` is a summary endpoint - it returns no `items` and no `requirements`. Item count and the pick-and-pack filter both need the detail, so the queue costs `1 + N` calls.
 
 **At four orders that is five calls.** It is the first thing that changes at real volume, and the fix is a list endpoint that returns `requirements` and an item count.
 
+### It refreshes, and the refresh is not an API call
+
+`QueueRefresh` is a client component that holds no data. It calls `router.refresh()`, which re-runs the **server component** - so the adapter re-joins against Nash and new HTML is streamed in. Nothing polls `/api/orders`, because nothing calls `/api/orders`.
+
+| Trigger | Why |
+|---|---|
+| `focus` and `visibilitychange` | The picker pockets the device, walks an aisle, pulls it out. That is when the queue is most likely to be stale, and catching it is free |
+| 30-second interval | Backstop for a device left awake on a bench |
+
+**The cost, which is worth naming before someone works it out:** each refresh is a full `1 + N`. With four orders that is **five Nash calls every thirty seconds per open device**, whether or not anything changed. At one store on a demo it is nothing. At fifty stores with idle devices on chargers it is real load for no information.
+
+The right answer at scale is a **webhook on order updates** rather than a timer - push instead of poll. That is named as a next action rather than pretended at here.
+
 ---
 
 ## Flow 2 - the pick run, and the three-way join
 
-`GET /api/orders/[orderId]` → `getPickRun()`
+`app/pick/[orderId]/page.tsx`, also a server component → `getPickRun()`
 
 **This is the core of the app.** Three resources are needed to render one pick row, and they are fetched in parallel.
 
@@ -107,7 +130,7 @@ sequenceDiagram
 sequenceDiagram
   autonumber
   participant B as Browser
-  participant R as GET /api/orders/[orderId]
+  participant R as page.tsx (server)
   participant A as adapter
   participant N as Nash
 
@@ -127,7 +150,7 @@ sequenceDiagram
   Note over A: subItem.sku → product<br/>product.externalIdentifier → inventory
   Note over A: channel resolved and DROPPED<br/>PickRow has no channel field
   A-->>R: PickRun { rows[] }
-  R-->>B: JSON
+  R-->>B: rendered HTML, hydrated into pick-client
 ```
 
 **The join is two hops, not one.**
@@ -191,8 +214,8 @@ GET /store_locations · GET /products · GET /inventory · GET /orders   (parall
 
 | Endpoint | Called by | Per what | Why |
 |---|---|---|---|
-| `GET /orders?limit=50` | `getQueue` | once per queue load | The order list. Summaries only |
-| `GET /order/{id}` | `getQueue` | **once per order** | Summaries carry no `requirements` or `items` |
+| `GET /orders?limit=50` | `getQueue` | once per queue load **and per 30s refresh** | The order list. Summaries only |
+| `GET /order/{id}` | `getQueue` | **once per order**, same cadence | Summaries carry no `requirements` or `items` |
 | `GET /order/{id}` | `getPickRun` | once per pick run | What was bought |
 | `GET /products?limit=500` | `getPickRun` | once per pick run | Name, image, barcode, `WEIGHTED` |
 | `GET /inventory?externalStoreLocationId` | `getPickRun` | once per pick run | **`location { aisle, bay, shelf }`** and stock |
