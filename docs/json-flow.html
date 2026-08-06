@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - JSON flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nash-signal:#c9ff00; --nash-bg:#01051E; --nash-surface:#0a0f28;
+  --nash-surface-2:#1e2535; --nash-ocean:#314868; --nash-mist:#d7f0ee;
+  --nash-text:#fff; --nash-text-secondary:#ffffffb3; --nash-text-tertiary:#ffffff73;
+  --nash-border:#ffffff1a; --nash-border-2:#ffffff33;
+  --r-sm:4px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--nash-bg);color:var(--nash-text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:64px 28px 120px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--nash-text-tertiary);margin-bottom:22px}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--nash-signal)}
+h1{font-size:clamp(40px,6.5vw,68px);line-height:1;letter-spacing:-.035em;font-weight:700;margin:0 0 18px}
+h1 .sig{color:var(--nash-signal)}
+.deck{font-size:clamp(19px,2.3vw,25px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text-secondary);max-width:56ch;margin:0 0 20px}
+p{margin:0 0 14px;color:var(--nash-text-secondary);max-width:74ch}
+p strong{color:var(--nash-text);font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--nash-surface-2);border:1px solid var(--nash-border);
+  padding:2px 7px;border-radius:var(--r-sm);color:var(--nash-mist);white-space:nowrap}
+
+.stage{margin-top:52px;border-top:1px solid var(--nash-border);padding-top:26px}
+.stage-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.num{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--nash-bg);
+  background:var(--nash-signal);padding:4px 9px;border-radius:99px}
+.num.ocean{background:var(--nash-ocean);color:#fff}
+.num.mist{background:var(--nash-mist);color:var(--nash-bg)}
+h2{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:0}
+.where{font-size:12px;letter-spacing:.06em;color:var(--nash-text-tertiary);
+  font-family:ui-monospace,Menlo,monospace}
+
+pre{background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:20px 22px;margin:16px 0;overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  line-height:1.65;color:#cfd8e6}
+pre .k{color:#8fb4d9}
+pre .s{color:#c9ff00}
+pre .n{color:#f0a868}
+pre .b{color:#d78bd7}
+pre .c{color:#5f6b82;font-style:italic}
+pre .hl{background:#c9ff0018;border-left:2px solid var(--nash-signal);
+  margin-left:-22px;padding-left:20px;display:block}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.cols pre{margin:0}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin:0 0 8px}
+
+.arrow{text-align:center;font-size:26px;color:var(--nash-signal);margin:22px 0;line-height:1}
+.note{border-left:2px solid var(--nash-signal);padding:2px 0 2px 20px;margin:20px 0}
+.note p{margin:0;color:var(--nash-text);max-width:64ch}
+.note .t{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:8px}
+
+table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+th{text-align:left;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);padding:0 16px 11px 0;border-bottom:1px solid var(--nash-border-2)}
+td{padding:13px 16px 13px 0;border-bottom:1px solid var(--nash-border);
+  vertical-align:top;color:var(--nash-text-secondary)}
+td:first-child{color:var(--nash-text);font-weight:600}
+tr:last-child td{border-bottom:none}
+footer{margin-top:84px;padding-top:22px;border-top:1px solid var(--nash-border);
+  font-size:13px;color:var(--nash-text-tertiary)}
+@media (max-width:640px){.wrap{padding:44px 18px 70px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="eyebrow"><span class="dot"></span> Nash &middot; OnePick &middot; real payloads</div>
+<h1>JSON <span class="sig">flow</span></h1>
+<p class="deck">One sub-item, followed end to end. Every payload on this page was captured from the live sandbox, not written by hand.</p>
+
+<p><strong>The item:</strong> <code>DRY-PAS-201</code> Spiral Pasta 500g, on order <code>FM-1003</code> for Ana Rossi. It is out of stock, and the customer pre-approved penne. That makes it the one row that touches every part of the system.</p>
+
+<!-- 1 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num ocean">01 NASH</span>
+    <h2>The order says what was bought</h2>
+  </div>
+  <p class="where">GET /v1/order/ord_h5ScMqy2JubFsL73PNN72X &rarr; items[0].subItems[0]</p>
+<pre><span class="b">{</span>
+  <span class="k">"id"</span>: <span class="s">"FM-1003-1"</span>,
+<span class="hl">  <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,        <span class="c">// the only join key the order carries</span></span>
+  <span class="k">"count"</span>: <span class="n">1</span>,
+  <span class="k">"weight"</span>: <span class="n">0.5</span>,
+  <span class="k">"barcode"</span>: <span class="s">"930000002019"</span>,
+  <span class="k">"category"</span>: <span class="s">"Pantry"</span>,
+  <span class="k">"description"</span>: <span class="s">"Spiral Pasta 500g"</span>,
+  <span class="k">"valueCents"</span>: <span class="n">250</span>,
+  <span class="k">"substitution"</span>: <span class="b">{</span>
+    <span class="k">"source"</span>: <span class="s">"customer"</span>,
+<span class="hl">    <span class="k">"preference"</span>: <span class="s">"substitute"</span>,   <span class="c">// or "refund" - see FM-1004</span></span>
+    <span class="k">"substituteItems"</span>: <span class="b">[</span> <span class="b">{</span> <span class="k">"sku"</span>: <span class="s">"DRY-PAS-200"</span>, <span class="k">"quantity"</span>: <span class="n">1</span> <span class="b">}</span> <span class="b">]</span>
+  <span class="b">}</span>
+<span class="b">}</span></pre>
+
+  <div class="note">
+    <p class="t">What is missing</p>
+    <p>No name a picker would recognise beyond a description, no image, <strong>no location, and no idea it is out of stock.</strong> The order knows what was bought. It does not know what it is or where it lives.</p>
+  </div>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<!-- 2 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num ocean">02 NASH</span>
+    <h2>Two more calls, in parallel</h2>
+  </div>
+
+  <div class="cols">
+    <div>
+      <p class="lbl">GET /v1/products</p>
+<pre><span class="b">{</span>
+  <span class="k">"id"</span>: <span class="s">"pro_XfoQjo5wv..."</span>,
+<span class="hl">  <span class="k">"externalIdentifier"</span>: <span class="s">"DRY-PAS-201"</span>,</span>
+  <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,
+  <span class="k">"name"</span>: <span class="s">"Spiral Pasta 500g"</span>,
+  <span class="k">"imageUrls"</span>: <span class="b">[</span><span class="s">"https://..."</span><span class="b">]</span>,
+  <span class="k">"attributes"</span>: <span class="b">[]</span>   <span class="c">// ["WEIGHTED"] on bananas</span>
+<span class="b">}</span></pre>
+    </div>
+    <div>
+      <p class="lbl">GET /v1/inventory?externalStoreLocationId=001</p>
+<pre><span class="b">{</span>
+  <span class="k">"id"</span>: <span class="s">"inv_Drw9hEVmr..."</span>,
+<span class="hl">  <span class="k">"externalProductId"</span>: <span class="s">"DRY-PAS-201"</span>,</span>
+  <span class="k">"externalStoreLocationId"</span>: <span class="s">"001"</span>,
+<span class="hl">  <span class="k">"quantity"</span>: <span class="n">0</span>,        <span class="c">// really out of stock</span></span>
+  <span class="k">"available"</span>: <span class="b">false</span>,
+  <span class="k">"valueCents"</span>: <span class="n">250</span>,
+<span class="hl">  <span class="k">"location"</span>: <span class="b">{</span> <span class="k">"aisle"</span>: <span class="s">"2"</span>, <span class="k">"bay"</span>: <span class="s">"B1"</span>, <span class="k">"shelf"</span>: <span class="s">"2"</span> <span class="b">}</span></span>
+<span class="b">}</span></pre>
+    </div>
+  </div>
+
+  <div class="note">
+    <p class="t">The join, and why it is fragile</p>
+    <p><code>subItems[].sku</code> &rarr; <code>products[].sku</code>, then <code>products[].externalIdentifier</code> &rarr; <code>inventory[].externalProductId</code>. <strong>Four identity hops, and every mismatch returns HTTP 200 with an empty result.</strong> Never an error. A broken join renders as a pick row with a blank aisle, which reads as missing data rather than a bug, so the adapter logs a miss instead of swallowing it.</p>
+  </div>
+
+  <p><strong>Location and price both live on inventory, not on the product.</strong> That is correct modelling, not an inconvenience: where a jar sits and what it costs are per-store facts. It is also the entire reason a third call exists.</p>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<!-- 3 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num">03 ADAPTER</span>
+    <h2>Three payloads become one row</h2>
+  </div>
+  <p class="where">lib/adapter.ts &rarr; getPickRun() &rarr; PickRow</p>
+<pre><span class="b">{</span>
+  <span class="k">"subItemId"</span>: <span class="s">"FM-1003-1"</span>,
+  <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,
+  <span class="k">"name"</span>: <span class="s">"Spiral Pasta 500g"</span>,          <span class="c">// from products</span>
+  <span class="k">"imageUrl"</span>: <span class="s">"https://placehold.co/..."</span>,  <span class="c">// from products</span>
+  <span class="k">"requestedQuantity"</span>: <span class="n">1</span>,                <span class="c">// from the order</span>
+  <span class="k">"isWeighted"</span>: <span class="b">false</span>,                    <span class="c">// products.attributes</span>
+  <span class="k">"weightUnit"</span>: <span class="b">null</span>,
+<span class="hl">  <span class="k">"location"</span>: <span class="b">{</span> <span class="k">"aisle"</span>: <span class="s">"2"</span>, <span class="k">"bay"</span>: <span class="s">"B1"</span>, <span class="k">"shelf"</span>: <span class="s">"2"</span> <span class="b">}</span>,  <span class="c">// inventory</span></span>
+  <span class="k">"inStock"</span>: <span class="b">false</span>,                       <span class="c">// inventory</span>
+  <span class="k">"onHand"</span>: <span class="n">0</span>,
+  <span class="k">"barcode"</span>: <span class="s">"930000002019"</span>,
+  <span class="k">"substitution"</span>: <span class="b">{</span>
+    <span class="k">"preference"</span>: <span class="s">"substitute"</span>,
+    <span class="k">"source"</span>: <span class="s">"customer"</span>,
+<span class="hl">    <span class="k">"items"</span>: <span class="b">[</span> <span class="b">{</span> <span class="k">"sku"</span>: <span class="s">"DRY-PAS-200"</span>,
+               <span class="k">"name"</span>: <span class="s">"Penne Pasta 500g"</span>,   <span class="c">// resolved from the catalog</span>
+               <span class="k">"quantity"</span>: <span class="n">1</span>,
+               <span class="k">"imageUrl"</span>: <span class="s">"https://..."</span> <span class="b">}</span> <span class="b">]</span></span>
+  <span class="b">}</span>
+<span class="b">}</span></pre>
+
+  <div class="note">
+    <p class="t">The substitute SKU became a product</p>
+    <p>Nash returns <code>{ sku: "DRY-PAS-200", quantity: 1 }</code>. The adapter reaches back into the catalog it already loaded and turns that into <strong>"Penne Pasta 500g"</strong> with an image. <strong>The picker never sees a SKU string.</strong> That is a second use of the same in-memory index, at no extra network cost.</p>
+  </div>
+
+  <p><strong>There is no <code>channel</code> field on <code>PickRow</code>.</strong> Channel arrives on <code>tags</code> as <code>"channel:uber_eats"</code>, is normalised here, and stops. The pick screen is channel-blind by construction rather than by discipline, because it is never handed one.</p>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<!-- 4 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num mist">04 BROWSER</span>
+    <h2>What the picker actually receives</h2>
+  </div>
+  <p class="where">server component &rarr; PickClient. No API key, no raw Nash payload, no channel</p>
+
+  <table>
+    <tr><th>Reaches the browser</th><th>Never does</th></tr>
+    <tr>
+      <td>Name, image, quantity, aisle / bay / shelf, stock, barcode, the approved substitute</td>
+      <td><strong>API key. Org id. Channel. Raw Nash shapes. Customer detail beyond the name</strong></td>
+    </tr>
+  </table>
+
+  <p>One tap on the substitute card produces the next payload. Nothing else on the screen can produce it, because the button is only rendered when <code>preference === "substitute"</code>. On <code>FM-1004</code>, where the preference is <code>refund</code>, <strong>that button is not disabled, it does not exist</strong>.</p>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<!-- 5 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num mist">05 BROWSER</span>
+    <h2>The outcome</h2>
+  </div>
+  <p class="where">lib/outcomes.ts &rarr; Outcome</p>
+<pre><span class="b">{</span>
+  <span class="k">"subItemId"</span>: <span class="s">"FM-1003-1"</span>,
+  <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,
+<span class="hl">  <span class="k">"status"</span>: <span class="s">"substituted"</span>,        <span class="c">// one of Nash's four, nothing invented</span></span>
+  <span class="k">"requestedQuantity"</span>: <span class="n">1</span>,
+  <span class="k">"quantity"</span>: <span class="n">1</span>,
+  <span class="k">"substituteSku"</span>: <span class="s">"DRY-PAS-200"</span>
+<span class="b">}</span>
+
+<span class="c">// the weighted case, from FM-1002 - 1kg ordered, 0.94kg on the scale</span>
+<span class="b">{</span>
+  <span class="k">"subItemId"</span>: <span class="s">"FM-1002-1"</span>,
+  <span class="k">"sku"</span>: <span class="s">"PRD-BAN-001"</span>,
+<span class="hl">  <span class="k">"status"</span>: <span class="s">"partially_picked"</span>,   <span class="c">// derived, never passed in</span></span>
+  <span class="k">"requestedQuantity"</span>: <span class="n">1</span>,
+  <span class="k">"quantity"</span>: <span class="n">0.94</span>,
+  <span class="k">"weight"</span>: <span class="n">0.94</span>
+<span class="b">}</span></pre>
+
+  <div class="note">
+    <p class="t">There is no boolean anywhere in this object</p>
+    <p><code>0.94</code> against a request of <code>1</code> is neither picked nor not-picked. <code>statusFor(requested, got)</code> derives the status from the two numbers in one place, so the screen and the write path cannot disagree about what partial means. <strong>A <code>picked: boolean</code> would make the most common case in fresh food unrepresentable.</strong></p>
+  </div>
+</div>
+
+<div class="arrow">&darr;</div>
+
+<!-- 6 -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num ocean">06 NASH</span>
+    <h2>Back to the system of record</h2>
+  </div>
+  <p class="where">PATCH /v1/order/{id} - server side only</p>
+
+  <div class="note">
+    <p class="t">Verified, and not what the plan assumed</p>
+    <p><code>pickedItems</code> is <strong>not an argument on update</strong>, and order <code>status</code> is not writable. Probing the live API found this before the write code was written rather than at 14:30. Outcomes land on <code>subItems[].metadata</code> and the run summary on <code>orderMetadata</code>, both confirmed to persist.</p>
+  </div>
+
+<pre><span class="c">// one PATCH per run, not one per tap</span>
+<span class="b">{</span>
+  <span class="k">"orderMetadata"</span>: <span class="b">{</span>
+    <span class="k">"channel"</span>: <span class="s">"uber_eats"</span>,
+    <span class="k">"pick_status"</span>: <span class="s">"items_pick_complete"</span>,
+    <span class="k">"pick_fill_rate"</span>: <span class="s">"1.00"</span>
+  <span class="b">}</span>,
+  <span class="k">"items"</span>: <span class="b">[</span> <span class="b">{</span> <span class="k">"subItems"</span>: <span class="b">[</span> <span class="b">{</span>
+    <span class="k">"id"</span>: <span class="s">"FM-1003-1"</span>, <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,
+    <span class="k">"metadata"</span>: <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"substituted"</span>,
+                  <span class="k">"picked_quantity"</span>: <span class="s">"1"</span>,
+                  <span class="k">"substitute_sku"</span>: <span class="s">"DRY-PAS-200"</span> <span class="b">}</span>
+  <span class="b">}</span> <span class="b">]</span> <span class="b">}</span> <span class="b">]</span>
+<span class="b">}</span></pre>
+
+  <div class="note">
+    <p class="t">The cost, stated plainly</p>
+    <p><code>PATCH</code> on <code>items</code> <strong>replaces rather than merges</strong>, so the whole items array is sent every time. And because the outcome sits in a general-purpose metadata field, Nash's own systems cannot act on it: completion is a convention this app defines, not a status the platform recognises. Dispatch will not trigger off it. <strong>If a first-class picking write path exists, it is one function to switch</strong>, which is exactly why the mapping was isolated.</p>
+  </div>
+</div>
+
+<!-- summary -->
+<div class="stage">
+  <div class="stage-head">
+    <span class="num">RECAP</span>
+    <h2>Six calls, one row</h2>
+  </div>
+
+  <table>
+    <tr><th>#</th><th>Where</th><th>What it adds</th></tr>
+    <tr><td>01</td><td>GET /order/{id}</td><td>What was bought, and the customer's substitution decision</td></tr>
+    <tr><td>02a</td><td>GET /products</td><td>Name, image, and the WEIGHTED flag</td></tr>
+    <tr><td>02b</td><td>GET /inventory</td><td>Aisle, bay, shelf, price, real stock level</td></tr>
+    <tr><td>03</td><td>adapter</td><td>Joins all three. Resolves the substitute SKU to a product. Drops channel</td></tr>
+    <tr><td>04-05</td><td>browser</td><td>One decision, one of four statuses, quantities never booleans</td></tr>
+    <tr><td>06</td><td>PATCH /order/{id}</td><td>Outcomes back to the system of record. One call per run</td></tr>
+  </table>
+
+  <p><strong>Measured:</strong> queue 445ms across five calls, one pick run 210ms across three. Nothing is cached and nothing is stored, because Nash is the system of record and a second copy would only ever be a copy that disagrees.</p>
+</div>
+
+<footer>
+  Every payload on this page was captured from the live Nash sandbox on 6 August 2026.
+</footer>
+
+</div>
+</body>
+</html>
