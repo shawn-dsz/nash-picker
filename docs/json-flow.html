@@ -265,28 +265,67 @@ footer{margin-top:84px;padding-top:22px;border-top:1px solid var(--nash-border);
   <p class="where">PATCH /v1/order/{id} - server side only</p>
 
   <div class="note">
-    <p class="t">Verified, and not what the plan assumed</p>
-    <p><code>pickedItems</code> is <strong>not an argument on update</strong>, and order <code>status</code> is not writable. Probing the live API found this before the write code was written rather than at 14:30. Outcomes land on <code>subItems[].metadata</code> and the run summary on <code>orderMetadata</code>, both confirmed to persist.</p>
+    <p class="t">When this fires</p>
+    <p><strong>The moment the last item is recorded</strong>, not when the picker taps "Back to queue". Recording the final outcome mounts the summary screen, which immediately POSTs to <code>/api/pick</code>. The picker watches it happen: <em>Writing outcomes to Nash</em>, then <em>Saved to Nash</em>. By the time they leave the screen it is already in Nash.</p>
   </div>
 
-<pre><span class="c">// one PATCH per run, not one per tap</span>
-<span class="b">{</span>
+  <div class="note">
+    <p class="t">Verified, and not what the plan assumed</p>
+    <p><code>pickedItems</code> is <strong>not an argument on update</strong>, and order <code>status</code> is not writable. Probing the live API found this before the write code was written rather than during L5. Outcomes land on <code>subItems[].metadata</code> and the run summary on <code>orderMetadata</code>, both confirmed to persist.</p>
+  </div>
+
+  <p class="lbl" style="margin-top:28px">Sent - one PATCH per run, not one per tap</p>
+<pre><span class="b">{</span>
   <span class="k">"orderMetadata"</span>: <span class="b">{</span>
-    <span class="k">"channel"</span>: <span class="s">"uber_eats"</span>,
+    <span class="k">"channel"</span>: <span class="s">"web"</span>,
     <span class="k">"pick_status"</span>: <span class="s">"items_pick_complete"</span>,
-    <span class="k">"pick_fill_rate"</span>: <span class="s">"1.00"</span>
+    <span class="k">"pick_fill_rate"</span>: <span class="s">"0.67"</span>,
+    <span class="k">"pick_completed_at"</span>: <span class="s">"2026-08-06T03:22:32.245Z"</span>
   <span class="b">}</span>,
-  <span class="k">"items"</span>: <span class="b">[</span> <span class="b">{</span> <span class="k">"subItems"</span>: <span class="b">[</span> <span class="b">{</span>
-    <span class="k">"id"</span>: <span class="s">"FM-1003-1"</span>, <span class="k">"sku"</span>: <span class="s">"DRY-PAS-201"</span>,
-    <span class="k">"metadata"</span>: <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"substituted"</span>,
-                  <span class="k">"picked_quantity"</span>: <span class="s">"1"</span>,
-                  <span class="k">"substitute_sku"</span>: <span class="s">"DRY-PAS-200"</span> <span class="b">}</span>
-  <span class="b">}</span> <span class="b">]</span> <span class="b">}</span> <span class="b">]</span>
+<span class="hl">  <span class="c">// the WHOLE array. PATCH replaces items, it does not merge.</span></span>
+  <span class="k">"items"</span>: <span class="b">[</span> <span class="b">{</span> <span class="k">"subItems"</span>: <span class="b">[</span>
+    <span class="b">{</span> <span class="k">"id"</span>: <span class="s">"FM-1004-1"</span>, <span class="k">"sku"</span>: <span class="s">"CHL-YOG-301"</span>, <span class="k">"metadata"</span>: <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"picked"</span>, ... <span class="b">}</span> <span class="b">}</span>,
+    <span class="b">{</span> <span class="k">"id"</span>: <span class="s">"FM-1004-2"</span>, <span class="k">"sku"</span>: <span class="s">"BKY-BRD-500"</span>, <span class="k">"metadata"</span>: <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"not_picked"</span>, ... <span class="b">}</span> <span class="b">}</span>,
+    <span class="b">{</span> <span class="k">"id"</span>: <span class="s">"FM-1004-3"</span>, <span class="k">"sku"</span>: <span class="s">"DRY-OIL-203"</span>, <span class="k">"metadata"</span>: <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"picked"</span>, ... <span class="b">}</span> <span class="b">}</span>
+  <span class="b">]</span> <span class="b">}</span> <span class="b">]</span>
 <span class="b">}</span></pre>
 
+  <p class="lbl" style="margin-top:24px">Read straight back from Nash, order FM-1004, unedited</p>
+<pre><span class="k">"orderMetadata"</span>: <span class="b">{</span>
+  <span class="k">"channel"</span>: <span class="s">"web"</span>,
+  <span class="k">"demonstrates"</span>: <span class="s">"Refund preference - offer no substitute at all"</span>,
+<span class="hl">  <span class="k">"pick_status"</span>: <span class="s">"items_pick_complete"</span>,</span>
+  <span class="k">"pick_fill_rate"</span>: <span class="s">"0.67"</span>,
+  <span class="k">"pick_completed_at"</span>: <span class="s">"2026-08-06T03:22:32.245Z"</span>
+<span class="b">}</span>
+
+<span class="c">// subItems still 3 - the basket survived the replace</span>
+
+<span class="s">CHL-YOG-301</span>  Greek Yoghurt 1kg
+  <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"picked"</span>, <span class="k">"picked_quantity"</span>: <span class="s">"1"</span>, <span class="k">"requested_quantity"</span>: <span class="s">"1"</span> <span class="b">}</span>
+
+<span class="s">BKY-BRD-500</span>  Sourdough Loaf
+  <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"not_picked"</span>, <span class="k">"picked_quantity"</span>: <span class="s">"0"</span>, <span class="k">"requested_quantity"</span>: <span class="s">"1"</span> <span class="b">}</span>
+<span class="hl">  substitution intact: <span class="b">{</span> <span class="k">"source"</span>: <span class="s">"customer"</span>, <span class="k">"preference"</span>: <span class="s">"refund"</span> <span class="b">}</span></span>
+
+<span class="s">DRY-OIL-203</span>  Olive Oil 500ml
+  <span class="b">{</span> <span class="k">"pick_status"</span>: <span class="s">"picked"</span>, <span class="k">"picked_quantity"</span>: <span class="s">"1"</span>, <span class="k">"requested_quantity"</span>: <span class="s">"1"</span> <span class="b">}</span></pre>
+
   <div class="note">
-    <p class="t">The cost, stated plainly</p>
-    <p><code>PATCH</code> on <code>items</code> <strong>replaces rather than merges</strong>, so the whole items array is sent every time. And because the outcome sits in a general-purpose metadata field, Nash's own systems cannot act on it: completion is a convention this app defines, not a status the platform recognises. Dispatch will not trigger off it. <strong>If a first-class picking write path exists, it is one function to switch</strong>, which is exactly why the mapping was isolated.</p>
+    <p class="t">Read the order first, or lose the basket</p>
+    <p><code>PATCH</code> on <code>items</code> <strong>replaces the whole array</strong>. Sending only the sub-item just picked deletes the other two, silently, with a 200. So <code>writeRun()</code> reads the order, maps outcomes onto the existing sub-items, and sends everything back. <strong>The check that matters is the count of what was not touched</strong>, which is why the verification asserts three sub-items rather than only asserting the metadata it wrote.</p>
+    <p style="margin-top:10px">The sourdough row shows why that matters beyond safety: the customer's original <code>refund</code> preference sits alongside the outcome that honoured it. An auditor can see what was asked for <em>and</em> what the picker did. A partial send loses that.</p>
+  </div>
+
+  <div class="note">
+    <p class="t">What this does NOT do</p>
+    <p>The order status in Nash is still <code>valid</code> and <code>quotes</code> is empty. <strong>Nothing was dispatched.</strong> <code>items_pick_complete</code> is a string this app writes into a general-purpose metadata field - Nash does not read it and does not act on it. Completion is a convention this app defines, not a platform transition, and the screen says so rather than claiming a handoff that did not happen.</p>
+    <p style="margin-top:10px"><strong>If a first-class picking write path exists, <code>toItemsPayload()</code> is the only function that changes.</strong> That is exactly why the mapping was isolated.</p>
+  </div>
+
+  <div class="note">
+    <p class="t">And the cost of batching</p>
+    <p>One PATCH per run means an outcome is <strong>not durable until the run completes</strong>. Close the tab on item three of four and all three are lost. Per-tap writing would be worse, not better: it needs a read-modify-write cycle on every item and any two overlapping would drop an outcome. The real fix is a write-ahead queue on the device.</p>
   </div>
 </div>
 
