@@ -179,3 +179,29 @@ No build cost. The layout stops looking sparse the moment it is framed as a devi
 **Cost:** fifteen minutes of L1's budget, and one scratch order's item payload overwritten - `PATCH` on `items` replaces rather than merges, which was itself only discovered by doing it.
 
 **Flips when:** it does not. Three of the four assumptions the write path rested on were wrong, and one of them - `200 OK` with the field silently dropped - would not have surfaced through testing the app at all. It would have looked like a working L5.
+
+---
+
+## T14 - A hardened boundary vs. a proven domain
+
+**Tension:** four hours buys either a correct model of picking or a safe edge, not both. Validation, authentication, timeouts and concurrency control are each an hour or a day, and every one of them competes directly with proving that `subItems` is the pickable unit and that partial quantity is a weight.
+
+**Chose:** the domain. Spend the time on the model and the join, and leave the boundary thin.
+
+**Cost, and this is measured rather than estimated** - the gaps were reproduced against the running app, not read off the source:
+
+| | |
+|---|---|
+| `POST /api/pick` takes **no authentication** | Anyone who can reach the URL can mark any order picked |
+| Outcomes are **not validated at runtime** | `Outcome[]` is erased at compile time. A quantity of 99999 against a requested 1 was accepted and persisted |
+| **Fill rate is unclamped** | That write produced a 9,999,900% fill rate in `orderMetadata`, which `/ops` reads straight back |
+| **No timeout, no retry** on any upstream call | A hung connection hangs the request; one transient 503 fails a run that would have succeeded |
+| **No claim or version check** | Two pickers on one order, and `PATCH` replaces - the first picker's work vanishes without trace |
+
+**Fixed, because it was the one that was a leak rather than a scope decision:** the write route no longer forwards Nash's response body and `RequestID` to the client. Detail goes to a server log line, the client gets a correlation ref.
+
+**Not fixed, deliberately:** authentication was never in scope and remains out. The fill-rate clamp is two lines and was left alone under code freeze rather than touched at 14:30 with other agents in the tree - **the discipline of not editing during a freeze is worth more than the two lines.**
+
+**Flips when:** a pilot is scheduled. This is roughly two to three days of boundary work on a core that does not need redesigning, and the order is: clamp the metric, validate the payload, authenticate, then concurrency.
+
+**The distinction worth drawing in the room:** the architecture is production-shaped - one module owns the vendor's payload shape, secrets are structurally unreachable from the browser, there is one source of truth, and the tests cover what fails silently. The *edges* are not. That is a different sentence from "it is not finished", and it is the honest one.
