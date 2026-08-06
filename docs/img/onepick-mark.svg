@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="OnePick">
+  <title>OnePick</title>
+  <!--
+    Three become one.
+
+    Three short bars on the left are the three devices a picker carries today,
+    one per channel. They converge into a single acid-green bar: the one queue.
+    The mark is the product's only claim, drawn.
+  -->
+  <rect width="96" height="96" rx="22" fill="#01051E"/>
+  <rect x="0.75" y="0.75" width="94.5" height="94.5" rx="21.25" fill="none" stroke="#ffffff1f" stroke-width="1.5"/>
+
+  <!-- the three channels, muted: they are what the picker juggles today -->
+  <g fill="#ffffff" fill-opacity="0.34">
+    <rect x="22" y="27" width="19" height="7" rx="3.5"/>
+    <rect x="22" y="44.5" width="19" height="7" rx="3.5"/>
+    <rect x="22" y="62" width="19" height="7" rx="3.5"/>
+  </g>
+
+  <!-- they converge -->
+  <path d="M43 30.5 H52 Q57 30.5 57 37 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M43 48 H57" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M43 65.5 H52 Q57 65.5 57 59 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
+
+  <!-- the one queue -->
+  <rect x="57" y="43" width="19" height="10" rx="5" fill="#c9ff00"/>
+</svg>
