@@ -117,7 +117,7 @@ Already documented in `DECISIONS.md` and `TRADEOFFS.md`. Listed so the picture i
 
 - **No error boundaries.** No `app/error.tsx` or `global-error.tsx`, so an unhandled render error shows the framework's default page
 - **No structured logging or correlation id.** One `console.warn` in the whole app. The plan specified a `runId` on every event, log line and response header; it was not built
-- **`placehold.co` is in the render path.** Product images come from an external host. If it is blocked or slow, every image on the pick screen breaks at once
+- **Product images are served by the app itself.** They were on `placehold.co`; they are now committed under `public/products` and seeded as same-origin paths, so no external host sits in the render path. What remains is that the seeded `imageUrls` value only resolves against this app - Nash's portal cannot render it, and a retailer would seed a CDN origin instead
 - **`tsconfig.tsbuildinfo` is tracked in git.** A build artifact, and it dirties `git status` on every build
 
 ---
