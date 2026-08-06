@@ -393,10 +393,21 @@ function RunSummary({
               Saved to Nash
             </p>
             <p className="mt-2 text-[15px] font-semibold">
-              Ready for Nash dispatch
+              Picking finished. Tote ready for handoff
             </p>
             <p className="mt-1 font-mono text-[12px] text-white/50">
               {sync.pickStatus}
+            </p>
+            {/*
+              Deliberately not "dispatched" or "ready for dispatch". This app
+              writes a metadata convention that Nash does not act on - the
+              order status is still `valid` and no quote has been requested.
+              Claiming a handoff that has not happened would be the kind of
+              detail a reviewer finds and stops trusting the rest over.
+            */}
+            <p className="mt-2 text-[12px] leading-snug text-white/45">
+              Recorded against the order. Dispatch is a separate Nash step and
+              is not triggered by this app.
             </p>
             {sync.portalUrl && (
               <a
