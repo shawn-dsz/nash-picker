@@ -196,7 +196,9 @@ Nash normalises it on write, so the expected barcode comes off
 `product.identifiers[] { type: "UPC", value }`, not `product.upc` and not
 `subItems[].barcode`, which is null on all four orders.
 
-**⛔ 15:05 FREEZE.** Broken things get cut, not fixed.
+**⛔ 15:15 FEATURE FREEZE.** After this, no new features. Broken things get
+cut, not fixed. The remaining time goes to verification, the reset, and the
+talk - because an unpresented feature scores nothing.
 
 ---
 
