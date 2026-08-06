@@ -47,6 +47,8 @@ Written as they happen. Part 2 of the presentation has "Tradeoffs" as a literal 
 
 **Cost:** a real dead end. Double-out-of-stock becomes a lost unit and a disappointed customer, where a human in the aisle could have solved it.
 
+**Resolved:** the case falls through to `not_picked`. Not built around, not seeded away - **named as a gap in Part 2**. It is a deferral, not an oversight, and the difference is whether it gets said before it gets asked.
+
 **Flips when:** the fill-rate loss attributable to double-out-of-stock is measured and it is material. Then: ranked alternates, still customer-authorised, never picker-invented.
 
 ---
@@ -95,7 +97,11 @@ Written as they happen. Part 2 of the presentation has "Tradeoffs" as a literal 
 
 **Cost:** a real presentation risk. The thing that makes it correct in the store makes it look sparse in the room.
 
-**Flips when:** it does not. **Mitigate instead** - demo in a phone-sized viewport and name the choice before anyone wonders about it.
+**Flips when:** it does not. **Mitigated instead** - demo at 360x800 in a phone-sized viewport, and name the choice in the opening line of Part 1 rather than let the room wonder:
+
+> *"Pickers hold a chunky handheld, not a laptop. So I built it at handheld size - 56px targets, no hover states, because there is no mouse in an aisle. I'll demo it the way they'd hold it."*
+
+No build cost. The layout stops looking sparse the moment it is framed as a device choice.
 
 ---
 
