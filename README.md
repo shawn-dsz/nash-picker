@@ -51,6 +51,7 @@ serves raw source for `.html` rather than rendering it.
 | [`plan.html`](https://shawn-dsz.github.io/nash-picker/plan.html) | The shareable one-pager. Problem, scope, storyline, metrics |
 | [`dataflow.html`](https://shawn-dsz.github.io/nash-picker/dataflow.html) | Where every field comes from and where every outcome goes |
 | [`json-flow.html`](https://shawn-dsz.github.io/nash-picker/json-flow.html) | One sub-item through six calls |
+| [`docs/PICKER-GUIDE.md`](docs/PICKER-GUIDE.md) | How the app is used on the shop floor. Written for the picker, not the developer |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | The shape, key decisions, analytics, NFRs, tradeoffs, current state |
 | [`docs/SCOPE.md`](docs/SCOPE.md) | What is built, what is stretch, what is deliberately not built - and what would change my mind |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | D1-D9 with rationale, what was rejected, and how reversible each one is |
