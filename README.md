@@ -134,16 +134,6 @@ there.
 
 ## Current state
 
-Nothing is claimed here until it has been seen working against the live sandbox.
-
-- [x] **L0** - the app boots and talks to Nash
-- [x] **L1** - store, catalog and four orders seeded
-- [x] **L2** - one queue, all four orders, all three channels
-- [x] **L3** - a picker can walk an order item by item
-- [x] **L4** - all four outcomes recordable · 25 tests, `npm test`
-- [x] **L5** - Nash knows picking is done · verified read back from the sandbox
-- [x] **L6** - stretch: fill rate by channel, **and** scan verification
-
-Beyond the brief: serpentine pick sequencing, a scan gate with recorded
-overrides, and an operations view that names the three metrics it cannot
-honestly compute yet.
+**[`docs/BUILD-PLAN.md`](docs/BUILD-PLAN.md) is the only place progress is
+tracked.** Two checklists drift; one does not. Nothing is ticked there until it
+has been seen working against the live sandbox.
