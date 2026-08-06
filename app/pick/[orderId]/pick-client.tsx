@@ -109,6 +109,7 @@ function ScanGate({
   scan,
   typed,
   expectedName,
+  catalogByUpc,
   onType,
   onSubmit,
   onRescan,
@@ -117,6 +118,7 @@ function ScanGate({
   scan: Scan;
   typed: string;
   expectedName: string;
+  catalogByUpc: Record<string, string>;
   onType: (v: string) => void;
   onSubmit: (code: string) => void;
   onRescan: () => void;
@@ -228,6 +230,45 @@ function ScanGate({
         placeholder="Barcode"
         className="mt-2 h-14 w-full rounded-lg border border-white/20 bg-transparent px-4 font-mono text-xl tabular-nums outline-none focus:border-[#c9ff00]"
       />
+      {/*
+        THE SHELF, FOR A DEMO WITH NO HANDHELD ATTACHED.
+        ------------------------------------------------
+        This picks the PHYSICAL ITEM, not the barcode. Choosing "Coca-Cola
+        Classic" is the software equivalent of taking that bottle off the
+        shelf, and the scan then reads whatever was taken - including the
+        wrong thing, which is the case worth showing.
+
+        What it replaces is the trigger on a handheld, and nothing else. The
+        barcode it emits comes from Nash's own product record and goes into
+        exactly the same resolution path a Zebra would drive, so nothing
+        downstream is bypassed or faked.
+      */}
+      <div className="mt-4 rounded-lg border border-dashed border-white/20 px-3 py-3">
+        <label
+          htmlFor="shelf"
+          className="text-[10px] uppercase tracking-[0.14em] text-white/40"
+        >
+          No handheld · pick an item off the shelf
+        </label>
+        <select
+          id="shelf"
+          defaultValue=""
+          onChange={(e) => e.target.value && onSubmit(e.target.value)}
+          className="mt-2 h-11 w-full rounded-lg border border-white/20 bg-[#01051E] px-3 text-[14px] text-white outline-none focus:border-[#c9ff00]"
+        >
+          <option value="" disabled>
+            Which one did you take?
+          </option>
+          {Object.entries(catalogByUpc)
+            .sort((a, b) => a[1].localeCompare(b[1]))
+            .map(([upc, name]) => (
+              <option key={upc} value={upc}>
+                {name}
+              </option>
+            ))}
+        </select>
+      </div>
+
       <div className="mt-3 flex items-center justify-between gap-3">
         {/* An item whose label is damaged or missing must still be pickable.
             A gate with no escape is one a picker works around, and the
@@ -417,6 +458,7 @@ function PickItem({
             scan={scan}
             typed={typed}
             expectedName={expectedName}
+            catalogByUpc={catalogByUpc}
             onType={setTyped}
             onSubmit={submitScan}
             onRescan={() => setScan({ state: "waiting" })}
