@@ -62,7 +62,7 @@ operations report can never drift apart.
 ## 4. The unit this converts into
 
 > *Every one second saved per item, they save ten million dollars a year.*
-> - Kareem, on Coles-scale grocery
+> - the customer, on supermarket-scale grocery
 
 That is the unit. **7.7 seconds per item** is what the two algorithms remove
 between them.

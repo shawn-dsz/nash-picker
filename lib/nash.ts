@@ -38,7 +38,7 @@ function headers(): HeadersInit {
     "Content-Type": "application/json",
   };
 
-  // Only needed when a key spans multiple orgs. Verified with Kareem
+  // Only needed when a key spans multiple orgs. Verified with the customer
   // 2026-08-06: single-org key, so this stays empty and unsent.
   const org = process.env.NASH_ORG_ID;
   if (org) h["X-Nash-Org-Id"] = org;

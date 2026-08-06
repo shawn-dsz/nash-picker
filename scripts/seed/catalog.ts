@@ -6,7 +6,7 @@
  *     requirement at all. A customer orders 1kg of bananas and the picker
  *     weighs 0.94kg - neither picked nor not-picked.
  *   - Three lookalike colas on the same aisle, bay AND shelf, with three
- *     distinct barcodes. This is Kareem's own example, and it is what makes
+ *     distinct barcodes. This is the customer's own example, and it is what makes
  *     scan verification visibly necessary rather than theoretical.
  *   - One product that is deliberately out of stock and has a pre-approved
  *     substitute, and one that is out of stock where the customer chose refund.

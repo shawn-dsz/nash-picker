@@ -32,7 +32,7 @@ Level 6 is only reached if 0-5 are stable.
 **Verified:** auth works against `https://api.sandbox.usenash.com/v1`. This org is
 **US**, not AU - the AU host returns `MISSING_RESOURCE "API key not found"`, which
 reads as a bad key but is a wrong-region error. `NASH_ORG_ID` not required
-(confirmed with Kareem: single-org key).
+(confirmed with the customer: single-org key).
 
 **Found:** Nash has **two list envelope shapes**. `/orders` returns
 `{ results, totalCount, limit, offset }`; `/products`, `/inventory` and

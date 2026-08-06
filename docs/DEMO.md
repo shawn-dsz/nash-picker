@@ -72,7 +72,7 @@ Use this one to show the **override**.
 
 ### Item 3 - Coke Zero Sugar 1.25L · aisle 4 / B2 / 3
 
-**This is the moment.** Kareem's own example.
+**This is the moment.** The customer's own example.
 
 1. Scan `930000001005` - Coca-Cola Classic, the bottle beside it
 

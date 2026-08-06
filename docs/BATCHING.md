@@ -2,7 +2,7 @@
 
 The next algorithm. Designed, measured, deliberately not built.
 
-> Kareem, in the mid-build call: *at grocery density you do not pick order by
+> The customer, in the mid-build call: *at grocery density you do not pick order by
 > order. Ten orders due at 2pm, you pick a third of all ten at a time.* And
 > then, twice: **do not build this today.**
 
