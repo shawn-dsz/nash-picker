@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - using it on the shop floor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nash-signal:#c9ff00;
+  --nash-bg:#01051E;
+  --nash-surface:#0a0f28;
+  --nash-surface-2:#1e2535;
+  --nash-ocean:#314868;
+  --nash-mist:#d7f0ee;
+  --nash-text:#ffffff;
+  --nash-text-secondary:#ffffffb3;
+  --nash-text-tertiary:#ffffff73;
+  --nash-border:#ffffff1a;
+  --nash-border-2:#ffffff33;
+  --nash-warn:#ff6b6b;
+  --r-sm:4px; --r-md:10px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--nash-bg);color:var(--nash-text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:960px;margin:0 auto;padding:72px 32px 128px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:24px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--nash-signal)}
+h1{font-size:clamp(40px,6.5vw,68px);line-height:1;letter-spacing:-.035em;font-weight:700;margin:0 0 20px}
+h1 .sig{color:var(--nash-signal)}
+.deck{font-size:clamp(19px,2.3vw,25px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text-secondary);max-width:52ch;margin:0 0 48px;font-weight:400}
+h2{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin:72px 0 24px;padding-bottom:14px;
+  border-bottom:1px solid var(--nash-border)}
+h3{font-size:23px;font-weight:650;letter-spacing:-.02em;margin:40px 0 10px;line-height:1.2}
+p{margin:0 0 14px;color:var(--nash-text-secondary);max-width:68ch}
+strong{color:var(--nash-text);font-weight:650}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--nash-surface-2);border:1px solid var(--nash-border);
+  padding:2px 7px;border-radius:var(--r-sm);color:var(--nash-mist);white-space:nowrap}
+a{color:var(--nash-signal)}
+
+.lede{border-left:2px solid var(--nash-signal);padding-left:20px;margin:0 0 8px}
+.lede p{font-size:17px;color:var(--nash-text);max-width:60ch}
+
+/* two-column: explanation beside the screen it describes */
+.split{display:grid;grid-template-columns:1fr 300px;gap:40px;align-items:start;margin:24px 0 8px}
+.split .screen{position:sticky;top:24px}
+
+/* faux device panel, using the app's own surface colours */
+.screen{background:var(--nash-surface);border:1px solid var(--nash-border-2);
+  border-radius:var(--r-lg);padding:18px;font-size:14px}
+.screen .label{font-size:9.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:12px}
+.row{border-bottom:1px solid var(--nash-border);padding:12px 0}
+.row:last-child{border-bottom:none}
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;padding:3px 7px;border-radius:var(--r-sm);margin-right:8px}
+.badge.web{background:var(--nash-signal);color:#01051E}
+.badge.dd{background:var(--nash-mist);color:#01051E}
+.badge.ue{background:var(--nash-ocean);color:#fff}
+.ref{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--nash-text-tertiary)}
+.cust{font-size:16px;font-weight:650;margin-top:6px}
+.meta{font-size:12.5px;color:var(--nash-text-secondary);margin-top:2px}
+.meta .ok{color:var(--nash-signal);font-weight:650}
+
+.loc{display:flex;background:#ffffff10;border-radius:var(--r-md);padding:12px 4px;margin-bottom:14px}
+.loc div{flex:1;text-align:center;border-right:1px solid var(--nash-border)}
+.loc div:last-child{border-right:none}
+.loc .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--nash-text-tertiary)}
+.loc .v{font-size:19px;font-weight:700;margin-top:3px}
+
+.item{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px}
+.thumb{width:56px;height:56px;border-radius:var(--r-md);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:8px;font-weight:600;color:#01051E;padding:4px;line-height:1.1}
+.item .nm{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+.item .sk{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--nash-text-tertiary);margin-top:3px}
+.item .qty{margin-top:5px;font-size:12.5px;color:var(--nash-text-secondary)}
+.item .qty b{font-size:19px;color:var(--nash-text)}
+
+.field{border:1px solid var(--nash-border-2);border-radius:var(--r-md);padding:11px 13px;
+  color:var(--nash-text-tertiary);font-size:14px;margin:8px 0}
+.btn{display:block;width:100%;text-align:center;border-radius:var(--r-md);
+  padding:14px;font-weight:700;font-size:14.5px;margin-top:8px}
+.btn.primary{background:var(--nash-signal);color:#01051E}
+.btn.dim{background:#ffffff12;color:var(--nash-text-tertiary)}
+.btn.ghost{background:transparent;border:1px solid var(--nash-border-2);color:var(--nash-text)}
+.btn.sub{background:#c9ff001a;border:1px solid #c9ff0066;color:var(--nash-text);
+  text-align:left;display:flex;align-items:center;gap:10px}
+.btn.sub .st{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--nash-signal);display:block}
+.btn.sub .sn{font-size:14px;font-weight:700;display:block;margin-top:2px}
+.pair{display:flex;gap:8px}
+.pair .btn{margin-top:8px}
+
+.alert{border-radius:var(--r-md);padding:13px;margin:10px 0;font-size:13.5px}
+.alert.bad{border:1px solid #ff6b6b55;background:#ff6b6b14}
+.alert.bad .t{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--nash-warn);font-weight:700}
+.alert.bad .a{font-weight:700;margin-top:6px;font-size:15px}
+.alert.bad .b{color:var(--nash-text-secondary);margin-top:2px}
+.alert.good{border:1px solid #c9ff0055;background:#c9ff0012}
+.alert.good .t{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--nash-signal);font-weight:700}
+.alert.plain{border:1px solid var(--nash-border-2)}
+.alert.plain .t{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--nash-text-tertiary)}
+.alert.plain .a{font-weight:700;margin-top:6px;font-size:14.5px}
+.alert.plain .b{color:var(--nash-text-secondary);margin-top:2px;font-size:13px}
+
+.fill{font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1;margin:4px 0 4px}
+.fill span{font-size:20px;color:var(--nash-text-tertiary);font-weight:600}
+.oline{display:flex;justify-content:space-between;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--nash-border);font-size:13px}
+.oline:last-child{border-bottom:none}
+.oline .s{color:var(--nash-text-tertiary);font-size:11.5px}
+
+table{width:100%;border-collapse:collapse;margin:22px 0;font-size:15px}
+th{text-align:left;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);padding:0 14px 12px 0;border-bottom:1px solid var(--nash-border-2)}
+td{padding:14px 14px 14px 0;border-bottom:1px solid var(--nash-border);
+  color:var(--nash-text-secondary);vertical-align:top}
+td:first-child{color:var(--nash-text);font-weight:600;width:42%}
+td b{color:var(--nash-signal);font-weight:700}
+
+.note{background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:24px 26px;margin:28px 0}
+.note .h{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-signal);margin-bottom:10px}
+.note p:last-child{margin-bottom:0}
+
+.live{display:inline-flex;align-items:center;gap:10px;text-decoration:none;
+  background:var(--nash-signal);color:#01051E;font-weight:650;font-size:15px;
+  padding:14px 24px;border-radius:99px;margin:8px 10px 8px 0}
+.live.ghost{background:transparent;color:var(--nash-text);border:1px solid var(--nash-border-2)}
+.live.ghost:hover{border-color:var(--nash-signal)}
+
+footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--nash-border);
+  font-size:13px;color:var(--nash-text-tertiary)}
+footer a{color:var(--nash-text-secondary)}
+
+@media (max-width:820px){
+  .split{grid-template-columns:1fr;gap:20px}
+  .split .screen{position:static;max-width:340px}
+}
+@media (max-width:640px){ .wrap{padding:48px 20px 80px} td:first-child{width:auto} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="eyebrow"><span class="dot"></span> OnePick &middot; For the shop floor</div>
+<h1>Using One<span class="sig">Pick</span></h1>
+<p class="deck">A guide for the person doing the picking. One device, one queue, whatever channel the order came from.</p>
+
+<div class="lede">
+  <p>There is nothing to install, no separate app per marketplace, and no login to remember. Open it and start the next order.</p>
+</div>
+
+<a class="live" href="https://onepick-production.up.railway.app">Open the app &rarr;</a>
+<a class="live ghost" href="index.html">All docs</a>
+
+<h2>01 &middot; The queue</h2>
+
+<div class="split">
+  <div>
+    <p>Every order the store owes anyone, oldest first, whether it came from your own website, DoorDash or Uber Eats.</p>
+    <p>Each row shows the channel, the order reference, the customer's name, how many items are in it and where it is going.</p>
+    <p>Orders already picked show a green <strong>&check; Picked</strong> and the fill rate, so you can see at a glance what is left.</p>
+    <p><strong>The queue updates itself.</strong> New orders appear without pulling to refresh, including while you are looking at it. Tap any order to start.</p>
+  </div>
+  <div class="screen">
+    <div class="label">4 orders &middot; 3 channels</div>
+    <div class="row">
+      <span class="badge web">Web</span><span class="ref">FM-1001</span>
+      <div class="cust">Priya Nair</div>
+      <div class="meta"><span class="ok">&check; Picked</span> &middot; 100% fill &middot; 4 items</div>
+    </div>
+    <div class="row">
+      <span class="badge dd">DoorDash</span><span class="ref">FM-1002</span>
+      <div class="cust">Marcus Webb</div>
+      <div class="meta">3 items &middot; Ipswich &middot; $22.59</div>
+    </div>
+    <div class="row">
+      <span class="badge ue">Uber Eats</span><span class="ref">FM-1003</span>
+      <div class="cust">Ana Rossi</div>
+      <div class="meta">3 items &middot; Ipswich &middot; $13.70</div>
+    </div>
+  </div>
+</div>
+
+<h2>02 &middot; Walking a run</h2>
+
+<p>You get <strong>one item at a time</strong>. That is deliberate. The screen shows the next thing to put in the tote and nothing else.</p>
+
+<h3>The route is already sorted</h3>
+
+<p>At the top of every run you will see the walking order:</p>
+
+<div class="screen" style="max-width:340px">
+  <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--nash-signal);font-weight:700;display:inline-block;margin-right:10px">Route</div>
+  <span style="color:var(--nash-text-secondary)">Produce &rarr; Deli &rarr; 4</span>
+  <span style="float:right;color:var(--nash-text-tertiary);font-size:12px">2 moves</span>
+</div>
+
+<p>The list has been reordered into the way the store is actually walked, not the order the customer added things to their basket. <strong>Chilled and frozen come last</strong>, so they spend the least time out of temperature.</p>
+
+<p>Follow the order the app gives you. Skipping ahead is allowed, but the route is the shortest sensible walk for that trolley.</p>
+
+<h3>Where it is, before what it is</h3>
+
+<div class="split">
+  <div>
+    <p>Location sits at the top of the screen, above the product. Until you are standing in front of the shelf, nothing else matters.</p>
+    <p>If a product has no location recorded you will see <em>No location on file</em>, and you will need to find it the usual way.</p>
+    <p><strong>The picture is part of the job.</strong> Most near-misses are lookalike packaging rather than the wrong aisle, and the picture is the fastest way to catch that before you even scan.</p>
+    <p>If the system thinks the shelf is empty you will see <strong>Shows 0 on hand</strong>. That is a warning, not an instruction. Check the shelf anyway, because stock counts drift.</p>
+  </div>
+  <div class="screen">
+    <div class="loc">
+      <div><div class="k">Aisle</div><div class="v">Produce</div></div>
+      <div><div class="k">Bay</div><div class="v">P1</div></div>
+      <div><div class="k">Shelf</div><div class="v">2</div></div>
+    </div>
+    <div class="item">
+      <div class="thumb" style="background:#d4b106">Bananas Loose</div>
+      <div>
+        <div class="nm">Bananas Loose</div>
+        <div class="sk">PRD-BAN-001</div>
+        <div class="qty"><b>1</b> kg</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>03 &middot; Scanning</h2>
+
+<div class="split">
+  <div>
+    <p>Before you can mark most items as picked, you scan them.</p>
+    <p>The field is already selected, so just scan. The handheld types the number in and confirms it for you. You can also type the digits and press enter.</p>
+    <p>When it matches, the box turns green, says <strong>Barcode verified</strong>, and the main button becomes available.</p>
+  </div>
+  <div class="screen">
+    <div class="label">Scan to confirm</div>
+    <div class="field">Barcode</div>
+    <div class="pair">
+      <div class="btn ghost" style="flex:1">No barcode</div>
+      <div class="btn ghost" style="flex:1">Check</div>
+    </div>
+    <div class="btn dim">Scan to confirm</div>
+    <div class="pair">
+      <div class="btn ghost" style="flex:1">Enter weight</div>
+      <div class="btn ghost" style="flex:1">Not on shelf</div>
+    </div>
+  </div>
+</div>
+
+<h3>If it is the wrong item</h3>
+
+<div class="split">
+  <div>
+    <p>The app tells you <strong>what you are holding</strong> and <strong>what you actually need</strong>. Put it back, find the right one, tap <strong>Rescan</strong>.</p>
+    <p>This is the whole reason scanning exists. Three colas can sit on the same shelf with almost the same label. The location will never tell them apart, and neither will a quick glance at the end of a long shift.</p>
+  </div>
+  <div class="screen">
+    <div class="alert bad">
+      <div class="t">&#10007; Wrong item</div>
+      <div class="a">That is Coca-Cola Classic 1.25L</div>
+      <div class="b">You need Diet Coke 1.25L</div>
+    </div>
+    <div class="pair">
+      <div class="btn ghost" style="flex:1">Rescan</div>
+      <div class="btn ghost" style="flex:1">Override</div>
+    </div>
+  </div>
+</div>
+
+<h3>If you cannot scan it</h3>
+
+<p>Loose produce, a torn label, a barcode that will not read. Tap <strong>No barcode on the item</strong> and carry on.</p>
+
+<div class="note">
+  <div class="h">This is not cheating</div>
+  <p>Overriding is a normal part of the job and not something to avoid. It is recorded, which is how the store finds out that a whole line has unreadable labels rather than blaming the picker who kept hitting it.</p>
+</div>
+
+<h2>04 &middot; What happened at the shelf</h2>
+
+<p>Four things can happen, and there is a button for each.</p>
+
+<h3>You got everything</h3>
+
+<p>Tap the big button at the bottom. It names what you are confirming - <strong>Picked 3</strong>, <strong>Picked 1kg</strong> - so there is no ambiguity about what is going in the tote.</p>
+
+<h3>You got some, but not all</h3>
+
+<div class="split">
+  <div>
+    <p>Tap <strong>Found fewer</strong> and set the number you actually have.</p>
+    <p>For anything sold by weight the button says <strong>Enter weight</strong> instead. Put the item on the scale and type what it says.</p>
+    <p><strong>Enter the real number, not the one that was asked for.</strong> The customer is charged on what you weighed. A 1kg order of bananas that comes out at 0.94kg is completely normal and the app expects it.</p>
+  </div>
+  <div class="screen">
+    <div class="label">Weight on the scale (kg)</div>
+    <div class="field" style="color:var(--nash-text);font-size:19px;font-weight:700">0.94</div>
+    <div class="btn primary">Confirm</div>
+    <div class="btn ghost">Back</div>
+  </div>
+</div>
+
+<h3>It is not on the shelf</h3>
+
+<p>Tap <strong>Not on shelf</strong>. You do not need to scan first, for the obvious reason that there is nothing in your hand to scan. Nothing else is required and the run carries on.</p>
+
+<h3>The customer approved a swap</h3>
+
+<div class="split">
+  <div>
+    <p>If the customer chose a replacement when they ordered, it appears as its own button with a picture. Tap it, then scan the replacement to confirm you have the right one.</p>
+    <p>If more than one alternative was approved they are listed <strong>in the customer's order of preference</strong>, so take the first one that is on the shelf.</p>
+    <p><strong>You never choose the substitute yourself.</strong> The customer made that decision when they placed the order, with the whole range in front of them.</p>
+  </div>
+  <div class="screen">
+    <div class="btn sub">
+      <div class="thumb" style="background:#e0b050;width:40px;height:40px">Penne</div>
+      <div>
+        <span class="st">Customer approved substitute</span>
+        <span class="sn">Penne Pasta 500g</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h3>The customer asked for a refund instead</h3>
+
+<div class="split">
+  <div>
+    <p>Some customers say up front that they do not want a replacement. When you see this, no substitute is offered and none should go in the tote.</p>
+    <p>If the item is not there, tap <strong>Not on shelf</strong>.</p>
+    <p>Putting something else in the bag is worse than sending the order short, because they have already told you they did not want it.</p>
+  </div>
+  <div class="screen">
+    <div class="alert plain">
+      <div class="t">Customer preference</div>
+      <div class="a">Refund if unavailable</div>
+      <div class="b">Do not substitute. They asked for their money back instead.</div>
+    </div>
+  </div>
+</div>
+
+<h2>05 &middot; Finishing the run</h2>
+
+<div class="split">
+  <div>
+    <p>When the last item is done you get the summary. <strong>Check it against the tote.</strong> This is the last point where a mistake is cheap to fix.</p>
+    <p>The app saves the run and confirms it. That is picking done.</p>
+    <p>Delivery is arranged separately and is not started by this app, so the tote still needs to go wherever your store normally stages them.</p>
+    <p>Tap <strong>Back to queue</strong> and take the next order.</p>
+  </div>
+  <div class="screen">
+    <div class="label">Run complete</div>
+    <div class="fill">98<span>% fill</span></div>
+    <div class="meta" style="margin-bottom:12px">2.94 of 3 units for Marcus Webb</div>
+    <div class="oline"><span>Bananas Loose</span><span class="s">Partial &middot; 0.94/1</span></div>
+    <div class="oline"><span>Chicken Breast Deli</span><span class="s">Picked &middot; 1/1</span></div>
+    <div class="oline"><span>Diet Coke 1.25L</span><span class="s">Picked &middot; 1/1</span></div>
+    <div class="alert good" style="margin-top:14px">
+      <div class="t">Saved</div>
+      <div style="font-weight:700;margin-top:5px">Picking finished. Tote ready for handoff</div>
+    </div>
+  </div>
+</div>
+
+<h2>Worth knowing</h2>
+
+<table>
+  <tr>
+    <td>You cannot lose a run</td>
+    <td>Everything is saved as you go. If the screen locks, the battery dies or you close the tab, reopen the order and carry on where you left off</td>
+  </tr>
+  <tr>
+    <td>Finished orders reopen read-only</td>
+    <td>You can see what was recorded but not change it. If something needs correcting, tell your supervisor rather than re-picking</td>
+  </tr>
+  <tr>
+    <td>One picker per order</td>
+    <td>Nothing stops two people opening the same order, so agree who has it before you start</td>
+  </tr>
+  <tr>
+    <td>Fill rate is not a score</td>
+    <td>It is what the customer receives against what they ordered. An out-of-stock item is a stock problem, not a picking mistake</td>
+  </tr>
+</table>
+
+<h2>Quick reference</h2>
+
+<table>
+  <tr><th>On the shelf</th><th>Tap</th></tr>
+  <tr><td>Got everything asked for</td><td>The main button - <b>Picked</b></td></tr>
+  <tr><td>Got fewer than asked for</td><td><b>Found fewer</b></td></tr>
+  <tr><td>Sold by weight</td><td><b>Enter weight</b>, then the number on the scale</td></tr>
+  <tr><td>Not there</td><td><b>Not on shelf</b></td></tr>
+  <tr><td>Not there, customer approved a swap</td><td>The <b>customer approved substitute</b> button</td></tr>
+  <tr><td>Not there, customer wants a refund</td><td><b>Not on shelf</b></td></tr>
+  <tr><td>Barcode will not scan</td><td><b>No barcode on the item</b></td></tr>
+  <tr><td>Scanned the wrong thing</td><td><b>Rescan</b></td></tr>
+</table>
+
+<footer>
+  OnePick &middot; <a href="index.html">All documentation</a> &middot; <a href="https://onepick-production.up.railway.app">Live app</a><br>
+  The screens on this page are illustrations of the real interface, drawn to match it.
+</footer>
+
+</div>
+</body>
+</html>
