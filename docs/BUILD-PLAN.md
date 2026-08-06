@@ -13,8 +13,8 @@ Level 6 is only reached if 0-5 are stable.
 | **L1** | The sandbox has a store, a catalog and four orders | 25 min | ✅ **done** |
 | **L2** | One queue showing all four orders, all three channels | 30 min | ✅ **done** |
 | **L3** | A picker can walk an order item by item | 30 min | ✅ **done** |
-| **L4** | All four outcomes recordable | 35 min | 🔨 **in progress** |
-| **L5** | Nash knows picking is done | 20 min | 🔴 **blocked** - see below |
+| **L4** | All four outcomes recordable | 35 min | 🟡 **built, untested** |
+| **L5** | Nash knows picking is done | 20 min | ✅ **done** |
 | **L6** | Scan verification, fill rate by channel | 25 min | ⬜ cut first |
 
 ---
@@ -124,17 +124,28 @@ is worse than picking nothing.
 
 ---
 
-## L5 - Write back 🔴 blocked
+## L5 - Write back ✅
 
 **Done when:** the order reaches `items_pick_complete` and it is visible in the portal.
 
-- [ ] **5.1** `toPickedItems()` - outcomes to Nash's payload · `feat: pickedItems mapping`
-- [ ] **5.2** `app/api/pick/route.ts` - write, server-side · `feat: pick write route`
-- [ ] **5.3** Completion transition and a staged confirmation screen · `feat: complete run`
-- [ ] **5.4** Name the handoff on screen - *ready for Nash dispatch* · `feat: handoff state`
+- [x] **5.1** `toPickedItems()` - outcomes to Nash's payload · `feat: pickedItems mapping`
+- [x] **5.2** `app/api/pick/route.ts` - write, server-side · `feat: pick write route`
+- [x] **5.3** Completion transition and a staged confirmation screen · `feat: complete run`
+- [x] **5.4** Name the handoff on screen - *ready for Nash dispatch* · `feat: handoff state`
 
-**⛔ 14:40 - everything above must run end to end.** If it does not, stop adding
-and finish it.
+**Verified end to end.** FM-1003 written and read back from Nash:
+`pick_status: items_pick_complete`, `pick_fill_rate: 0.75`, three sub-item
+outcomes persisted, basket intact, substitution preserved.
+
+**Found:** `pickedItems` is not an argument on update and order `status` is not
+writable. Outcomes land on `subItems[].metadata`, summary on `orderMetadata`.
+**`PATCH` on `items` replaces rather than merges**, so `writeRun()` reads the
+order first and sends the whole array. A partial send silently destroys the
+rest of the basket.
+
+**The cost:** metadata is not a first-class picking field, so Nash's own
+systems cannot act on it. `items_pick_complete` is this app's convention, not
+a platform status. Dispatch will not trigger off it.
 
 ---
 
@@ -153,13 +164,12 @@ Only if L0-L5 are stable. **Cut in this order.**
 
 | | Question | Blocks | Fallback |
 |---|---|---|---|
-| 🔴 | **What writes `pickedItems`?** `PATCH /v1/order/{id}` does not accept it or `status` per the docs | **L5** | None found yet. Asked in Zoom chat |
+| 🟢 | ~~What writes `pickedItems`~~ | - | Answered by probing: nothing does. Outcomes go to `subItems[].metadata`, verified to persist |
 | 🟢 | ~~Is `NASH_ORG_ID` needed~~ | - | Answered: no, single-org key |
 | 🟢 | ~~Can `substitution` be set on order create~~ | - | Answered by doing: yes, it round-trips |
 | 🟢 | ~~Where does channel live~~ | - | `tags` plus `orderMetadata`. Accepted and returned |
 
-**L2, L3 and L4 do not touch the write path.** They are roughly 95 minutes of
-work that can proceed while the blocker is open.
+**Nothing is blocked.** L0 to L5 run end to end against the live sandbox.
 
 ---
 

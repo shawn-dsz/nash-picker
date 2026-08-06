@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { PickRow, PickRun } from "@/lib/types";
 import type { Outcome } from "@/lib/outcomes";
@@ -303,6 +303,11 @@ function PickItem({
 
 // -------------------------------------------------------------------- summary
 
+type SyncState =
+  | { phase: "writing" }
+  | { phase: "done"; pickStatus: string; portalUrl: string | null }
+  | { phase: "failed"; message: string };
+
 function RunSummary({
   run,
   outcomes,
@@ -314,6 +319,38 @@ function RunSummary({
   const ordered = list.reduce((n, l) => n + l.row.requestedQuantity, 0);
   const got = list.reduce((n, l) => n + (l.outcome?.quantity ?? 0), 0);
   const fill = ordered === 0 ? 0 : Math.round((got / ordered) * 100);
+
+  const [sync, setSync] = useState<SyncState>({ phase: "writing" });
+  // React runs effects twice in dev StrictMode. A duplicate PATCH is
+  // idempotent here, but firing it twice muddies the log during a demo.
+  const fired = useRef(false);
+
+  useEffect(() => {
+    if (fired.current) return;
+    fired.current = true;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/pick", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: run.id,
+            outcomes: Object.values(outcomes),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "write failed");
+        setSync({
+          phase: "done",
+          pickStatus: data.pickStatus,
+          portalUrl: data.portalUrl,
+        });
+      } catch (e) {
+        setSync({ phase: "failed", message: (e as Error).message });
+      }
+    })();
+  }, [run.id, outcomes]);
 
   return (
     <div className="flex flex-1 flex-col px-5 py-6">
@@ -344,15 +381,56 @@ function RunSummary({
         ))}
       </ul>
 
+      {/* The handoff, named on screen. Picking ends here and Nash takes over. */}
+      <div className="mt-5 rounded-xl border border-white/15 px-4 py-4">
+        {sync.phase === "writing" && (
+          <p className="text-[14px] text-white/60">Writing outcomes to Nash…</p>
+        )}
+
+        {sync.phase === "done" && (
+          <>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-[#c9ff00]">
+              Saved to Nash
+            </p>
+            <p className="mt-2 text-[15px] font-semibold">
+              Ready for Nash dispatch
+            </p>
+            <p className="mt-1 font-mono text-[12px] text-white/50">
+              {sync.pickStatus}
+            </p>
+            {sync.portalUrl && (
+              <a
+                href={sync.portalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-3 inline-block text-[13px] font-semibold text-[#c9ff00] underline underline-offset-4"
+              >
+                Open in the Nash portal
+              </a>
+            )}
+          </>
+        )}
+
+        {sync.phase === "failed" && (
+          <>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-white/45">
+              Not saved
+            </p>
+            <p className="mt-2 text-[14px] text-white/70">{sync.message}</p>
+            <p className="mt-2 text-[12px] text-white/45">
+              The run is still on this device. Reopening the order re-reads
+              from Nash.
+            </p>
+          </>
+        )}
+      </div>
+
       <Link
         href="/"
-        className="mt-6 flex min-h-[64px] items-center justify-center rounded-xl bg-[#c9ff00] text-[17px] font-bold text-[#01051E] active:bg-[#a8d400]"
+        className="mt-4 flex min-h-[64px] items-center justify-center rounded-xl bg-[#c9ff00] text-[17px] font-bold text-[#01051E] active:bg-[#a8d400]"
       >
         Back to queue
       </Link>
-      <p className="mt-3 text-center text-[11px] text-white/35">
-        Write-back to Nash lands in L5
-      </p>
     </div>
   );
 }
