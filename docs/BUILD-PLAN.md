@@ -13,9 +13,9 @@ Level 6 is only reached if 0-5 are stable.
 | **L1** | The sandbox has a store, a catalog and four orders | 25 min | ✅ **done** |
 | **L2** | One queue showing all four orders, all three channels | 30 min | ✅ **done** |
 | **L3** | A picker can walk an order item by item | 30 min | ✅ **done** |
-| **L4** | All four outcomes recordable | 35 min | 🟡 **built, untested** |
+| **L4** | All four outcomes recordable | 35 min | ✅ **done** - 25 tests, `npm test` |
 | **L5** | Nash knows picking is done | 20 min | ✅ **done** |
-| **L6** | Scan verification, fill rate by channel | 25 min | ⬜ cut first |
+| **L6** | Scan verification, fill rate by channel | 25 min | 🟡 **6.2 shipped**, 6.1 held |
 
 ---
 
@@ -170,12 +170,31 @@ a platform status. Dispatch will not trigger off it.
 
 ---
 
-## L6 - Stretch ⬜
+## L6 - Stretch 🟡
 
-Only if L0-L5 are stable. **Cut in this order.**
+L0-L5 are stable, so L6 was reached.
 
-- [ ] **6.2** Fill rate by channel - answers *"no unified view of fulfillment"* · **cut 1st**
-- [ ] **6.1** Scan verification - reject a wrong barcode visibly. Diet Coke versus Coke · cut 2nd
+- [x] **6.2** `/ops` - fulfilment view by channel, answers *"no unified view of fulfilment"* · `feat: fulfilment view for the operations manager`
+- [ ] **6.1** Scan verification - reject a wrong barcode visibly. Diet Coke versus Coke · **held**
+
+**6.2 shipped.** Every number is derived from what picking wrote to Nash -
+no counter, no event table, no second copy. A counter incremented alongside a
+write is a second source of truth, and two sources disagree silently, usually
+in front of the person being shown the dashboard.
+
+It also **names what it cannot measure** rather than filling the gap with a
+plausible number:
+
+| Missing | Why it cannot be computed |
+|---|---|
+| Pick duration | `pick_completed_at` is written, nothing records when a run *started* |
+| Scan accuracy | `scanned_barcode` is stored, nothing records a *rejected* scan |
+
+**6.1 is held, not cut.** Shawn is taking the barcode approach himself.
+One finding for whoever builds it: **`upc` does not read back as `upc`.**
+Nash normalises it on write, so the expected barcode comes off
+`product.identifiers[] { type: "UPC", value }`, not `product.upc` and not
+`subItems[].barcode`, which is null on all four orders.
 
 **⛔ 15:05 FREEZE.** Broken things get cut, not fixed.
 
@@ -190,7 +209,7 @@ Only if L0-L5 are stable. **Cut in this order.**
 | 🟢 | ~~Can `substitution` be set on order create~~ | - | Answered by doing: yes, it round-trips |
 | 🟢 | ~~Where does channel live~~ | - | `tags` plus `orderMetadata`. Accepted and returned |
 
-**Nothing is blocked.** L0 to L5 run end to end against the live sandbox.
+**Nothing is blocked.** L0 to L6.2 run end to end against the live sandbox.
 
 ---
 
@@ -200,7 +219,9 @@ Only if L0-L5 are stable. **Cut in this order.**
 |---|---|
 | **This file** | The checklist. The only place a task is ticked |
 | `git log --oneline` | One commit per increment. The history is the audit trail |
+| `npm test` | 25 tests, no framework. Mutation-checked, so a green run means something |
 | `/api/health` | Live counts from the sandbox - proves the data is really there |
+| `/ops` | Fill rate by channel, derived from what picking actually wrote |
 | `docs/DECISIONS.md` | Why, not what. Updated as decisions are made |
 
 ---
@@ -209,3 +230,20 @@ Only if L0-L5 are stable. **Cut in this order.**
 
 A level is done when it is **committed, running, and demonstrable without
 explanation**. Not when the code exists.
+
+---
+
+## Demo reset
+
+`npm run seed` is the reset. It is safe to run any number of times and it only
+touches the four references it owns.
+
+It clears stale demo orders first, and the order of those two calls is
+load-bearing: `DELETE /order/{id}` is a **soft archive** that keeps the
+`externalId`, so the reference stays taken and the next create lands in
+`needs_attention`. The stale order is renamed to a tombstone, *then* deleted.
+
+Afterwards it asserts **exactly one `valid` order per reference**. The failure
+this catches is invisible until the queue serves the wrong copy and the
+write-back lands on a duplicate while the portal shows the real order
+untouched.
