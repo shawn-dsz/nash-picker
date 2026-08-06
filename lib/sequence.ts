@@ -57,13 +57,25 @@ export const STORE_LAYOUT: string[] = [
   "Frozen",
 ];
 
-/** Aisles not in the layout go last, in a stable order, never guessed at. */
+/**
+ * Aisles not in the layout go last, in a stable order, never guessed at.
+ *
+ * The sentinels are deliberately adjacent to the layout rather than huge.
+ * An earlier version returned Number.MAX_SAFE_INTEGER for a missing aisle,
+ * which sorted correctly but made `travel()` - which takes differences
+ * between ranks - return ~1.8e16 the moment one row failed the join. That in
+ * turn made `routeGain` report a fabricated ~50% saving. A rank is a position
+ * in a walk, so it has to stay within the walk.
+ */
+const RANK_UNKNOWN_AISLE = STORE_LAYOUT.length;
+const RANK_NO_LOCATION = STORE_LAYOUT.length + 1;
+
 function aisleRank(aisle: string | undefined): number {
-  if (!aisle) return Number.MAX_SAFE_INTEGER;
+  if (!aisle) return RANK_NO_LOCATION;
   const i = STORE_LAYOUT.findIndex(
     (a) => a.toLowerCase() === aisle.toLowerCase(),
   );
-  return i === -1 ? STORE_LAYOUT.length : i;
+  return i === -1 ? RANK_UNKNOWN_AISLE : i;
 }
 
 /**
@@ -124,12 +136,20 @@ export function aisleChanges(rows: PickRow[]): number {
  * geometry, which is planogram data this system does not have. Aisle
  * positions are a proxy that is honest about its own precision and still
  * captures the thing that costs time: crossing the store.
+ *
+ * Rows with no location are EXCLUDED rather than assigned a position. Their
+ * aisle is unknown, so any distance attributed to them is invented - and this
+ * number exists to support a claim about a saving. Counting a guess towards
+ * it would be the same mistake as sorting on a guess.
  */
 export function travel(rows: PickRow[]): number {
+  const located = rows.filter((r) => r.location?.aisle);
+
   let total = 0;
-  for (let i = 1; i < rows.length; i++) {
+  for (let i = 1; i < located.length; i++) {
     total += Math.abs(
-      aisleRank(rows[i].location?.aisle) - aisleRank(rows[i - 1].location?.aisle),
+      aisleRank(located[i].location?.aisle) -
+        aisleRank(located[i - 1].location?.aisle),
     );
   }
   return total;
@@ -138,8 +158,10 @@ export function travel(rows: PickRow[]): number {
 export type RouteGain = {
   before: { moves: number; travel: number };
   after: { moves: number; travel: number };
-  /** Reduction in travel, 0 to 1. Null when the basket was already optimal. */
+  /** Reduction in travel, 0 to 1. Null when there is no honest number to give. */
   saved: number | null;
+  /** Rows the join could not locate. They are excluded from `travel`. */
+  unlocated: number;
 };
 
 /**
@@ -160,9 +182,16 @@ export function routeGain(basketOrder: PickRow[]): RouteGain {
   };
   const after = { moves: aisleChanges(sequenced), travel: travel(sequenced) };
 
+  const unlocated = basketOrder.filter((r) => !r.location?.aisle).length;
+
   return {
     before,
     after,
+    unlocated,
+    // Null rather than zero when there is nothing to measure. A basket that
+    // was already in walk order genuinely saved nothing, and a basket with
+    // fewer than two locatable rows has no distance to compare - both are
+    // "no number", not "0% improvement".
     saved:
       before.travel > 0 ? (before.travel - after.travel) / before.travel : null,
   };
