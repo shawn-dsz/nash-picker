@@ -70,6 +70,14 @@ export async function writeRun(
       ...(order.orderMetadata ?? {}),
       // Nash does not recognise this as a status. It is this app's convention,
       // and it is named as one rather than dressed up as a platform state.
+      //
+      // `items_pick_partial` is currently UNREACHABLE, and that is worth
+      // saying rather than leaving as a branch that looks live. RunSummary
+      // only POSTs at the end of a run with every outcome present, so
+      // `complete` is always true. Making it reachable means a run can be
+      // abandoned part-way, which needs the write-ahead queue named above -
+      // the same change that makes a mid-run outcome durable. The logic here
+      // is correct if it is ever called.
       pick_status: complete ? "items_pick_complete" : "items_pick_partial",
       pick_fill_rate: rate.toFixed(2),
       pick_completed_at: new Date().toISOString(),
