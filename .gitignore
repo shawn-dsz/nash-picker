@@ -9,3 +9,6 @@ out
 # local working material - see AGENTS.md
 _context
 .reviews
+
+# recorder output - stills and the gif are committed, frames are not
+docs/media/.frames/
