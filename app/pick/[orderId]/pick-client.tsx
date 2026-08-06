@@ -249,18 +249,25 @@ function ScanGate({
         exactly the same resolution path a Zebra would drive, so nothing
         downstream is bypassed or faked.
       */}
-      <div className="mt-4 rounded-lg border border-dashed border-white/20 px-3 py-3">
+      <div className="mt-4 rounded-xl border-2 border-[#c9ff00]/60 bg-[#c9ff00]/[0.08] px-4 py-4">
         <label
           htmlFor="shelf"
-          className="text-[10px] uppercase tracking-[0.14em] text-white/40"
+          className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.12em] text-[#c9ff00]"
         >
-          No handheld · pick an item off the shelf
+          <span className="rounded bg-[#c9ff00] px-1.5 py-0.5 text-[10px] font-bold text-[#01051E]">
+            Demo
+          </span>
+          Take an item off the shelf
         </label>
+        <p className="mt-1.5 text-[12px] leading-snug text-white/60">
+          No handheld attached, so pick the physical product here. The app then
+          scans whatever you took.
+        </p>
         <select
           id="shelf"
           defaultValue=""
           onChange={(e) => e.target.value && onSubmit(e.target.value)}
-          className="mt-2 h-11 w-full rounded-lg border border-white/20 bg-[#01051E] px-3 text-[14px] text-white outline-none focus:border-[#c9ff00]"
+          className="mt-3 h-14 w-full rounded-lg border-2 border-[#c9ff00]/50 bg-[#01051E] px-3 text-[16px] font-semibold text-white outline-none focus:border-[#c9ff00]"
         >
           <option value="" disabled>
             Which one did you take?
