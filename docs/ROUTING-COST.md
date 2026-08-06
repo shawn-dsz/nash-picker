@@ -15,10 +15,15 @@ The customer-facing argument for the sequencing algorithm. One page.
 
 Handling is the job. Searching and exceptions are reducible but never zero.
 
-**Walking is the only component that delivers nothing to the customer.** No
-shopper has ever received a better order because the picker walked further. It
-is pure cost, and it is the one line a piece of software can attack without
-moving a shelf, hiring anyone, or changing a single physical process.
+**Walking delivers nothing to the customer.** No shopper has ever received a
+better order because the picker walked further. It is the largest controllable
+term and the cheapest to attack first - no shelf moved, nobody hired, no
+physical process changed.
+
+Not the *only* one, and overclaiming here would be easy to puncture: better
+location data attacks searching too. And batching does not purely remove waste,
+it **adds** a cost - four seconds per line of put-to-tote sortation. That is why
+the batching number is quoted net of it.
 
 That is the whole argument for spending the algorithm budget here first.
 
@@ -43,14 +48,14 @@ Sequenced  (shipped today)      160 s          -29%
 Batched wave  (designed)        124 s          -45% cumulative
 ```
 
-Per item picked:
+Per line picked:
 
 ```
 17.2 s  ->  12.3 s  ->  9.5 s
             ^shipped     ^designed
 ```
 
-**Sequencing alone removes 4.9 seconds per item, and it is running in
+**Sequencing alone removes 4.9 seconds per line, and it is running in
 production right now.** Batching removes another 2.8 on top, and the batching
 figure already has put-to-tote sortation deducted.
 
@@ -62,15 +67,25 @@ operations report can never drift apart.
 ## 4. The unit this converts into
 
 > *Every one second saved per item, they save ten million dollars a year.*
-> - the customer, on supermarket-scale grocery
+> - Kareem, on Coles-scale grocery
 
-That is the unit. **7.7 seconds per item** is what the two algorithms remove
-between them.
+That is the unit, and one clarification matters before the number is said out
+loud: **this measures a line, not a unit.** An order line for two bottles of
+milk is one walk and one pick, so **7.7 seconds per line** is what the two
+algorithms remove between them. Lines are fewer than units, so this is the
+conservative reading of Kareem's figure rather than the flattering one.
 
 Deliberately not multiplied out. n = 4 orders is a demonstration of method, not
 a study, and a number that large deserves a real order book behind it before
 anybody says it in a meeting. The mechanism and the unit are the claim; the
 annual figure is a pilot's job.
+
+**And the batch figure has a second limit worth naming first.** Trolley capacity
+was set to 4, which is the entire sample, so it measures every seeded order
+picked together rather than the best few chosen out of many. That is the
+maximum-overlap case for this data. Real batch formation selects a subset, so
+what this exercises is the walk arithmetic, not the selection. Fixing it needs a
+larger order book, not a better algorithm.
 
 ---
 
