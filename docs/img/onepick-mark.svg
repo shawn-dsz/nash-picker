@@ -3,25 +3,24 @@
   <!--
     Three become one.
 
-    Three short bars on the left are the three devices a picker carries today,
-    one per channel. They converge into a single acid-green bar: the one queue.
-    The mark is the product's only claim, drawn.
+    Three muted bars are the three devices a picker carries today, one per
+    channel. They converge into a single acid-green one: the queue. Strokes are
+    deliberately heavy - the mark has to survive a 16px favicon.
   -->
   <rect width="96" height="96" rx="22" fill="#01051E"/>
   <rect x="0.75" y="0.75" width="94.5" height="94.5" rx="21.25" fill="none" stroke="#ffffff1f" stroke-width="1.5"/>
 
-  <!-- the three channels, muted: they are what the picker juggles today -->
-  <g fill="#ffffff" fill-opacity="0.34">
-    <rect x="22" y="27" width="19" height="7" rx="3.5"/>
-    <rect x="22" y="44.5" width="19" height="7" rx="3.5"/>
-    <rect x="22" y="62" width="19" height="7" rx="3.5"/>
+  <g stroke="#ffffff" stroke-opacity="0.42" stroke-width="4" fill="none" stroke-linecap="round">
+    <!-- the three channels -->
+    <path d="M20 28 H34"/>
+    <path d="M20 48 H34"/>
+    <path d="M20 68 H34"/>
+    <!-- converging into one spine -->
+    <path d="M34 28 H44 Q50 28 50 34 V48"/>
+    <path d="M34 68 H44 Q50 68 50 62 V48"/>
+    <path d="M34 48 H52"/>
   </g>
 
-  <!-- they converge -->
-  <path d="M43 30.5 H52 Q57 30.5 57 37 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-  <path d="M43 48 H57" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-  <path d="M43 65.5 H52 Q57 65.5 57 59 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-
   <!-- the one queue -->
-  <rect x="57" y="43" width="19" height="10" rx="5" fill="#c9ff00"/>
+  <rect x="52" y="41" width="26" height="14" rx="7" fill="#c9ff00"/>
 </svg>

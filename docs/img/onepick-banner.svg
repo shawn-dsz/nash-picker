@@ -15,15 +15,15 @@
   <g transform="translate(72 112)">
     <rect width="96" height="96" rx="22" fill="#0a0f28"/>
     <rect x="0.75" y="0.75" width="94.5" height="94.5" rx="21.25" fill="none" stroke="#ffffff26" stroke-width="1.5"/>
-    <g fill="#ffffff" fill-opacity="0.34">
-      <rect x="22" y="27" width="19" height="7" rx="3.5"/>
-      <rect x="22" y="44.5" width="19" height="7" rx="3.5"/>
-      <rect x="22" y="62" width="19" height="7" rx="3.5"/>
+    <g stroke="#ffffff" stroke-opacity="0.42" stroke-width="4" fill="none" stroke-linecap="round">
+      <path d="M20 28 H34"/>
+      <path d="M20 48 H34"/>
+      <path d="M20 68 H34"/>
+      <path d="M34 28 H44 Q50 28 50 34 V48"/>
+      <path d="M34 68 H44 Q50 68 50 62 V48"/>
+      <path d="M34 48 H52"/>
     </g>
-    <path d="M43 30.5 H52 Q57 30.5 57 37 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M43 48 H57" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-    <path d="M43 65.5 H52 Q57 65.5 57 59 V48" fill="none" stroke="#ffffff" stroke-opacity="0.34" stroke-width="2.4" stroke-linecap="round"/>
-    <rect x="57" y="43" width="19" height="10" rx="5" fill="#c9ff00"/>
+    <rect x="52" y="41" width="26" height="14" rx="7" fill="#c9ff00"/>
   </g>
 
   <!-- wordmark -->
