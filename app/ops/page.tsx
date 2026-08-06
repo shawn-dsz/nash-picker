@@ -198,6 +198,31 @@ export default async function OpsPage() {
                   />
                 </section>
 
+                {/* Scan verification. Shown only once something has been
+                    gated - a 0% override rate over zero gated lines is not a
+                    good number, it is an absent one. */}
+                {report.linesGated > 0 && (
+                  <section className="mt-3 grid gap-3 sm:grid-cols-3">
+                    <StatTile
+                      label="Scan verified"
+                      value={pct(
+                        report.linesVerified / report.linesGated,
+                      )}
+                      hint={`${report.linesVerified} of ${report.linesGated} gated lines confirmed by barcode`}
+                    />
+                    <StatTile
+                      label="Override rate"
+                      value={pct(report.overrideRate)}
+                      hint={`${report.linesOverridden} picked without a matching scan`}
+                    />
+                    <StatTile
+                      label="Not gated"
+                      value={`${report.outcomes.not_picked}`}
+                      hint="Out-of-stock lines. Nothing to scan, so never counted as unverified"
+                    />
+                  </section>
+                )}
+
                 {/* One series, so the heading names it and there is no legend. */}
                 <section className="mt-9">
                   <h2 className="text-[15px] font-semibold">

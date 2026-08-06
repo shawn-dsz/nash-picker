@@ -108,6 +108,19 @@ export type Report = {
   /** Lines that did not fully fill, over lines picked. The pain, not the score. */
   shortRate: number | null;
   linesRecorded: number;
+  /**
+   * Scan verification, derived the same way as everything else here.
+   *
+   * `linesGated` counts lines where verification was expected at all -
+   * verified plus overridden. `not_picked` is never gated, so it is correctly
+   * outside this denominator: you cannot scan an item that is not there, and
+   * counting it as an unverified line would invent a failure.
+   */
+  linesGated: number;
+  linesVerified: number;
+  linesOverridden: number;
+  /** Overrides over gated lines. Null until anything has been gated. */
+  overrideRate: number | null;
   outcomes: OutcomeCounts;
   byChannel: ChannelMetrics[];
   byAisle: AisleMetrics[];
@@ -138,9 +151,9 @@ export const NOT_MEASURED: Report["notMeasured"] = [
     needs: "A per-line timestamp, which also makes the 200ms scan-to-next-item budget measurable.",
   },
   {
-    metric: "Pick accuracy",
-    why: "Scanned barcodes are stored, but a REJECTED scan is never recorded, so a mismatch rate cannot be computed.",
-    needs: "Scan verification on the pick screen - the wrong-Coke case.",
+    metric: "Scan mismatch rate",
+    why: "Verified scans and overrides now persist, so override rate is real. A REJECTED scan the picker then corrects is not written, so how often the wrong item was picked up cannot be computed - only how often verification was skipped.",
+    needs: "A per-line reject counter on the write. The gate already knows the number; nothing carries it to Nash.",
   },
 ];
 
@@ -149,6 +162,8 @@ type PickedMeta = {
   pick_status?: string;
   picked_quantity?: string;
   requested_quantity?: string;
+  scanned_barcode?: string;
+  scan_override?: string;
 };
 
 const metaOf = (s: NashSubItem): PickedMeta =>
@@ -189,6 +204,10 @@ type Line = {
   status: OutcomeKey;
   requested: number;
   picked: number;
+  /** A barcode was read for this line, whether or not it matched. */
+  scanned: boolean;
+  /** The picker proceeded past a failed or missing scan. */
+  overridden: boolean;
 };
 
 /** One order's recorded lines. Lines picking never touched are skipped. */
@@ -206,6 +225,8 @@ function readRun(o: NashOrderDetail): Line[] {
       // so a partially written run still contributes an honest denominator.
       requested: num(m.requested_quantity) ?? sub.count ?? 0,
       picked: num(m.picked_quantity) ?? 0,
+      scanned: m.scanned_barcode !== undefined,
+      overridden: m.scan_override === "true",
     });
   }
 
@@ -333,6 +354,11 @@ export function buildReport(
 
   const shortLines = allLines.filter((l) => isShort(l.status)).length;
 
+  // Only lines the gate actually applied to. not_picked is never gated.
+  const overridden = allLines.filter((l) => l.overridden).length;
+  const verified = allLines.filter((l) => l.scanned && !l.overridden).length;
+  const gated = verified + overridden;
+
   return {
     generatedAt: now.toISOString(),
     ordersTotal: orders.length,
@@ -342,6 +368,10 @@ export function buildReport(
     fillRate: ordersPicked > 0 ? rate(unitsPicked, unitsOrdered) : null,
     shortRate: allLines.length > 0 ? shortLines / allLines.length : null,
     linesRecorded: allLines.length,
+    linesGated: gated,
+    linesVerified: verified,
+    linesOverridden: overridden,
+    overrideRate: gated > 0 ? overridden / gated : null,
     outcomes: totals,
     byChannel,
     byAisle,
