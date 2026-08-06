@@ -133,28 +133,3 @@ function grey(data: Uint8ClampedArray, width: number, height: number) {
   }
   return out;
 }
-
-/** Decode a still image - a photo, or a file the picker chose. */
-export async function decodeImage(
-  file: File,
-  decode: Decoder,
-): Promise<string | null> {
-  const bitmap = await createImageBitmap(file);
-
-  // A phone photo is far bigger than the decoder needs and the extra pixels
-  // cost real time on a mid-range device. Capped on the long edge, aspect
-  // preserved - squashing it would distort the bar widths, which ARE the data.
-  const MAX = 1600;
-  const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-  ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-
-  return decode(canvas);
-}
