@@ -1,0 +1,8 @@
+# Railway uploads the working directory, and it does not know about
+# .git/info/exclude - only .gitignore. Local working material has to be
+# named again here or it ends up in the build context.
+_context/
+.reviews/
+.env
+.next/
+node_modules/
