@@ -1,10 +1,33 @@
-# OnePick
+<img src="docs/img/onepick-banner.svg" alt="OnePick - three devices become one queue" width="100%">
 
 A lightweight web picking app for FreshMart, built on Nash's `pick_and_pack` model.
 
 **Live:** https://onepick-production.up.railway.app
 **Health:** https://onepick-production.up.railway.app/api/health
 **Docs:** https://shawn-dsz.github.io/nash-picker/
+
+---
+
+<img src="docs/media/demo.gif" alt="Picking an order end to end: queue, location, weighed partial, a caught mis-scan, written back to Nash" width="380" align="right">
+
+## One run, start to finish
+
+Recorded against the live sandbox, not a mockup. Fifteen seconds, one order,
+and every screen in it is real.
+
+The picker opens the queue, walks to the shelf, weighs a kilo of bananas that
+comes out at **0.94kg**, and reaches for a Diet Coke. They scan a Coca-Cola
+Classic by mistake and **the app stops them** - naming what they are holding and
+what they actually need. The run closes at **98% fill**, written back to Nash.
+
+Nothing in that flow is staged. The order it finishes is a real order in the
+sandbox, and `pick_status: items_pick_complete` is read back from the platform
+rather than shown as a success message.
+
+Re-record it any time with `demo/beats.mjs`, which drives the same five beats
+against production. The UI changes, so the recording has to be re-runnable.
+
+<br clear="all">
 
 ---
 
