@@ -32,7 +32,7 @@ The git history is a deliverable. It should read as a sequence of decisions, not
 ## Boundaries
 
 - **`_context/` is local working material and is git-excluded.** Never commit it, never reference it from tracked files
-- Secrets live in `.env.local`, read server-side only. **Never `NEXT_PUBLIC_`**
+- Secrets live in `.env` - the only one. Read server-side only. **Never `NEXT_PUBLIC_`**
 - `docs/` is what a reader outside this project sees. Keep it that way
 
 ## Building

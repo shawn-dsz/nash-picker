@@ -23,7 +23,7 @@ Levels 0-5 are the contract. Level 6 is only reached if 0-5 are stable.
 | | Task | Commit |
 |---|---|---|
 | 0.1 | `create-next-app` - TypeScript, Tailwind, App Router, no src dir | `chore: scaffold` |
-| 0.2 | `.env.local` from the template - key, org id, base URL, store location | *(not committed)* |
+| 0.2 | `.env` from the template - key, org id, base URL, store location | *(not committed)* |
 | 0.3 | `lib/nash.ts` - a single `nashFetch()` with auth headers, base URL and error shaping | `feat: nash client` |
 | 0.4 | `app/api/health/route.ts` - proves auth works end to end | `feat: health check` |
 
@@ -129,7 +129,7 @@ Only if L0-L5 are stable. **Cut in this order.**
 
 | | Blocker | Needed for | Who |
 |---|---|---|---|
-| 🔴 | **`.env.local` is empty** - no API key, no org id, no store location id | **L0 onwards. Nothing starts without it** | Portal → Settings → API keys |
+| 🔴 | **`.env` needs the sandbox key** - no API key, no org id, no store location id | **L0 onwards. Nothing starts without it** | Portal → Settings → API keys |
 | 🟡 | Where channel should live - `tags` or `orderMetadata` | L1.4, L2.3 | Kareem. **Assume `tags` and proceed** |
 | 🟡 | Whether `PATCH /v1/order` is the right write path | L5 | Kareem. **Assume yes and proceed** |
 

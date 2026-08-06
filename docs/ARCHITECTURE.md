@@ -176,9 +176,9 @@ Real stores run this on rugged handhelds. This is the lightweight web equivalent
 ## Running it
 
 ```bash
-cp .env.example .env.local     # fill in the sandbox key, org id and store location
+cp .env.example .env           # fill in the sandbox key and store location
 npm install
 npm run dev
 ```
 
-Nash sandbox AU: `https://api.sandbox.ap-southeast-2.usenash.com/v1`
+Nash sandbox: `https://api.sandbox.usenash.com/v1`
