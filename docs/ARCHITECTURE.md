@@ -12,7 +12,7 @@ A lightweight web picking app for FreshMart, built on Nash's pick-and-pack model
 
 ```mermaid
 flowchart LR
-  subgraph nash["Nash API (AU sandbox)"]
+  subgraph nash["Nash API (sandbox)"]
     orders["GET / PATCH /v1/order"]
     prod["GET / POST /v1/products"]
     inv["GET / POST /v1/inventory"]

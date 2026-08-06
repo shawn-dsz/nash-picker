@@ -23,11 +23,11 @@ Levels 0-5 are the contract. Level 6 is only reached if 0-5 are stable.
 | | Task | Commit |
 |---|---|---|
 | 0.1 | `create-next-app` - TypeScript, Tailwind, App Router, no src dir | `chore: scaffold` |
-| 0.2 | `.env` from the template - key, org id, base URL, store location | *(not committed)* |
+| 0.2 | ~~`.env`~~ **done** - key valid, store location `stl_FHRyQgmDr9DwC8qhkD3r75` | *(not committed)* |
 | 0.3 | `lib/nash.ts` - a single `nashFetch()` with auth headers, base URL and error shaping | `feat: nash client` |
 | 0.4 | `app/api/health/route.ts` - proves auth works end to end | `feat: health check` |
 
-**Risk:** wrong region. AU sandbox is `api.sandbox.ap-southeast-2.usenash.com/v1`. A US key against an AU host fails as a 401 or an empty list, not as a helpful error. **If the first call misbehaves, flip the region before debugging anything else.**
+**Verified 2026-08-06:** auth works against `https://api.sandbox.usenash.com/v1`. This org is **US**, not AU - the AU host returns `MISSING_RESOURCE "API key not found"`, which reads as a bad key but is a wrong-region error. `NASH_ORG_ID` is not required; the key is single-org.
 
 ---
 
@@ -37,7 +37,7 @@ Levels 0-5 are the contract. Level 6 is only reached if 0-5 are stable.
 
 | | Task | Commit |
 |---|---|---|
-| 1.1 | `scripts/seed/store.ts` - one store location, `externalId: freshmart-richmond` | `feat(seed): store` |
+| 1.1 | ~~Create the store~~ **already exists** - **Carlton**, `externalId: 001`. Inventory joins on `externalStoreLocationId: "001"`, not the `stl_` id | - |
 | 1.2 | `scripts/seed/products.ts` - ~14 products. Two `WEIGHTED`. Three lookalike colas | `feat(seed): catalog` |
 | 1.3 | `scripts/seed/inventory.ts` - per-store inventory with `location { aisle, bay, shelf }` | `feat(seed): inventory` |
 | 1.4 | `scripts/seed/orders.ts` - four orders, `pick_and_pack` in `requirements` | `feat(seed): orders` |
@@ -129,11 +129,11 @@ Only if L0-L5 are stable. **Cut in this order.**
 
 | | Blocker | Needed for | Who |
 |---|---|---|---|
-| 🔴 | **`.env` needs the sandbox key** - no API key, no org id, no store location id | **L0 onwards. Nothing starts without it** | Portal → Settings → API keys |
+| ✅ | ~~Sandbox credentials~~ | Resolved - key verified, store confirmed, catalog empty | - |
 | 🟡 | Where channel should live - `tags` or `orderMetadata` | L1.4, L2.3 | Kareem. **Assume `tags` and proceed** |
 | 🟡 | Whether `PATCH /v1/order` is the right write path | L5 | Kareem. **Assume yes and proceed** |
 
-**Neither amber item blocks starting.** Both are isolated to one adapter function each, so a wrong guess is a small edit, not a rewrite. Do not wait on them.
+**Nothing is blocking. Neither amber item blocks starting.** Both are isolated to one adapter function each, so a wrong guess is a small edit, not a rewrite. Do not wait on them.
 
 ---
 
