@@ -49,7 +49,8 @@ and locations.
 - [x] **1.2** `scripts/seed/catalog.ts` - 14 products. Two `WEIGHTED`. Three lookalike colas · `feat(seed): catalog`
 - [x] **1.3** Inventory with `location { aisle, bay, shelf }` and per-store price
 - [x] **1.4** `scripts/seed/orders.ts` - four orders, `pick_and_pack` in `requirements` · `feat(seed): orders`
-- [x] **1.5** `npm run seed` - idempotent, so it doubles as reset
+- [x] **1.5** `npm run seed` - idempotent for the catalog. **Orders are not**, so reset is its own script
+- [x] **1.7** `npm run reset` - four clean orders before a demo · `feat(seed): reset by superseding`
 - [x] **1.6** Seed asserts the join and the substitution round-trip rather than trusting a 200
 
 **Live in the sandbox:**
@@ -68,6 +69,13 @@ and `substituteItems`.
 **Found:** `DELETE /products` and `DELETE /inventory` both return **405**. The
 catalog is upsert-only, so reset restores quantities rather than removing rows.
 That is how a real store catalog behaves anyway.
+
+**Found:** orders are **append-only**. `POST /order/{id}/cancel` is 404,
+`DELETE /order/{id}` is 404, and `PATCH` refuses `status` outright. Correct
+behaviour for a fulfilment system - a customer's order is not something an
+integration should be able to erase - but it means **reset supersedes rather
+than removes**: re-post the same `externalId` and let the queue's newest-wins
+dedupe hide the picked copies. `npm run reset`.
 
 ---
 
@@ -108,7 +116,7 @@ way the catalog is. The queue dedupes on `externalId`, newest wins.
 
 ---
 
-## L4 - The four outcomes 🔨
+## L4 - The four outcomes ✅
 
 **Done when:** each seeded order behaves the way it was designed to.
 
@@ -117,10 +125,19 @@ way the catalog is. The queue dedupes on `externalId`, newest wins.
 - [x] **4.3** Not on shelf → `not_picked` · `feat: outcome not picked`
 - [x] **4.4** Substitution - show the customer's pre-approved item, one tap → `substituted` · `feat: outcome substitution`
 - [x] **4.5** Honour `preference: refund` - **no substitute offered at all** → `not_picked` · `feat: honour refund preference`
-- [ ] **4.6** Two tests on `toPickedItems()`, weighted partial first · `test: outcome mapping`
+- [x] **4.6** Tests on the outcome mapping, weighted partial first · `test: outcome mapping`
 
 **4.5 is the one most people miss.** Offering a substitute the customer declined
 is worse than picking nothing.
+
+**Tests: `npm test`.** 25, no framework and no new dependency - Node's own
+runner over native type stripping. Chosen for what fails *silently*: a
+substitution with a full quantity is still `substituted` not `picked`; 0.94kg
+of 1kg is partial, the case a boolean cannot express; sub-items with no
+outcome must survive the write, because `PATCH` on `items` replaces and Nash
+returns 200 for the destructive version exactly as it does for the correct
+one. The suite was mutation-checked - dropping unmatched sub-items and
+disabling the serpentine each turned it red.
 
 ---
 
