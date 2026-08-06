@@ -208,12 +208,22 @@ function ScanGate({
         value={typed}
         onChange={(e) => onType(e.target.value)}
         // A wedge scanner types the digits then sends Enter, so Enter is the
-        // real submit. Typing it by hand works identically.
+        // real submit. Typing it by hand works identically - the device is a
+        // keyboard, so there is nothing to emulate.
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             e.preventDefault();
             onSubmit(typed);
           }
+        }}
+        // Some wedge configurations deliver the whole code in one burst with
+        // no terminating Enter, which arrives as a paste. Submitting on paste
+        // covers that, and it is also how a barcode gets in without a scanner.
+        onPaste={(e) => {
+          const pasted = e.clipboardData.getData("text").trim();
+          if (!pasted) return;
+          e.preventDefault();
+          onSubmit(pasted);
         }}
         placeholder="Barcode"
         className="mt-2 h-14 w-full rounded-lg border border-white/20 bg-transparent px-4 font-mono text-xl tabular-nums outline-none focus:border-[#c9ff00]"
