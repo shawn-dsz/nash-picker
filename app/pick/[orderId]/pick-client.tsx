@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { PickRow, PickRun } from "@/lib/types";
 import type { Outcome } from "@/lib/outcomes";
 import { STATUS_LABEL, statusFor } from "@/lib/outcomes";
+import { ScanCamera } from "./scan-camera";
 
 /**
  * One item at a time.
@@ -230,6 +231,11 @@ function ScanGate({
         placeholder="Barcode"
         className="mt-2 h-14 w-full rounded-lg border border-white/20 bg-transparent px-4 font-mono text-xl tabular-nums outline-none focus:border-[#c9ff00]"
       />
+      {/* The optical path, for a store issuing phones rather than handhelds.
+          It resolves into this same onSubmit, so the gate cannot tell which
+          device read the code - and renders nothing at all on a browser
+          without BarcodeDetector. /shelf has symbols to point it at. */}
+      <ScanCamera onDetect={onSubmit} />
       {/*
         THE SHELF, FOR A DEMO WITH NO HANDHELD ATTACHED.
         ------------------------------------------------

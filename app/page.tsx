@@ -69,6 +69,23 @@ export default async function QueuePage() {
             </>
           )}
         </p>
+        {/* The two views that are not the picker's. Findable rather than
+            memorised - a demo where the presenter types a URL from memory is
+            a demo with a pause in it. */}
+        <nav className="mt-4 flex gap-2">
+          <Link
+            href="/ops"
+            className="rounded-lg border border-white/15 px-3 py-2 text-[12px] font-semibold text-white/70 active:bg-white/10"
+          >
+            Fulfilment report
+          </Link>
+          <Link
+            href="/shelf"
+            className="rounded-lg border border-white/15 px-3 py-2 text-[12px] font-semibold text-white/70 active:bg-white/10"
+          >
+            Shelf labels
+          </Link>
+        </nav>
       </header>
 
       <div className="flex-1 divide-y divide-white/10">

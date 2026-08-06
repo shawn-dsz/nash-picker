@@ -74,6 +74,7 @@ export type NashProduct = {
   externalIdentifier?: string | null;
   sku?: string | null;
   name?: string | null;
+  description?: string | null;
   imageUrls?: string[] | null;
   attributes?: string[] | null;
   /**
