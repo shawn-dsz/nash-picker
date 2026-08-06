@@ -523,6 +523,7 @@ function PickItem({
                 <button
                   key={alt.sku}
                   onClick={() => chooseSubstitute(i)}
+                  aria-label={`Take the customer approved substitute, ${alt.name}`}
                   className="flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-[#c9ff00]/40 bg-[#c9ff00]/10 px-4 text-left active:bg-[#c9ff00]/20"
                 >
                   {alt.imageUrl && (
@@ -714,8 +715,16 @@ function RunSummary({
             <p className="mt-2 text-[15px] font-semibold">
               Picking finished. Tote ready for handoff
             </p>
-            <p className="mt-1 font-mono text-[12px] text-white/50">
-              {sync.pickStatus}
+            {/*
+              The raw convention string, labelled as one.
+              `items_pick_complete` means the RUN finished, not that everything
+              was found - it sits next to a 67% fill rate on a run with a
+              missing item and reads as a contradiction otherwise.
+            */}
+            <p className="mt-1 text-[12px] text-white/50">
+              Run status{" "}
+              <span className="font-mono text-white/70">{sync.pickStatus}</span>
+              <span className="text-white/40"> · the run finished, not that every item was found</span>
             </p>
             {/*
               Deliberately not "dispatched" or "ready for dispatch". This app

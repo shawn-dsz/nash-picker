@@ -133,6 +133,7 @@ function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }
   ];
   const saved = run.route.saved;
   const worthShowing = saved !== null && saved > 0;
+  const moves = aisleChanges(run.rows);
 
   return (
     <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.03] px-5 py-2.5">
@@ -143,7 +144,7 @@ function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }
         {aisles.join(" → ")}
       </span>
       <span className="shrink-0 font-mono text-[11px] text-white/40">
-        {aisleChanges(run.rows)} moves
+        {moves} {moves === 1 ? "move" : "moves"}
       </span>
       {worthShowing && (
         <span
