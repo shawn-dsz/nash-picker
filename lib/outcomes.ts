@@ -26,7 +26,16 @@ export type Outcome = {
   weight?: number;
   /** Only set on `substituted`. The SKU the customer pre-approved. */
   substituteSku?: string;
+  /** What was actually scanned. Never the expected barcode. */
   scannedBarcode?: string;
+  /**
+   * True when the picker proceeded past a failed or missing scan.
+   *
+   * Recorded, never silent. An override that leaves no trace is worse than no
+   * gate at all: it looks like verification happened. This is also the only
+   * scan metric the system can honestly compute - see lib/metrics.ts.
+   */
+  scanOverride?: boolean;
 };
 
 export const STATUS_LABEL: Record<PickStatus, string> = {

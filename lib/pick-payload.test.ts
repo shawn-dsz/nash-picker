@@ -127,3 +127,35 @@ test("an empty items array produces an empty payload, not a crash", () => {
   assert.deepEqual(toItemsPayload(undefined, [outcome()]), []);
   assert.deepEqual(toItemsPayload([], [outcome()]), []);
 });
+
+test("an override records the barcode actually scanned, not the expected one", () => {
+  // The point of the record. "They scanned Coca-Cola Classic and proceeded
+  // anyway" is a training signal. Writing the expected barcode instead would
+  // make the record agree with itself and describe nothing that happened.
+  const m = meta(
+    toItemsPayload(order(), [
+      outcome({ scannedBarcode: "930000001005", scanOverride: true }),
+    ]),
+  );
+
+  assert.equal(m.scanned_barcode, "930000001005");
+  assert.equal(m.scan_override, "true");
+});
+
+test("a clean verified scan carries no override flag", () => {
+  const m = meta(
+    toItemsPayload(order(), [outcome({ scannedBarcode: "930000001029" })]),
+  );
+
+  assert.equal(m.scanned_barcode, "930000001029");
+  assert.equal("scan_override" in m, false);
+});
+
+test("an override with no barcode at all still records the override", () => {
+  // A damaged or missing label. There is no barcode to write, but the fact
+  // that verification was skipped must not disappear.
+  const m = meta(toItemsPayload(order(), [outcome({ scanOverride: true })]));
+
+  assert.equal(m.scan_override, "true");
+  assert.equal("scanned_barcode" in m, false);
+});

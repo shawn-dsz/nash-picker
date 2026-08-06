@@ -37,7 +37,12 @@ export default function PickClient({ run }: { run: PickRun }) {
   return (
     <>
       <Progress index={index} total={run.rows.length} />
-      <PickItem key={row.subItemId} row={row} onRecord={record} />
+      <PickItem
+        key={row.subItemId}
+        row={row}
+        catalogByUpc={run.catalogByUpc}
+        onRecord={record}
+      />
     </>
   );
 }
@@ -87,21 +92,249 @@ function pickedAllLabel(row: PickRow): string {
     : "Picked";
 }
 
+/**
+ * The scan gate.
+ *
+ * A TEXT INPUT, NOT A CAMERA, AND THAT IS THE PRODUCTION DESIGN
+ * ------------------------------------------------------------
+ * Store handhelds - Zebra, Honeywell - emulate a keyboard. They type the
+ * digits into whatever is focused and send a carriage return. So a focused
+ * input IS the mechanism a real device drives, not a stand-in for one. It also
+ * costs no camera permission, no HTTPS caveat and no lighting risk.
+ *
+ * A phone camera would be the addition for stores without handhelds, and it
+ * feeds this same resolution path.
+ */
+function ScanGate({
+  scan,
+  typed,
+  expectedName,
+  onType,
+  onSubmit,
+  onRescan,
+  onOverride,
+}: {
+  scan: Scan;
+  typed: string;
+  expectedName: string;
+  onType: (v: string) => void;
+  onSubmit: (code: string) => void;
+  onRescan: () => void;
+  onOverride: (barcode: string | null) => void;
+}) {
+  if (scan.state === "verified") {
+    return (
+      <div className="mt-5 flex items-center gap-3 rounded-xl border border-[#c9ff00]/40 bg-[#c9ff00]/10 px-4 py-3">
+        <span className="text-lg text-[#c9ff00]">✓</span>
+        <span className="min-w-0">
+          <span className="block text-[13px] font-semibold text-[#c9ff00]">
+            Barcode verified
+          </span>
+          <span className="block font-mono text-[11px] text-white/45">
+            {scan.barcode}
+          </span>
+        </span>
+      </div>
+    );
+  }
+
+  if (scan.state === "overridden") {
+    // Never silent. The override is visible for as long as the item is on
+    // screen, and it is written to Nash - see scan_override in the payload.
+    return (
+      <div className="mt-5 rounded-xl border border-[#f0b429]/40 bg-[#f0b429]/10 px-4 py-3">
+        <p className="text-[13px] font-semibold text-[#f0b429]">
+          Recorded as unverified
+        </p>
+        <p className="mt-1 text-[12px] text-white/55">
+          {scan.barcode
+            ? `Scanned ${scan.barcode}, which is not this item.`
+            : "No barcode was read."}{" "}
+          This is written to the order, not dropped.
+        </p>
+      </div>
+    );
+  }
+
+  if (scan.state === "wrong") {
+    return (
+      <div className="mt-5 rounded-xl border-2 border-[#ff4d4d] bg-[#ff4d4d]/15 px-4 py-4">
+        <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#ff4d4d]">
+          ✗ Wrong item
+        </p>
+        <p className="mt-2 text-[15px] font-semibold leading-snug">
+          {scan.actual ? (
+            <>That is {scan.actual}</>
+          ) : (
+            <>That barcode is not in this store&rsquo;s catalog</>
+          )}
+        </p>
+        <p className="mt-1 text-[14px] text-white/70">You need {expectedName}</p>
+        <p className="mt-2 font-mono text-[11px] text-white/40">
+          {scan.barcode}
+        </p>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={onRescan}
+            className="min-h-[48px] flex-1 rounded-lg bg-white text-[14px] font-semibold text-[#01051E] active:opacity-80"
+          >
+            Rescan
+          </button>
+          <button
+            onClick={() => onOverride(scan.barcode)}
+            className="min-h-[48px] flex-1 rounded-lg border border-white/25 text-[13px] font-semibold text-white/70 active:bg-white/10"
+          >
+            Override
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-5 rounded-xl border border-white/15 px-4 py-4">
+      <label
+        htmlFor="scan"
+        className="text-[11px] uppercase tracking-[0.14em] text-white/45"
+      >
+        Scan to confirm
+      </label>
+      <input
+        id="scan"
+        autoFocus
+        inputMode="numeric"
+        autoComplete="off"
+        value={typed}
+        onChange={(e) => onType(e.target.value)}
+        // A wedge scanner types the digits then sends Enter, so Enter is the
+        // real submit. Typing it by hand works identically.
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSubmit(typed);
+          }
+        }}
+        placeholder="Barcode"
+        className="mt-2 h-14 w-full rounded-lg border border-white/20 bg-transparent px-4 font-mono text-xl tabular-nums outline-none focus:border-[#c9ff00]"
+      />
+      <div className="mt-3 flex items-center justify-between gap-3">
+        {/* An item whose label is damaged or missing must still be pickable.
+            A gate with no escape is one a picker works around, and the
+            workaround is always worse than a recorded override. */}
+        <button
+          onClick={() => onOverride(null)}
+          className="text-left text-[12px] text-white/45 underline underline-offset-2 active:text-white/70"
+        >
+          No barcode on the item
+        </button>
+        <button
+          onClick={() => onSubmit(typed)}
+          disabled={typed.trim() === ""}
+          className="min-h-[44px] shrink-0 rounded-lg bg-white px-4 text-[13px] font-semibold text-[#01051E] disabled:opacity-30 active:opacity-80"
+        >
+          Check
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Scan state for one item.
+ *
+ * `overridden` is a real state rather than a flag on `verified`, because the
+ * two are not the same thing and the record must not pretend they are: one
+ * says the barcode matched, the other says a human decided to proceed anyway.
+ */
+type Scan =
+  | { state: "waiting" }
+  | { state: "verified"; barcode: string }
+  | { state: "wrong"; barcode: string; actual: string | null }
+  /**
+   * Carries the barcode that was actually read, when there was one. "Scanned
+   * Coca-Cola Classic and proceeded anyway" is a different fact from "the
+   * label was missing", and only one of them is a training problem.
+   */
+  | { state: "overridden"; barcode: string | null };
+
 function PickItem({
   row,
+  catalogByUpc,
   onRecord,
 }: {
   row: PickRow;
+  catalogByUpc: Record<string, string>;
   onRecord: (o: Outcome) => void;
 }) {
   const [quantity, setQuantity] = useState(row.requestedQuantity);
   const [weight, setWeight] = useState("");
-  const [mode, setMode] = useState<"pick" | "short">("pick");
+  const [mode, setMode] = useState<"pick" | "short" | "substitute">("pick");
+  const [chosen, setChosen] = useState(0);
+  const [scan, setScan] = useState<Scan>({ state: "waiting" });
+  const [typed, setTyped] = useState("");
 
   const refundOnly = row.substitution?.preference === "refund";
-  const canSubstitute =
-    row.substitution?.preference === "substitute" &&
-    row.substitution.items.length > 0;
+  const substitutes = row.substitution?.preference === "substitute"
+    ? row.substitution.items
+    : [];
+  const canSubstitute = substitutes.length > 0;
+  const sub = substitutes[chosen];
+
+  // What has to be in the picker's hand right now. Taking a substitute changes
+  // it: penne goes in the tote, so penne is what gets verified.
+  const expected = mode === "substitute" ? sub?.barcode ?? null : row.barcode;
+  const expectedName = mode === "substitute" ? sub?.name ?? row.name : row.name;
+
+  /*
+   * WHICH ACTIONS THE SCAN GATES, AND WHICH IT MUST NOT
+   * ---------------------------------------------------
+   *   picked / partial   gated. This is the accuracy claim.
+   *   substituted        gated, against the SUBSTITUTE's barcode.
+   *   not_picked         NOT gated. You cannot scan an item that is not there,
+   *                      and gating it would make an out-of-stock item
+   *                      unrecordable - turning a safety feature into the
+   *                      reason the data is wrong.
+   *
+   * A row with no barcode on file is not gated either. The alternative is an
+   * unpickable item, and a picker blocked by missing catalog data will find a
+   * way around the app rather than stop.
+   */
+  const scannable = expected !== null;
+  const cleared =
+    !scannable || scan.state === "verified" || scan.state === "overridden";
+
+  /** What was actually scanned, or undefined. Never the expected barcode. */
+  const scannedBarcode =
+    scan.state === "verified"
+      ? scan.barcode
+      : scan.state === "overridden"
+        ? scan.barcode ?? undefined
+        : undefined;
+  const scanOverride = scan.state === "overridden" ? true : undefined;
+
+  /** Resolve a read against the expected barcode, naming what was scanned. */
+  const submitScan = (raw: string) => {
+    const code = raw.trim();
+    if (!code) return;
+    setTyped("");
+
+    if (expected && code === expected) {
+      setScan({ state: "verified", barcode: code });
+      return;
+    }
+    // Naming the wrong item is the whole point. "That is Coca-Cola Classic,
+    // you need Coke Zero" is actionable. "Wrong item" is not.
+    setScan({ state: "wrong", barcode: code, actual: catalogByUpc[code] ?? null });
+  };
+
+  /** Choosing a substitute changes what must be scanned, so the gate resets. */
+  const chooseSubstitute = (i: number) => {
+    setChosen(i);
+    setMode("substitute");
+    setScan({ state: "waiting" });
+    setTyped("");
+  };
 
   return (
     <div className="flex flex-1 flex-col">
@@ -166,6 +399,21 @@ function PickItem({
           </div>
         )}
 
+        {/* The accuracy gate. Three lookalike colas sit on one shelf in this
+            store, same aisle, same bay, same shelf. Location cannot tell them
+            apart. The barcode is the only thing that can. */}
+        {scannable && (
+          <ScanGate
+            scan={scan}
+            typed={typed}
+            expectedName={expectedName}
+            onType={setTyped}
+            onSubmit={submitScan}
+            onRescan={() => setScan({ state: "waiting" })}
+            onOverride={(barcode) => setScan({ state: "overridden", barcode })}
+          />
+        )}
+
         {mode === "short" && (
           <div className="mt-5 rounded-xl border border-white/15 px-4 py-4">
             {row.isWeighted ? (
@@ -218,9 +466,10 @@ function PickItem({
 
       {/* Actions pinned to the bottom, where a thumb is. */}
       <div className="space-y-2 border-t border-white/10 px-5 pb-6 pt-4">
-        {mode === "pick" ? (
+        {mode === "pick" && (
           <>
             <Primary
+              disabled={!cleared}
               onClick={() =>
                 onRecord({
                   subItemId: row.subItemId,
@@ -234,16 +483,22 @@ function PickItem({
                   ),
                   requestedQuantity: row.requestedQuantity,
                   quantity: row.requestedQuantity,
+                  scannedBarcode,
+                  scanOverride,
                 })
               }
             >
-              {pickedAllLabel(row)}
+              {cleared ? pickedAllLabel(row) : "Scan to confirm"}
             </Primary>
 
             <div className="flex gap-2">
               <Secondary onClick={() => setMode("short")}>
                 {row.isWeighted ? "Enter weight" : "Found fewer"}
               </Secondary>
+              {/* Deliberately NOT gated. You cannot scan an item that is not
+                  there, and blocking this would make an out-of-stock item
+                  unrecordable - turning the safety feature into the reason
+                  the data is wrong. */}
               <Secondary
                 onClick={() =>
                   onRecord({
@@ -259,47 +514,44 @@ function PickItem({
               </Secondary>
             </div>
 
-            {/* One tap. The picker is applying a decision, not making one. */}
-            {canSubstitute && (
-              <button
-                onClick={() =>
-                  onRecord({
-                    subItemId: row.subItemId,
-                    sku: row.sku,
-                    // The `true` is what makes this substituted. A full-count
-                    // substitute is still not the thing the customer ordered.
-                    status: statusFor(
-                      row.requestedQuantity,
-                      row.substitution!.items[0].quantity,
-                      true,
-                    ),
-                    requestedQuantity: row.requestedQuantity,
-                    quantity: row.substitution!.items[0].quantity,
-                    substituteSku: row.substitution!.items[0].sku,
-                  })
-                }
-                className="flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-[#c9ff00]/40 bg-[#c9ff00]/10 px-4 text-left active:bg-[#c9ff00]/20"
-              >
-                {row.substitution!.items[0].imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={row.substitution!.items[0].imageUrl!}
-                    alt=""
-                    className="h-11 w-11 rounded object-cover"
-                  />
-                )}
-                <span className="min-w-0">
-                  <span className="block text-[11px] uppercase tracking-[0.12em] text-[#c9ff00]">
-                    Customer approved substitute
+            {/* Every substitute the customer pre-approved, in their order of
+                preference. The picker is applying a decision, not making one -
+                but a ranked fallback is still their decision, and offering
+                only the first silently discards the rest. */}
+            {canSubstitute &&
+              substitutes.map((alt, i) => (
+                <button
+                  key={alt.sku}
+                  onClick={() => chooseSubstitute(i)}
+                  className="flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-[#c9ff00]/40 bg-[#c9ff00]/10 px-4 text-left active:bg-[#c9ff00]/20"
+                >
+                  {alt.imageUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={alt.imageUrl}
+                      alt=""
+                      className="h-11 w-11 rounded object-cover"
+                    />
+                  )}
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[11px] uppercase tracking-[0.12em] text-[#c9ff00]">
+                      {substitutes.length > 1
+                        ? `Approved substitute ${i + 1} of ${substitutes.length}`
+                        : "Customer approved substitute"}
+                    </span>
+                    <span className="block truncate text-[15px] font-semibold">
+                      {alt.name}
+                    </span>
                   </span>
-                  <span className="block truncate text-[15px] font-semibold">
-                    {row.substitution!.items[0].name}
+                  <span aria-hidden className="shrink-0 text-xl text-white/30">
+                    ›
                   </span>
-                </span>
-              </button>
-            )}
+                </button>
+              ))}
           </>
-        ) : (
+        )}
+
+        {mode === "short" && (
           <>
             <Primary
               onClick={() => {
@@ -314,13 +566,51 @@ function PickItem({
                   requestedQuantity: row.requestedQuantity,
                   quantity: got,
                   weight: row.isWeighted ? got : undefined,
+                  scannedBarcode,
+                  scanOverride,
                 });
               }}
-              disabled={row.isWeighted && weight === ""}
+              // Finding fewer still means holding some of them, so the scan
+              // applies. Zero found is the "Not on shelf" path, not this one.
+              disabled={(row.isWeighted && weight === "") || !cleared}
             >
-              Confirm
+              {cleared ? "Confirm" : "Scan to confirm"}
             </Primary>
             <Secondary onClick={() => setMode("pick")} full>
+              Back
+            </Secondary>
+          </>
+        )}
+
+        {mode === "substitute" && sub && (
+          <>
+            <Primary
+              disabled={!cleared}
+              onClick={() =>
+                onRecord({
+                  subItemId: row.subItemId,
+                  sku: row.sku,
+                  // The `true` is what makes this substituted. A full-count
+                  // substitute is still not the thing the customer ordered.
+                  status: statusFor(row.requestedQuantity, sub.quantity, true),
+                  requestedQuantity: row.requestedQuantity,
+                  quantity: sub.quantity,
+                  substituteSku: sub.sku,
+                  scannedBarcode,
+                  scanOverride,
+                })
+              }
+            >
+              {cleared ? `Take ${sub.name}` : "Scan the substitute"}
+            </Primary>
+            <Secondary
+              onClick={() => {
+                setMode("pick");
+                setScan({ state: "waiting" });
+                setTyped("");
+              }}
+              full
+            >
               Back
             </Secondary>
           </>

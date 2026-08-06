@@ -54,6 +54,7 @@ export function toItemsPayload(
           ...(o.weight !== undefined ? { picked_weight: s(o.weight)! } : {}),
           ...(o.substituteSku ? { substitute_sku: o.substituteSku } : {}),
           ...(o.scannedBarcode ? { scanned_barcode: o.scannedBarcode } : {}),
+          ...(o.scanOverride ? { scan_override: "true" } : {}),
         },
       };
     }),
