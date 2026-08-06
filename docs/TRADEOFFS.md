@@ -152,3 +152,26 @@ No build cost. The layout stops looking sparse the moment it is framed as a devi
 **Flips when:** it does not - the bet is already placed. It paid off if `pick_and_pack` really is the right model, because finding that at hour three would have cost the day. **Judged, not asserted:** the finding that Nash already models picking end to end came out of that block.
 
 ---
+## T12 - The model I planned against vs. the API that exists
+
+**Tension:** the plan's central claim was that Nash models picking end to end - `pickedItems[]`, the four statuses, a transition to `items_pick_complete`. Probing the live sandbox at 12:30 showed `pickedItems` is not an argument on `updateOrder` and the order `status` is not writable at all. The read path survived the probe. The write path did not.
+
+**Chose:** keep the domain model, change where it lands. Outcomes go to `subItems[].metadata`, the run summary to `orderMetadata`, both verified to persist. `D2` holds - Nash still owns the state.
+
+**Cost:** the outcome is stored in a general-purpose metadata field rather than a first-class picking field, so Nash's own systems cannot act on it. Completion is a convention this app defines, not a status the platform recognises. Dispatch will not trigger off it.
+
+**Flips when:** the picking write path is confirmed at check-in. If a first-class field exists, it is one adapter function to switch - which is precisely why the mapping was kept behind `toPickedItems()`.
+
+**Worth saying out loud:** the probe cost fifteen minutes and moved this from an assumption to a fact. Finding it at 14:20, during L5, would have cost the write-back and the demo with it.
+
+---
+
+## T13 - Probing the live API vs. trusting the docs
+
+**Tension:** the documented shape was coherent and the plan built on it cleanly. Verifying it meant spending build-block time writing throwaway curl commands that produce no product.
+
+**Chose:** probe first, at the boundary between the read path and the write path.
+
+**Cost:** fifteen minutes of L1's budget, and one scratch order's item payload overwritten - `PATCH` on `items` replaces rather than merges, which was itself only discovered by doing it.
+
+**Flips when:** it does not. Three of the four assumptions the write path rested on were wrong, and one of them - `200 OK` with the field silently dropped - would not have surfaced through testing the app at all. It would have looked like a working L5.
