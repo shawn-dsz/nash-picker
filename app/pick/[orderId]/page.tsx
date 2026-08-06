@@ -119,15 +119,24 @@ export default async function PickPage({
 /**
  * Names the walk order, because a picker who does not know the list is
  * sequenced will assume it is basket order and second-guess it.
+ *
+ * The saving is shown only when there is one. `routeGain` refuses to invent a
+ * number on a basket that was already optimal, and the UI has to hold the same
+ * line - on a four-item basket the honest answer is often "no gain", and
+ * showing nothing is correct. A percentage that appears on every order is a
+ * percentage nobody believes.
  */
 function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }) {
   if (!run) return null;
   const aisles = [
     ...new Set(run.rows.map((r) => r.location?.aisle).filter(Boolean)),
   ];
+  const saved = run.route.saved;
+  const worthShowing = saved !== null && saved > 0;
+
   return (
     <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.03] px-5 py-2.5">
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#c9ff00]">
+      <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-[#c9ff00]">
         Route
       </span>
       <span className="min-w-0 flex-1 truncate text-[12px] text-white/60">
@@ -136,6 +145,14 @@ function SequenceBanner({ run }: { run: Awaited<ReturnType<typeof getPickRun>> }
       <span className="shrink-0 font-mono text-[11px] text-white/40">
         {aisleChanges(run.rows)} moves
       </span>
+      {worthShowing && (
+        <span
+          className="shrink-0 rounded bg-[#c9ff00]/15 px-2 py-[3px] text-[11px] font-semibold text-[#c9ff00]"
+          title={`Basket order: ${run.route.before.travel} aisle positions. Sequenced: ${run.route.after.travel}.`}
+        >
+          {Math.round(saved * 100)}% less walking
+        </span>
+      )}
     </div>
   );
 }
