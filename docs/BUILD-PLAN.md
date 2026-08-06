@@ -12,8 +12,8 @@ Level 6 is only reached if 0-5 are stable.
 | **L0** | The app boots and talks to Nash | 10 min | ✅ **done** |
 | **L1** | The sandbox has a store, a catalog and four orders | 25 min | ✅ **done** |
 | **L2** | One queue showing all four orders, all three channels | 30 min | ✅ **done** |
-| **L3** | A picker can walk an order item by item | 30 min | 🔨 **in progress** |
-| **L4** | All four outcomes recordable | 35 min | ⬜ |
+| **L3** | A picker can walk an order item by item | 30 min | ✅ **done** |
+| **L4** | All four outcomes recordable | 35 min | 🔨 **in progress** |
 | **L5** | Nash knows picking is done | 20 min | 🔴 **blocked** - see below |
 | **L6** | Scan verification, fill rate by channel | 25 min | ⬜ cut first |
 
@@ -95,28 +95,28 @@ way the catalog is. The queue dedupes on `externalId`, newest wins.
 
 ---
 
-## L3 - Pick screen 🔨
+## L3 - Pick screen ✅
 
 **Done when:** a picker can walk order A start to finish and reach a done state.
 
-- [ ] **3.1** `app/pick/[orderId]/page.tsx` - one sub-item at a time · `feat: pick screen`
-- [ ] **3.2** The five things: image, name, quantity, `aisle / bay / shelf`, one primary action · `feat: pick detail`
-- [ ] **3.3** Advance, progress indicator, completion state · `feat: pick progress`
-- [ ] **3.4** Handheld styling - 360px, 56px targets, 64px primary, no hover · `style: handheld`
+- [x] **3.1** `app/pick/[orderId]/page.tsx` - one sub-item at a time · `feat: pick screen`
+- [x] **3.2** The five things: image, name, quantity, `aisle / bay / shelf`, one primary action · `feat: pick detail`
+- [x] **3.3** Advance, progress indicator, completion state · `feat: pick progress`
+- [x] **3.4** Handheld styling - 360px, 56px targets, 64px primary, no hover · `style: handheld`
 
 **Cut risk:** none. This is the product.
 
 ---
 
-## L4 - The four outcomes ⬜
+## L4 - The four outcomes 🔨
 
 **Done when:** each seeded order behaves the way it was designed to.
 
-- [ ] **4.1** Picked → `picked` · `feat: outcome picked`
-- [ ] **4.2** Partial quantity - stepper, plus weight entry for `WEIGHTED` → `partially_picked` · `feat: outcome partial`
-- [ ] **4.3** Not on shelf → `not_picked` · `feat: outcome not picked`
-- [ ] **4.4** Substitution - show the customer's pre-approved item, one tap → `substituted` · `feat: outcome substitution`
-- [ ] **4.5** Honour `preference: refund` - **no substitute offered at all** → `not_picked` · `feat: honour refund preference`
+- [x] **4.1** Picked → `picked` · `feat: outcome picked`
+- [x] **4.2** Partial quantity - stepper, plus weight entry for `WEIGHTED` → `partially_picked` · `feat: outcome partial`
+- [x] **4.3** Not on shelf → `not_picked` · `feat: outcome not picked`
+- [x] **4.4** Substitution - show the customer's pre-approved item, one tap → `substituted` · `feat: outcome substitution`
+- [x] **4.5** Honour `preference: refund` - **no substitute offered at all** → `not_picked` · `feat: honour refund preference`
 - [ ] **4.6** Two tests on `toPickedItems()`, weighted partial first · `test: outcome mapping`
 
 **4.5 is the one most people miss.** Offering a substitute the customer declined
