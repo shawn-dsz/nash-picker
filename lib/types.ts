@@ -108,6 +108,16 @@ export type QueueOrder = {
   valueCents: number;
   currency: string;
   createdAt: string | null;
+  /**
+   * Read back from orderMetadata, which is where picking outcomes are written.
+   *
+   * The queue has to read what picking wrote, or a completed order looks
+   * identical to an untouched one and the whole thing reads as a mock. This
+   * is the round trip made visible.
+   */
+  pickStatus: "waiting" | "complete" | "partial";
+  /** Units delivered over units ordered. Null until a run has been written. */
+  fillRate: number | null;
 };
 
 /** One row of a pick list. The join of three Nash resources. */

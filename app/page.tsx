@@ -40,6 +40,7 @@ export default async function QueuePage() {
   }
 
   const channels = new Set(orders.map((o) => o.channel));
+  const waiting = orders.filter((o) => o.pickStatus === "waiting");
 
   return (
     <main className="flex min-h-dvh flex-col">
@@ -53,10 +54,18 @@ export default async function QueuePage() {
           </span>
         </div>
         <p className="mt-3 text-sm text-white/70">
-          <span className="font-semibold text-white">{orders.length}</span>{" "}
-          {orders.length === 1 ? "order" : "orders"} to pick across{" "}
+          <span className="font-semibold text-white">{waiting.length}</span>{" "}
+          {waiting.length === 1 ? "order" : "orders"} to pick across{" "}
           <span className="font-semibold text-white">{channels.size}</span>{" "}
           {channels.size === 1 ? "channel" : "channels"}
+          {orders.length > waiting.length && (
+            <>
+              {" · "}
+              <span className="text-white/45">
+                {orders.length - waiting.length} done
+              </span>
+            </>
+          )}
         </p>
       </header>
 
@@ -68,42 +77,60 @@ export default async function QueuePage() {
           </p>
         )}
 
-        {orders.map((o) => (
-          <Link
-            key={o.id}
-            href={`/pick/${o.id}`}
-            // 88px row, well over the 56px minimum. No hover state - there is
-            // no mouse in an aisle, so active: is the only tap feedback.
-            className="flex min-h-[88px] items-center gap-4 px-5 py-4 active:bg-white/5"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`rounded px-2 py-[3px] text-[10px] font-bold uppercase tracking-wider ${CHANNEL_STYLE[o.channel]}`}
-                >
-                  {CHANNEL_LABEL[o.channel]}
-                </span>
-                <span className="font-mono text-[11px] text-white/45">
-                  {o.reference}
-                </span>
+        {orders.map((o) => {
+          const done = o.pickStatus !== "waiting";
+          return (
+            <Link
+              key={o.id}
+              href={`/pick/${o.id}`}
+              // 88px row, well over the 56px minimum. No hover state - there is
+              // no mouse in an aisle, so active: is the only tap feedback.
+              className={`flex min-h-[88px] items-center gap-4 px-5 py-4 active:bg-white/5 ${done ? "opacity-45" : ""}`}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded px-2 py-[3px] text-[10px] font-bold uppercase tracking-wider ${CHANNEL_STYLE[o.channel]}`}
+                  >
+                    {CHANNEL_LABEL[o.channel]}
+                  </span>
+                  <span className="font-mono text-[11px] text-white/45">
+                    {o.reference}
+                  </span>
+                </div>
+
+                <p className="mt-2 truncate text-[17px] font-semibold leading-tight">
+                  {o.customer}
+                </p>
+
+                {/* Read back from Nash, not held locally. Reload the page and
+                    this survives, which is the point. */}
+                {done ? (
+                  <p className="mt-1 text-[13px] text-white/55">
+                    <span className="font-semibold text-[#c9ff00]">
+                      ✓ Picked
+                    </span>
+                    {o.fillRate !== null && (
+                      <> · {Math.round(o.fillRate * 100)}% fill</>
+                    )}
+                    {" · "}
+                    {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[13px] text-white/55">
+                    {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
+                    {o.suburb ? ` · ${o.suburb}` : ""} ·{" "}
+                    {money(o.valueCents, o.currency)}
+                  </p>
+                )}
               </div>
 
-              <p className="mt-2 truncate text-[17px] font-semibold leading-tight">
-                {o.customer}
-              </p>
-
-              <p className="mt-1 text-[13px] text-white/55">
-                {o.itemCount} {o.itemCount === 1 ? "item" : "items"}
-                {o.suburb ? ` · ${o.suburb}` : ""} ·{" "}
-                {money(o.valueCents, o.currency)}
-              </p>
-            </div>
-
-            <span aria-hidden className="text-2xl text-white/30">
-              ›
-            </span>
-          </Link>
-        ))}
+              <span aria-hidden className="text-2xl text-white/30">
+                ›
+              </span>
+            </Link>
+          );
+        })}
       </div>
 
       <footer className="border-t border-white/10 px-5 py-4 text-[11px] text-white/35">

@@ -90,6 +90,13 @@ export async function getQueue(): Promise<QueueOrder[]> {
     // order in this list would be a picker staring at an empty pick list.
     if (!detail?.requirements?.includes("pick_and_pack")) continue;
 
+    // Reading back what picking wrote. Without this a completed order is
+    // indistinguishable from an untouched one, which makes a working round
+    // trip look like a mock.
+    const meta = detail.orderMetadata ?? {};
+    const written = meta.pick_status;
+    const rate = meta.pick_fill_rate ? Number(meta.pick_fill_rate) : null;
+
     orders.push({
       id: o.id,
       reference: o.externalId!,
@@ -102,10 +109,24 @@ export async function getQueue(): Promise<QueueOrder[]> {
       valueCents: o.valueCents ?? 0,
       currency: o.currency ?? "AUD",
       createdAt: o.createdAt ?? null,
+      pickStatus:
+        written === "items_pick_complete"
+          ? "complete"
+          : written === "items_pick_partial"
+            ? "partial"
+            : "waiting",
+      fillRate: rate !== null && !Number.isNaN(rate) ? rate : null,
     });
   }
 
-  return orders.sort((a, b) => a.reference.localeCompare(b.reference));
+  // Work to do first. A picker opening the app should see what is outstanding,
+  // not scroll past this morning's finished runs.
+  const rank = { waiting: 0, partial: 1, complete: 2 } as const;
+  return orders.sort(
+    (a, b) =>
+      rank[a.pickStatus] - rank[b.pickStatus] ||
+      a.reference.localeCompare(b.reference),
+  );
 }
 
 const subItemsOf = (d: NashOrderDetail | null): NashSubItem[] =>
