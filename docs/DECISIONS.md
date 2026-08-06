@@ -26,7 +26,9 @@ Each entry: what was decided, why, what was rejected, and **how reversible it is
 
 ## D2 - Stateless. Nash holds the state.
 
-**Decided:** no database, no session store. Picking outcomes are written to Nash's `pickedItems`; the order's transition to `items_pick_complete` is the completion signal.
+**Decided:** no database, no session store. Picking outcomes are written back to the order in Nash; `pick_status: items_pick_complete` is the completion signal.
+
+**Amended 12:30** - the original wording said outcomes go to Nash's `pickedItems`. That field is not writable. The decision held; only its landing place changed. See `D10`.
 
 **Why:** the state already has an owner. A local store would be a second copy of the truth, and two copies eventually disagree - silently, and usually mid-demo. Statelessness also means closing the tab does not lose a run.
 
@@ -117,3 +119,45 @@ Each entry: what was decided, why, what was rejected, and **how reversible it is
 **Why:** the git history is part of the technical review. It should read as a sequence of decisions rather than a single dump, and it makes any wrong turn cost minutes rather than the afternoon.
 
 **Reversibility:** cheap, and it never needs reversing.
+
+---
+
+## D10 - Outcomes land on metadata, because the field they were planned for does not exist
+
+**Decided:** write per-line outcomes to `subItems[].metadata` and the run summary to `orderMetadata`. Keep the domain model exactly as `D3` set it.
+
+**Why:** `pickedItems` is not an argument on the order update and order `status` is not writable. Both were established by probing the live sandbox at 12:30 rather than by reading, which matters because the API returns **200 for the version that silently persists nothing**. Testing the app would not have caught it - it would have looked like a working write path until someone opened the portal.
+
+**Rejected:** inventing a local store to hold outcomes until a real write path appears. That reverses `D2` to work around a gap that is one adapter function wide.
+
+**Cost, stated plainly:** this is my schema in a general-purpose field. Nash's own systems cannot act on it, `items_pick_complete` is this app's convention rather than a platform state, and dispatch will not trigger off it.
+
+**Reversibility:** cheap, and deliberately so. The mapping is behind `toPickedItems()`, so a first-class picking field is one function to switch.
+
+---
+
+## D11 - Sequence the pick list, do not just display the location
+
+**Decided:** reorder each run serpentine by aisle, ambient before chilled and frozen.
+
+**Why:** the three-way join already had `aisle / bay / shelf` for every line, so the ordering was nearly free once the data was in hand. The temperature rule is the part that is not obvious: the shortest walk is not the best walk if ice cream picked first melts for the rest of the run.
+
+**Rejected:** shortest-path optimisation. A real solver on a real planogram, none of which exists here, to beat a heuristic that is already most of the win.
+
+**Cost:** aisle values are strings, so `"A12"` does not sort numerically against `"A6"`. The collation is explicit and it is the part most likely to be wrong on a store that names aisles differently.
+
+**Reversibility:** cheap. One pure function, covered by tests.
+
+---
+
+## D12 - The scan gate has a recorded exit, not a hard block
+
+**Decided:** the primary action stays unavailable until the barcode matches. "No barcode on the item" proceeds anyway and persists `scan_override`. "Not on shelf" is not gated at all.
+
+**Why:** you cannot scan an item that is not there. A gate with no exit makes an out-of-stock line unrecordable, and the picker's only remaining move is to abandon the run - which is how a safety feature becomes the reason the data is wrong. An override that leaves no trace is worse than no gate, because it looks like verification happened.
+
+**Rejected:** a hard block. It fails the first time a label is damaged, and it fails silently in the data rather than loudly on the screen.
+
+**Cost:** the scan-verified number is now a rate rather than a guarantee, which is the honest version but a weaker headline.
+
+**Reversibility:** cheap.
