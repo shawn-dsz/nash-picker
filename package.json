@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node --env-file=.env scripts/seed/index.ts",
-    "reset": "node --env-file=.env scripts/seed/reset.ts"
+    "reset": "node --env-file=.env scripts/seed/reset.ts",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test 'lib/*.test.ts'"
   },
   "dependencies": {
     "next": "16.3.0",
