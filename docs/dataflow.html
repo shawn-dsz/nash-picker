@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - data flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nash-signal:#c9ff00;
+  --nash-accent-dim:#a8d400;
+  --nash-bg:#01051E;
+  --nash-surface:#0a0f28;
+  --nash-surface-2:#1e2535;
+  --nash-surface-3:#262e40;
+  --nash-ocean:#314868;
+  --nash-mist:#d7f0ee;
+  --nash-text:#ffffff;
+  --nash-text-secondary:#ffffffb3;
+  --nash-text-tertiary:#ffffff73;
+  --nash-border:#ffffff1a;
+  --nash-border-2:#ffffff33;
+  --r-sm:4px; --r-md:8px; --r-lg:16px; --r-xl:24px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--nash-bg);color:var(--nash-text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:16px;line-height:1.55;font-weight:400;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:72px 32px 128px}
+
+header{margin-bottom:72px}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:24px;
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--nash-signal)}
+h1{
+  font-size:clamp(44px,7vw,76px);line-height:.98;letter-spacing:-.035em;
+  font-weight:700;margin:0 0 20px;
+}
+h1 .sig{color:var(--nash-signal)}
+.deck{
+  font-size:clamp(20px,2.4vw,26px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text-secondary);max-width:56ch;margin:0;font-weight:400;
+}
+
+section{margin-top:80px}
+h2{
+  font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin:0 0 28px;padding-bottom:14px;
+  border-bottom:1px solid var(--nash-border);
+}
+h3{font-size:22px;font-weight:650;letter-spacing:-.015em;margin:36px 0 10px}
+.lead{
+  font-size:clamp(24px,3vw,34px);line-height:1.22;letter-spacing:-.025em;
+  font-weight:650;margin:0 0 16px;max-width:24ch;
+}
+.lead.wide{max-width:34ch}
+p{margin:0 0 14px;color:var(--nash-text-secondary);max-width:70ch}
+p strong{color:var(--nash-text);font-weight:600}
+code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.86em;
+  background:var(--nash-surface-2);border:1px solid var(--nash-border);
+  padding:2px 7px;border-radius:var(--r-sm);color:var(--nash-mist);
+  white-space:nowrap;
+}
+pre{
+  background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:26px 24px;margin:24px 0;overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13.5px;
+  line-height:1.7;color:var(--nash-text-secondary);
+}
+pre b{color:var(--nash-signal);font-weight:600}
+pre i{color:var(--nash-text-tertiary);font-style:normal}
+pre em{color:var(--nash-mist);font-style:normal;font-weight:600}
+
+.quote{border-left:2px solid var(--nash-signal);padding:6px 0 6px 24px;margin:28px 0}
+.quote p{font-size:clamp(19px,2.2vw,24px);line-height:1.35;letter-spacing:-.015em;
+  color:var(--nash-text);margin:0;max-width:46ch}
+.quote cite{display:block;font-style:normal;font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--nash-text-tertiary);margin-top:14px}
+
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:15px}
+th{
+  text-align:left;font-size:10px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--nash-text-tertiary);
+  padding:0 20px 12px 0;border-bottom:1px solid var(--nash-border-2);
+}
+td{padding:15px 20px 15px 0;border-bottom:1px solid var(--nash-border);
+  vertical-align:top;color:var(--nash-text-secondary)}
+td:first-child{color:var(--nash-text);font-weight:600}
+tr:last-child td{border-bottom:none}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:24px 0}
+.card{
+  background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:26px;
+}
+.card .n{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--nash-text-tertiary);margin-bottom:12px}
+.card .v{font-size:20px;font-weight:650;letter-spacing:-.02em;line-height:1.25;margin-bottom:12px}
+.card p{font-size:14px;margin:0}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}
+.pill{
+  display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+  letter-spacing:.03em;padding:7px 14px;border-radius:99px;
+  border:1px solid var(--nash-border-2);color:var(--nash-text-secondary);
+}
+.pill .sw{width:10px;height:10px;border-radius:3px}
+.sw-built{background:var(--nash-signal)}
+.sw-stretch{background:var(--nash-mist)}
+.sw-nash{background:var(--nash-ocean)}
+.sw-out{background:transparent;border:1px dashed var(--nash-border-2)}
+
+.diagram{
+  background:var(--nash-surface);border:1px solid var(--nash-border);
+  border-radius:var(--r-lg);padding:32px 24px;margin:24px 0;overflow-x:auto;
+}
+.diagram .mermaid{text-align:center;min-width:720px}
+.diagram .mermaid svg{max-width:100%;height:auto}
+.cap{font-size:13px;color:var(--nash-text-tertiary);margin:-10px 0 0;max-width:70ch}
+
+/* Mermaid theme variables override classDef text colour, so force it back.
+   Dark text on the light fills, light text on the dark ones. */
+.mermaid g.built rect,.mermaid g.built polygon{fill:var(--nash-signal)!important;stroke:var(--nash-signal)!important}
+.mermaid g.built .nodeLabel,.mermaid g.built .nodeLabel *,.mermaid g.built text,.mermaid g.built tspan{
+  fill:#01051E!important;color:#01051E!important;font-weight:600!important}
+
+.mermaid g.stretch rect,.mermaid g.stretch polygon{fill:var(--nash-mist)!important;stroke:var(--nash-mist)!important}
+.mermaid g.stretch .nodeLabel,.mermaid g.stretch .nodeLabel *,.mermaid g.stretch text,.mermaid g.stretch tspan{
+  fill:#01051E!important;color:#01051E!important;font-weight:600!important}
+
+.mermaid g.nash rect,.mermaid g.nash polygon{fill:var(--nash-ocean)!important;stroke:#4a648a!important}
+.mermaid g.nash .nodeLabel,.mermaid g.nash .nodeLabel *,.mermaid g.nash text,.mermaid g.nash tspan{
+  fill:#ffffff!important;color:#ffffff!important}
+
+.mermaid g.out rect,.mermaid g.out polygon{fill:transparent!important;stroke:#ffffff4d!important;stroke-dasharray:5 4!important}
+.mermaid g.out .nodeLabel,.mermaid g.out .nodeLabel *,.mermaid g.out text,.mermaid g.out tspan{
+  fill:#ffffff8c!important;color:#ffffff8c!important}
+
+.mermaid .cluster rect{fill:#01051E!important;stroke:#ffffff26!important}
+.mermaid .cluster text,.mermaid .cluster .nodeLabel{fill:#ffffff8c!important;color:#ffffff8c!important;
+  font-size:12px!important;letter-spacing:.08em!important;text-transform:uppercase!important}
+.mermaid .edgePath path,.mermaid .flowchart-link{stroke:#ffffff59!important}
+.mermaid marker path{fill:#ffffff59!important;stroke:#ffffff59!important}
+.mermaid .edgeLabel,.mermaid .edgeLabel *{color:#ffffffb3!important;fill:#ffffffb3!important;
+  background-color:#0a0f28!important}
+
+/* sequence diagram - different element classes to the flowchart ones above */
+.mermaid text.actor,.mermaid .actor tspan{fill:#ffffff!important;stroke:none!important;font-weight:600!important}
+.mermaid .messageText{fill:#ffffffb3!important;stroke:none!important}
+.mermaid .noteText,.mermaid .noteText tspan{fill:#d7f0ee!important}
+.mermaid .labelText,.mermaid .loopText,.mermaid .loopText tspan{fill:#ffffffb3!important}
+.mermaid .sequenceNumber{fill:#01051E!important}
+
+ol,ul{color:var(--nash-text-secondary);padding-left:22px;max-width:70ch}
+li{margin:9px 0}
+li strong{color:var(--nash-text)}
+
+footer{margin-top:96px;padding-top:24px;border-top:1px solid var(--nash-border);
+  font-size:13px;color:var(--nash-text-tertiary)}
+
+@media (max-width:640px){ .wrap{padding:48px 20px 80px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow"><span class="dot"></span> Nash &middot; Picker Lite &middot; FreshMart</div>
+  <h1>Data <span class="sig">flow</span></h1>
+  <p class="deck">Where every field comes from, where every outcome goes, and what never leaves the server.</p>
+</header>
+
+<section>
+  <h2>01 &mdash; The whole thing in one line</h2>
+  <p class="lead wide">Nash owns the data. OnePick borrows it, shapes it for a picker, and hands the outcome straight back.</p>
+  <p>There is <strong>no database</strong>. Nothing is stored between requests. Every screen is a projection of what Nash currently holds, and every action is a write back to Nash. That is not a shortcut &mdash; it is the decision that makes the app recoverable, because a closed tab loses nothing.</p>
+  <div class="legend">
+    <span class="pill"><span class="sw sw-nash"></span> Nash owns it</span>
+    <span class="pill"><span class="sw sw-built"></span> OnePick server</span>
+    <span class="pill"><span class="sw sw-stretch"></span> Browser</span>
+    <span class="pill"><span class="sw sw-out"></span> Not built</span>
+  </div>
+</section>
+
+<section>
+  <h2>02 &mdash; Read path: three resources become one pick row</h2>
+  <p>An order knows <strong>what</strong> was bought. The catalog knows <strong>what it is</strong>. Per-store inventory knows <strong>where it is</strong>. Rendering a single row of a pick list needs all three, and the join is the single riskiest piece of integration work in the build.</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  subgraph N["Nash API - sandbox"]
+    O["GET /orders<br/>items[].subItems[]<br/>sku, quantity, substitution"]
+    P["GET /products<br/>name, image, attributes<br/>WEIGHTED flag"]
+    I["GET /inventory<br/>location: aisle / bay / shelf<br/>externalStoreLocationId 001"]
+  end
+
+  subgraph S["OnePick - server only"]
+    R["route handler<br/>/api/orders"]
+    A["adapter<br/>three-way join<br/>+ channel normalisation"]
+  end
+
+  subgraph B["Browser - handheld"]
+    Q["queue<br/>4 orders, 3 channels"]
+    PK["pick screen<br/>one sub-item at a time"]
+  end
+
+  O --> R
+  P --> R
+  I --> R
+  R --> A
+  A -- "PickRow[]" --> Q
+  Q --> PK
+
+  class O,P,I nash
+  class R,A built
+  class Q,PK stretch
+    </pre>
+  </div>
+  <p class="cap">The API key exists only inside the server box. The browser never holds a credential and never talks to Nash.</p>
+
+  <h3>The join, field by field</h3>
+  <pre>
+order.items[].subItems[]
+  .sku          <i>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&rarr;</i>  products[].sku
+  .quantity                        <b>&darr;</b> .id
+  .substitution                    <b>&darr;</b>
+                          products[].id + storeLocationId
+                                   <b>&darr;</b>
+                          inventory[].location { <em>aisle, bay, shelf</em> }
+
+<i>one PickRow =</i>
+  <em>name</em>            <i>from</i> products[].name
+  <em>image</em>           <i>from</i> products[].imageUrl
+  <em>requestedQuantity</em> <i>from</i> subItems[].quantity
+  <em>location</em>        <i>from</i> inventory[].location
+  <em>isWeighted</em>      <i>from</i> products[].attributes includes "WEIGHTED"
+  <em>substitution</em>    <i>from</i> subItems[].substitution
+  <i># channel is deliberately absent - see 03</i>
+</pre>
+  <p><strong>Location lives on inventory, not on the order.</strong> That is the detail that turns a two-call app into a three-call one, and it is why the adapter exists at all rather than the view fetching what it needs.</p>
+</section>
+
+<section>
+  <h2>03 &mdash; Channel enters, and stops at the adapter</h2>
+  <p>Nash has no channel field, so the channel rides in on <code>tags</code> and is normalised the moment it lands. <strong>The picker view never receives it.</strong></p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  U["Uber order<br/>tags: uber_eats"] --> AD
+  D["DoorDash order<br/>tags: doordash"] --> AD
+  W["Web order<br/>tags: web"] --> AD
+  AD["adapter<br/>normalise -> Channel"] --> PV["picker view<br/>no channel field"]
+  AD --> AN["analytics<br/>channel dimension kept"]
+
+  class U,D,W nash
+  class AD built
+  class PV stretch
+  class AN stretch
+    </pre>
+  </div>
+  <p>Channel-blindness is a <strong>property of the type</strong>, not a rule someone has to remember. A component cannot leak the channel into the pick screen because it is never handed one. The analytics stream keeps it, because comparing fill rate across channels is the entire point of unifying them.</p>
+</section>
+
+<section>
+  <h2>04 &mdash; Write path: four outcomes, one shape</h2>
+  <p>Every picker action &mdash; picked, short, missing, substituted &mdash; converges on a single mapping function and a single write. There is no branch in the transport, only in the mapping.</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  subgraph ACT["Picker taps"]
+    T1["Picked"]
+    T2["Partial / weighed"]
+    T3["Not on shelf"]
+    T4["Substitute confirmed"]
+  end
+
+  M["toPickedItems()<br/>the only mapping"]
+  RT["/api/pick<br/>server only"]
+  NS["PATCH /order/{id}<br/>pickedItems[]"]
+  DONE["items_pick_complete<br/>ready for Nash dispatch"]
+
+  T1 -- "status: picked" --> M
+  T2 -- "quantity &lt; requested<br/>+ weight" --> M
+  T3 -- "status: not_picked" --> M
+  T4 -- "status: substituted" --> M
+  M --> RT --> NS --> DONE
+
+  class T1,T2,T3,T4 stretch
+  class M,RT built
+  class NS,DONE nash
+    </pre>
+  </div>
+
+  <pre>
+<i>every outcome, one shape</i>
+pickedItems[] {
+  <em>requestedQuantity</em>   <i>what the customer asked for</i>
+  <em>quantity</em>            <i>what is physically in the tote</i>
+  <em>status</em>              picked | partially_picked | not_picked | substituted
+  <em>weight</em>              <i>only when the product is WEIGHTED</i>
+  <em>scannedBarcode</em>      <i>stretch - scan verification</i>
+}
+</pre>
+  <p><strong>There is no <code>picked: boolean</code> anywhere in this flow.</strong> A customer orders 1kg of bananas and the picker weighs 0.94kg &mdash; that is neither picked nor not-picked. A boolean makes the most common real case unrepresentable, so the model carries quantities from the start.</p>
+</section>
+
+<section>
+  <h2>05 &mdash; One order, end to end</h2>
+
+  <div class="diagram">
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant P as Picker
+  participant B as Browser
+  participant S as OnePick server
+  participant N as Nash
+
+  P->>B: opens the queue
+  B->>S: GET /api/orders
+  S->>N: GET /orders + /products + /inventory
+  N-->>S: three payloads
+  Note over S: adapter joins them<br/>and normalises channel
+  S-->>B: PickRow[] - no channel, no key
+  P->>B: taps an order, walks item 1
+  B->>S: POST /api/pick { outcome }
+  S->>N: PATCH /order/{id} pickedItems[]
+  N-->>S: 200
+  S-->>B: ok
+  Note over B,N: repeat per sub-item.<br/>State lives in Nash, never in the tab
+  P->>B: last item resolved
+  B->>S: POST /api/pick { complete }
+  S->>N: items_pick_complete
+  N-->>B: ready for dispatch
+    </pre>
+  </div>
+  <p>Close the tab at step 8 and reopen it: the run resumes, because the outcomes already recorded live in Nash rather than in browser memory. That is the practical payoff of statelessness, and it is worth demonstrating live rather than asserting.</p>
+</section>
+
+<section>
+  <h2>06 &mdash; The second stream: analytics and observability</h2>
+  <p>Same events, two consumers with different questions. <strong>Analytics</strong> answers <em>how did the shift go</em>. <strong>Observability</strong> answers <em>what happened to this one order</em>.</p>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart LR
+  EV["picker actions<br/>run_started, item_picked,<br/>item_partial, item_not_picked,<br/>item_substituted, scan_rejected,<br/>run_completed"]
+  DIM["dimensions<br/>ts, runId, orderId, subItemId,<br/>channel, storeId, sku,<br/>quantity, weightKg, durationMs"]
+  FR["order fill rate<br/>units delivered / units ordered<br/><b>cut by channel</b>"]
+  TR["runId correlation<br/>every log line + response header"]
+
+  EV --> DIM
+  DIM --> FR
+  DIM --> TR
+
+  class EV,DIM built
+  class FR stretch
+  class TR built
+    </pre>
+  </div>
+
+  <table>
+    <tr><th>Question</th><th>Answered by</th></tr>
+    <tr><td>How did the shift go</td><td>Fill rate, cut by channel. Web at 96% next to marketplace at 89% is invisible when the channels sit on separate devices</td></tr>
+    <tr><td>What happened to order 4021</td><td><code>runId</code> on every event, every log line and every response header</td></tr>
+    <tr><td>Is the picker scanning twice</td><td>200ms scan-to-next-item budget. Above that a picker double-scans, and a double scan is a data-quality problem, not a UX one</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>07 &mdash; What crosses which boundary</h2>
+  <table>
+    <tr><th>Crosses</th><th>Carries</th><th>Never carries</th></tr>
+    <tr><td>Nash &rarr; server</td><td>Orders, products, inventory, customer details</td><td>&mdash;</td></tr>
+    <tr><td>Server &rarr; browser</td><td>Joined <code>PickRow[]</code>, the minimum a picker needs to pick</td><td><strong>API key. Org id. Channel. Raw Nash payloads. Customer detail beyond the name</strong></td></tr>
+    <tr><td>Browser &rarr; server</td><td>Outcome, quantity, weight, scanned barcode</td><td>Anything Nash-shaped. The browser does not know Nash exists</td></tr>
+    <tr><td>Server &rarr; Nash</td><td><code>pickedItems[]</code>, completion status</td><td>&mdash;</td></tr>
+  </table>
+  <p>The middle row is the one that matters. <strong>The key is server-side only and never prefixed <code>NEXT_PUBLIC_</code></strong> &mdash; that prefix would ship the credential in the browser bundle. It also removes CORS as a possible failure at exactly the wrong moment in a demo.</p>
+</section>
+
+<section>
+  <h2>08 &mdash; What is deliberately not in this flow</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="n">Not built</div>
+      <div class="v">A database</div>
+      <p>Two copies of the truth eventually disagree, silently, and usually mid-demo. <strong>Would change my mind:</strong> multi-device handoff, or offline durability.</p>
+    </div>
+    <div class="card">
+      <div class="n">Not built</div>
+      <div class="v">Dispatch and delivery</div>
+      <p>Nash already does this better than anything built this afternoon. OnePick hands off at <code>items_pick_complete</code>. <strong>Would change my mind:</strong> never.</p>
+    </div>
+    <div class="card">
+      <div class="n">Not built</div>
+      <div class="v">Route optimisation</div>
+      <p>Location is displayed, not sequenced. A genuine efficiency lever, and not one of the four requirements.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Architecture, scope and the decision log with rationale live alongside this under <code>docs/</code>.
+</footer>
+
+</div>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:"base",
+    themeVariables:{
+      background:"#0a0f28",
+      primaryColor:"#0a0f28",
+      primaryTextColor:"#01051E",
+      primaryBorderColor:"#ffffff33",
+      lineColor:"#ffffff59",
+      secondaryColor:"#1e2535",
+      tertiaryColor:"#01051E",
+      fontFamily:"Host Grotesk, system-ui, sans-serif",
+      fontSize:"14px",
+      clusterBkg:"#01051E",
+      clusterBorder:"#ffffff26",
+      titleColor:"#ffffffb3",
+      edgeLabelBackground:"#0a0f28",
+      /* sequence diagram - its own set of variables */
+      actorBkg:"#314868",
+      actorBorder:"#4a648a",
+      actorTextColor:"#ffffff",
+      actorLineColor:"#ffffff59",
+      signalColor:"#ffffff59",
+      signalTextColor:"#ffffffb3",
+      labelBoxBkgColor:"#1e2535",
+      labelBoxBorderColor:"#ffffff33",
+      labelTextColor:"#ffffff",
+      loopTextColor:"#ffffffb3",
+      noteBkgColor:"#1e2535",
+      noteBorderColor:"#ffffff33",
+      noteTextColor:"#d7f0ee",
+      activationBkgColor:"#c9ff00",
+      activationBorderColor:"#c9ff00",
+      sequenceNumberColor:"#01051E"
+    },
+    flowchart:{curve:"basis",padding:16,nodeSpacing:26,rankSpacing:60,htmlLabels:false,useMaxWidth:true},
+    sequence:{useMaxWidth:true,mirrorActors:false,wrap:true,width:170,messageFontSize:13,noteFontSize:13}
+  });
+</script>
+</body>
+</html>
