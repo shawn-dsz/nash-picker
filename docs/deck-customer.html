@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OnePick - for FreshMart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OnePick - Part 1, the customer room.
+   House style inherited from docs/index.html: Nash brand palette,
+   Host Grotesk, dark ground, signal lime for the one thing that matters.
+   Self-contained. No build step, no dependencies, works from file://.
+   ============================================================ */
+
+:root{
+  --signal:#c9ff00;
+  --signal-dim:#a8d400;
+  --bg:#01051E;
+  --surface:#0a0f28;
+  --surface-2:#1e2535;
+  --ocean:#314868;
+  --mist:#d7f0ee;
+  --text:#ffffff;
+  --text-2:#ffffffb3;
+  --text-3:#ffffff73;
+  --border:#ffffff1a;
+  --border-2:#ffffff33;
+  --r-sm:6px; --r-md:12px; --r-lg:20px;
+
+  /* Viewport-safe type scale. Every value clamps, so a 1366x768 laptop
+     on a projector renders the same composition as a 27in display. */
+  --title:clamp(2.2rem,6.4vw,5.6rem);
+  --h2:clamp(1.5rem,3.6vw,3rem);
+  --h3:clamp(1rem,1.9vw,1.5rem);
+  --body:clamp(0.85rem,1.35vw,1.15rem);
+  --small:clamp(0.68rem,0.95vw,0.85rem);
+  --pad:clamp(1.5rem,4.5vw,5rem);
+  --gap:clamp(0.6rem,1.8vh,1.75rem);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;overflow-x:hidden;margin:0}
+html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:"Host Grotesk",ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:var(--body);line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+
+/* --- the slide primitive. One viewport, never scrolls internally. ------ */
+.slide{
+  width:100vw;height:100vh;height:100dvh;overflow:hidden;
+  scroll-snap-align:start;display:flex;flex-direction:column;position:relative;
+}
+.inner{
+  flex:1;display:flex;flex-direction:column;justify-content:center;
+  max-height:100%;overflow:hidden;padding:var(--pad);gap:var(--gap);
+  max-width:1240px;margin:0 auto;width:100%;
+}
+
+/* --- shared atoms ----------------------------------------------------- */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:var(--small);font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-3);
+}
+.eyebrow .dot{width:6px;height:6px;border-radius:99px;background:var(--signal);flex:none}
+h1{font-size:var(--title);line-height:.95;letter-spacing:-.035em;font-weight:700;margin:0}
+h2{font-size:var(--h2);line-height:1.04;letter-spacing:-.03em;font-weight:680;margin:0}
+h3{font-size:var(--h3);line-height:1.2;letter-spacing:-.02em;font-weight:650;margin:0}
+p{margin:0;color:var(--text-2);max-width:60ch}
+.sig{color:var(--signal)}
+.lead{font-size:clamp(1.05rem,2vw,1.6rem);line-height:1.35;letter-spacing:-.015em;color:var(--text-2);max-width:46ch}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;
+  background:var(--surface-2);border:1px solid var(--border);padding:2px 7px;
+  border-radius:var(--r-sm);color:var(--mist);white-space:nowrap}
+
+/* --- cards and grids -------------------------------------------------- */
+.grid{display:grid;gap:clamp(0.5rem,1.2vw,1rem);}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:clamp(0.9rem,1.8vw,1.6rem);display:flex;flex-direction:column;gap:.5rem;
+  min-width:0;
+}
+.card .n{font-size:var(--small);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+.card .v{font-size:clamp(1rem,1.7vw,1.35rem);font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.card p{font-size:var(--small);line-height:1.45}
+.card.hot{border-color:#c9ff0059;background:#c9ff000f}
+.card.hot .v{color:var(--signal)}
+
+/* --- the pain quotes. Their words, set as evidence. ------------------- */
+.quotes{display:flex;flex-direction:column;gap:clamp(.4rem,1vh,.8rem)}
+.quote{
+  display:flex;gap:clamp(.7rem,1.6vw,1.4rem);align-items:baseline;
+  border-left:2px solid var(--border-2);padding:clamp(.4rem,1vh,.7rem) 0 clamp(.4rem,1vh,.7rem) clamp(.8rem,1.6vw,1.4rem);
+}
+.quote.hot{border-left-color:var(--signal)}
+.quote .k{font-size:var(--small);font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-3);min-width:5.5ch;flex:none}
+.quote.hot .k{color:var(--signal)}
+.quote .t{font-size:clamp(.95rem,1.65vw,1.3rem);line-height:1.3;letter-spacing:-.015em;color:var(--text)}
+.quote .t em{color:var(--text-3);font-style:normal}
+
+/* --- the demo cue. Deliberately loud: the presenter must switch app. --- */
+.slide.demo{background:
+  radial-gradient(circle at 22% 30%, #c9ff0014, transparent 55%),
+  radial-gradient(circle at 78% 78%, #31486826, transparent 60%), var(--bg);}
+.demo-badge{
+  display:inline-flex;align-items:center;gap:12px;align-self:flex-start;
+  background:var(--signal);color:var(--bg);font-weight:750;
+  font-size:var(--small);letter-spacing:.16em;text-transform:uppercase;
+  padding:10px 20px;border-radius:99px;
+}
+.beats{display:flex;flex-direction:column;gap:clamp(.35rem,1vh,.7rem);margin:0;padding:0;list-style:none;counter-reset:beat}
+.beats li{
+  display:flex;gap:clamp(.7rem,1.4vw,1.1rem);align-items:baseline;
+  font-size:clamp(.9rem,1.5vw,1.2rem);line-height:1.35;color:var(--text-2);counter-increment:beat;
+}
+.beats li::before{
+  content:counter(beat);font-variant-numeric:tabular-nums;
+  color:var(--signal);font-weight:700;font-size:var(--small);min-width:2ch;flex:none;
+}
+.beats li strong{color:var(--text);font-weight:650}
+
+/* --- three devices, one device. The fragmentation picture. ------------ */
+.devices{display:flex;align-items:center;gap:clamp(.7rem,2.5vw,2.5rem);flex-wrap:wrap}
+.dev-stack{display:flex;gap:clamp(.4rem,1.2vw,1rem)}
+.dev{
+  width:clamp(64px,8.5vw,116px);aspect-ratio:9/16;border-radius:var(--r-md);
+  border:1px solid var(--border-2);background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  font-size:var(--small);color:var(--text-3);text-align:center;padding:6px;
+}
+.dev.one{border-color:var(--signal);background:#c9ff000f;color:var(--signal);
+  width:clamp(78px,10vw,138px)}
+.arrow{font-size:clamp(1.4rem,3vw,2.6rem);color:var(--text-3);line-height:1}
+
+/* --- the shelf. Three lookalikes, one location. ----------------------- */
+.shelf{display:flex;gap:clamp(.5rem,1.4vw,1.1rem);align-items:flex-end}
+.can{
+  flex:1;border-radius:var(--r-md);border:1px solid var(--border);
+  padding:clamp(.6rem,1.3vw,1rem);display:flex;flex-direction:column;gap:.35rem;min-width:0;
+}
+.can .swatch{height:clamp(28px,4.5vh,52px);border-radius:var(--r-sm);margin-bottom:.3rem}
+.can .nm{font-size:var(--small);font-weight:650;line-height:1.2}
+.can .up{font-family:ui-monospace,Menlo,monospace;font-size:clamp(.6rem,.85vw,.75rem);color:var(--text-3)}
+.can.target{border-color:var(--signal);background:#c9ff000f}
+.can.target .nm{color:var(--signal)}
+
+/* --- stat row --------------------------------------------------------- */
+.stats{display:flex;gap:clamp(1rem,3.5vw,3.5rem);flex-wrap:wrap}
+.stat .fig{font-size:clamp(1.8rem,4.6vw,3.6rem);font-weight:700;letter-spacing:-.04em;line-height:1;color:var(--signal)}
+.stat .lb{font-size:var(--small);color:var(--text-3);margin-top:.4rem;max-width:22ch}
+
+/* --- honest list: what we did not build ------------------------------- */
+.rows{display:flex;flex-direction:column;gap:0}
+.row{display:flex;gap:clamp(.8rem,2vw,1.8rem);align-items:baseline;
+  padding:clamp(.5rem,1.2vh,.85rem) 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.row .t{font-weight:650;min-width:min(30vw,15ch);font-size:clamp(.85rem,1.4vw,1.1rem)}
+.row .d{color:var(--text-2);font-size:var(--small);line-height:1.4}
+
+/* --- chrome: progress rail, slide counter, notes ---------------------- */
+.rail{position:fixed;top:0;left:0;height:2px;background:var(--signal);width:0;
+  z-index:60;transition:width .25s ease}
+.counter{position:fixed;bottom:clamp(12px,2.2vh,24px);right:clamp(14px,2.4vw,30px);
+  font-size:var(--small);color:var(--text-3);font-variant-numeric:tabular-nums;z-index:60;
+  letter-spacing:.1em}
+.counter b{color:var(--text);font-weight:650}
+.time{position:fixed;bottom:clamp(12px,2.2vh,24px);left:clamp(14px,2.4vw,30px);
+  font-size:var(--small);color:var(--text-3);z-index:60;letter-spacing:.1em;text-transform:uppercase}
+
+/* Speaker notes. Hidden by default, toggled with N. Keeps the stage lines
+   with the slide they belong to instead of on a second screen. */
+.notes{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  background:#050a24f2;border-top:1px solid var(--signal);
+  backdrop-filter:blur(12px);padding:clamp(.9rem,2vw,1.4rem) clamp(1rem,3vw,2.5rem);
+  font-size:var(--small);line-height:1.5;color:var(--text-2);
+  transform:translateY(101%);transition:transform .2s ease;max-height:42vh;overflow-y:auto;
+}
+.notes.on{transform:translateY(0)}
+.notes .hd{font-size:var(--small);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--signal);margin-bottom:.5rem;font-weight:650}
+.notes p{max-width:none;margin:0 0 .5rem}
+.notes p:last-child{margin:0}
+.notes strong{color:var(--text)}
+.hint{position:fixed;bottom:clamp(12px,2.2vh,24px);left:50%;transform:translateX(-50%);
+  font-size:var(--small);color:var(--text-3);z-index:60;opacity:.55}
+
+/* --- reveal on enter -------------------------------------------------- */
+.r{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.slide.seen .r{opacity:1;transform:none}
+.slide.seen .r:nth-child(2){transition-delay:.06s}
+.slide.seen .r:nth-child(3){transition-delay:.12s}
+.slide.seen .r:nth-child(4){transition-delay:.18s}
+.slide.seen .r:nth-child(5){transition-delay:.24s}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .r{opacity:1;transform:none;transition:none}
+  .rail{transition:none}
+}
+
+/* --- short screens: shed chrome before shrinking type ----------------- */
+@media (max-height:700px){
+  :root{--pad:clamp(1rem,3vw,2.2rem);--gap:clamp(.4rem,1.2vh,1rem);
+        --title:clamp(1.7rem,5vw,3rem);--h2:clamp(1.2rem,3vw,2rem)}
+}
+@media (max-height:560px){ .hint,.time{display:none} }
+@media (max-width:760px){
+  .g3,.g2{grid-template-columns:1fr}
+  .shelf{flex-direction:column;align-items:stretch}
+  .can .swatch{height:22px}
+  .row{flex-direction:column;gap:.2rem}
+  .row .t{min-width:0}
+  .hint{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="rail" id="rail"></div>
+<div class="time" id="time">10-15 min</div>
+<div class="counter"><b id="cur">1</b> / <span id="tot">12</span></div>
+<div class="hint">&larr; &rarr; to move &middot; N for notes</div>
+
+<main>
+
+<!-- 01 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Open here. Do not open on architecture.</strong> Say the one line and let it sit: your picker carries three devices today. Three queues, three interfaces, no single view. OnePick is one app, one queue, one device.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> Nash &middot; Picker Lite &middot; for FreshMart</div>
+    <h1 class="r">One<span class="sig">Pick</span></h1>
+    <p class="lead r">Three devices become one queue.</p>
+    <div class="eyebrow r" style="margin-top:auto">Shawn D'Souza &middot; 6 August 2026</div>
+  </div>
+</section>
+
+<!-- 02 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Read two of these aloud, not all five.</strong> The point is that nothing on this slide is mine. Then: the last two are the ones you described most vividly, and they are not in the brief's requirements. That is where I spent my judgement.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> Where this started</div>
+    <h2 class="r">Your words, not mine</h2>
+    <div class="quotes r">
+      <div class="quote hot"><span class="k">01</span><span class="t">&ldquo;We're having picking issues: <em>accuracy&hellip;</em>&rdquo;</span></div>
+      <div class="quote hot"><span class="k">02</span><span class="t">&ldquo;&hellip;<em>speed</em>&hellip;&rdquo;</span></div>
+      <div class="quote hot"><span class="k">03</span><span class="t">&ldquo;&hellip;and <em>substitutions</em>.&rdquo;</span></div>
+      <div class="quote"><span class="k">04</span><span class="t">&ldquo;Orders come from multiple channels on different systems. Our pickers juggle multiple screens.&rdquo;</span></div>
+      <div class="quote"><span class="k">05</span><span class="t">&ldquo;We have no unified view of fulfilment.&rdquo;</span></div>
+    </div>
+    <p class="r" style="font-size:var(--small)">The first three are what I built against. The last two are what the first three are caused by.</p>
+  </div>
+</section>
+
+<!-- 03 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>This is the commercial argument in one picture.</strong> A picker re-learns three interfaces and decides which screen to look at next. That decision is unpaid work, it happens hundreds of times a shift, and it is where accuracy and speed both leak. Do not say 'adapter' in this room.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> The floor today</div>
+    <h2 class="r">Three devices, three queues, one picker</h2>
+    <div class="devices r">
+      <div class="dev-stack">
+        <div class="dev">Uber<br>Eats</div>
+        <div class="dev">Door<br>Dash</div>
+        <div class="dev">First<br>party</div>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="dev-stack"><div class="dev one">One<br>queue</div></div>
+    </div>
+    <p class="r">Every order still arrives from its own channel. The picker just stops being the place where those channels get reconciled.</p>
+  </div>
+</section>
+
+<!-- 04 ---------------------------------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Switch to the app now. Phone viewport, 360x800.</strong> Show the queue. Point at the channel badges and say: three channels, one list, sorted so outstanding work is at the top. Do not scroll past this quickly, it is the product.">
+  <div class="inner">
+    <div class="demo-badge r">Demo &middot; the queue</div>
+    <h2 class="r">One list, every channel</h2>
+    <ul class="beats r">
+      <li><strong>Four orders, three channels.</strong> Web, DoorDash, Uber Eats</li>
+      <li><strong>Outstanding work first.</strong> Finished runs sink to the bottom</li>
+      <li><strong>The badge is for you, not the picker.</strong> Channel never reaches the pick screen</li>
+    </ul>
+    <p class="r" style="font-size:var(--small)">The picker cannot pick differently by channel, because they are never told the channel.</p>
+  </div>
+</section>
+
+<!-- 05 ---------------------------------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Open FM-1003.</strong> Show the route line at the top, then one item. Say: five things on screen. What it is, a picture of it, how many, where it is, one button. Built for a gloved hand in a cold aisle, no hover states because there is no mouse.">
+  <div class="inner">
+    <div class="demo-badge r">Demo &middot; one item at a time</div>
+    <h2 class="r">The screen shows five things</h2>
+    <div class="grid g3 r">
+      <div class="card"><div class="n">Where</div><div class="v">Aisle &middot; bay &middot; shelf</div><p>Shown first, because nothing else matters until they are standing in front of it</p></div>
+      <div class="card"><div class="n">What</div><div class="v">Name and picture</div><p>The picture does work that a product name cannot</p></div>
+      <div class="card"><div class="n">How many</div><div class="v">Quantity or weight</div><p>Weighted goods get a scale entry, not a counter</p></div>
+    </div>
+    <p class="r">Items are ordered by how the store is walked, not by the order the customer added them to their basket.</p>
+  </div>
+</section>
+
+<!-- 06 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>The four outcomes.</strong> Emphasise partial: 1kg of bananas ordered, 0.94kg on the scale. That is neither picked nor missing, and a tick box cannot say it. This is the detail that tells them I understand grocery rather than software.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> What actually happens in an aisle</div>
+    <h2 class="r">Four outcomes, not a tick box</h2>
+    <div class="grid g2 r">
+      <div class="card"><div class="n">01</div><div class="v">Picked</div><p>Everything the customer asked for is in the tote</p></div>
+      <div class="card hot"><div class="n">02</div><div class="v">Partial</div><p>1kg of bananas ordered. 0.94kg on the scale. Neither picked nor missing</p></div>
+      <div class="card"><div class="n">03</div><div class="v">Missing</div><p>Not on the shelf, and the shelf is the truth, not the stock figure</p></div>
+      <div class="card"><div class="n">04</div><div class="v">Swapped</div><p>The substitute the customer already approved</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 ---------------------------------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Demo the spirals line on FM-1003.</strong> The line to land: it does not pick a substitute. Your customer already chose at checkout, the same way they do on Uber Eats. The picker confirms a decision, they never make one. Then show FM-1004: the customer said refund, so we offer nothing at all.">
+  <div class="inner">
+    <div class="demo-badge r">Demo &middot; substitutions</div>
+    <h2 class="r">The customer already decided</h2>
+    <ul class="beats r">
+      <li><strong>Chosen at checkout</strong>, not in the aisle. The picker confirms in one tap</li>
+      <li><strong>They see a product, not a code.</strong> Name and picture of the approved swap</li>
+      <li><strong>&ldquo;Refund, don't substitute&rdquo; shows no alternative at all</strong></li>
+    </ul>
+    <p class="r">Handing someone a replacement they explicitly declined is worse than handing them nothing.</p>
+  </div>
+</section>
+
+<!-- 08 ---------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>This is Kareem's own example, so use his words:</strong> I ordered a Diet Coke and they gave me a Coke. I put all three on one shelf on purpose, because that is the situation your pickers are actually in. Location cannot tell them apart. The barcode is the only thing that can.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> Accuracy</div>
+    <h2 class="r">&ldquo;I ordered a Diet Coke and they gave me a Coke&rdquo;</h2>
+    <div class="shelf r">
+      <div class="can"><div class="swatch" style="background:#c0392b"></div><div class="nm">Coca-Cola Classic</div><div class="up">930000001005</div></div>
+      <div class="can"><div class="swatch" style="background:#8e9aa5"></div><div class="nm">Diet Coke</div><div class="up">930000001012</div></div>
+      <div class="can target"><div class="swatch" style="background:#2c3e50"></div><div class="nm">Coke Zero Sugar</div><div class="up">930000001029</div></div>
+    </div>
+    <p class="r">Same aisle. Same bay. <strong style="color:var(--text)">Same shelf.</strong> Telling a picker where to stand cannot solve this one, and neither can a product name read at speed.</p>
+  </div>
+</section>
+
+<!-- 09 ---------------------------------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Scan the wrong barcode deliberately.</strong> Let them watch it get rejected by name. Then say: an override exists because labels get damaged, and taking it is recorded rather than silent. So the exception is visible to you instead of invisible.">
+  <div class="inner">
+    <div class="demo-badge r">Demo &middot; scan to confirm</div>
+    <h2 class="r">The wrong item cannot be picked</h2>
+    <ul class="beats r">
+      <li><strong>Scan the Classic against a Zero line.</strong> It is rejected, by name</li>
+      <li><strong>Out of stock needs no scan.</strong> You cannot scan a thing that is not there</li>
+      <li><strong>Damaged label? Override.</strong> Allowed, and recorded rather than silent</li>
+    </ul>
+    <p class="r" style="font-size:var(--small)">Real handheld scanners type like a keyboard, so this works on the hardware your stores already have.</p>
+  </div>
+</section>
+
+<!-- 10 --------------------------------------------------------------- -->
+<section class="slide demo" data-notes="<strong>Switch to the ops view.</strong> This answers 'no unified view of fulfilment'. Fill rate by channel is the number nobody at FreshMart can see today. Point at the aisle cut and say: this is the one a store manager can act on on Monday morning.">
+  <div class="inner">
+    <div class="demo-badge r">Demo &middot; the unified view</div>
+    <h2 class="r">The number nobody there can see today</h2>
+    <div class="grid g3 r">
+      <div class="card hot"><div class="n">By channel</div><div class="v">Fill rate</div><p>Is Uber Eats being served worse than your own web orders? Today nobody can answer that</p></div>
+      <div class="card"><div class="n">By aisle</div><div class="v">Short picks</div><p>A bay that keeps coming up empty is a replenishment problem, and it has an owner</p></div>
+      <div class="card"><div class="n">Named gaps</div><div class="v">What it cannot say</div><p>Metrics I cannot yet derive are listed as gaps rather than filled with a plausible number</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 --------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Never invent a number here.</strong> If they push for a percentage: I don't have one and I'd rather not invent one. What I can tell you is what it removes, and that I have instrumented the thing that would give you a real number after a week in one store.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> What a pilot would tell you</div>
+    <h2 class="r">I would rather measure it than estimate it</h2>
+    <div class="stats r">
+      <div class="stat"><div class="fig">3&rarr;1</div><div class="lb">Devices per picker. This one is certain, it is structural</div></div>
+      <div class="stat"><div class="fig">0</div><div class="lb">New databases or infrastructure to operate. It runs on the Nash account you have</div></div>
+      <div class="stat"><div class="fig">1 wk</div><div class="lb">One store, and fill rate by channel stops being a guess</div></div>
+    </div>
+    <p class="r">I have not put an accuracy percentage on this slide, because I would be making it up. The app already records what is needed to calculate one.</p>
+  </div>
+</section>
+
+<!-- 12 --------------------------------------------------------------- -->
+<section class="slide" data-notes="<strong>Volunteer this, do not wait to be asked.</strong> Naming what you skipped is what makes everything else on the slide credible. Each one has a trigger for when I would change my mind.">
+  <div class="inner">
+    <div class="eyebrow r"><span class="dot"></span> Ownership</div>
+    <h2 class="r">What I deliberately did not build</h2>
+    <div class="rows r">
+      <div class="row"><span class="t">Batch picking</span><span class="d">Several orders in one trip. The single biggest throughput lever, and the obvious next release. Out today because one order end to end had to be right first</span></div>
+      <div class="row"><span class="t">Offline</span><span class="d">A supermarket drops signal in the freezer aisle. Stated as a requirement, not built. Half a day of work</span></div>
+      <div class="row"><span class="t">Two pickers, one order</span><span class="d">Nothing currently stops it. The fix is a claim step, and it is the first thing I would add for a pilot</span></div>
+      <div class="row"><span class="t">Indoor navigation</span><span class="d">Needs beacons in the building. Out on cost, not on difficulty</span></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="notes" id="notes"><div class="hd">Speaker notes</div><div id="notesBody"></div></div>
+
+<script>
+/* ------------------------------------------------------------------
+   Presentation controller.
+   Scroll-snap does the moving; this syncs chrome, reveals, and notes.
+   ------------------------------------------------------------------ */
+(function () {
+  const slides = [...document.querySelectorAll('.slide')];
+  const rail = document.getElementById('rail');
+  const cur = document.getElementById('cur');
+  const notes = document.getElementById('notes');
+  const notesBody = document.getElementById('notesBody');
+  document.getElementById('tot').textContent = slides.length;
+
+  let index = 0;
+  let notesOpen = false;
+
+  // Reveal on enter, and treat the most-visible slide as current.
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('seen');
+        const i = slides.indexOf(e.target);
+        if (i !== -1) { index = i; sync(); }
+      }
+    });
+  }, { threshold: 0.55 });
+  slides.forEach((s) => io.observe(s));
+
+  function sync() {
+    cur.textContent = index + 1;
+    rail.style.width = ((index + 1) / slides.length) * 100 + '%';
+    notesBody.innerHTML =
+      slides[index].dataset.notes
+        ? '<p>' + slides[index].dataset.notes + '</p>'
+        : '<p style="color:var(--text-3)">No notes on this slide.</p>';
+  }
+
+  function go(i) {
+    index = Math.max(0, Math.min(slides.length - 1, i));
+    slides[index].scrollIntoView({
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    });
+    sync();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown':
+        e.preventDefault(); go(index + 1); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); go(index - 1); break;
+      case 'Home': e.preventDefault(); go(0); break;
+      case 'End': e.preventDefault(); go(slides.length - 1); break;
+      case 'n': case 'N':
+        notesOpen = !notesOpen; notes.classList.toggle('on', notesOpen); break;
+      case 'Escape':
+        notesOpen = false; notes.classList.remove('on'); break;
+    }
+  });
+
+  // Touch: a deliberate vertical swipe moves one slide.
+  let y0 = null;
+  addEventListener('touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchend', (e) => {
+    if (y0 === null) return;
+    const dy = y0 - e.changedTouches[0].clientY;
+    if (Math.abs(dy) > 60) go(index + (dy > 0 ? 1 : -1));
+    y0 = null;
+  }, { passive: true });
+
+  sync();
+})();
+</script>
+</body>
+</html>
