@@ -1,62 +1,122 @@
-# Picker Lite
+# OnePick - plan
 
-Nash AI build day, 2026-08-06. Brief dissected in `docs/BRIEF.md`.
-
----
-
-## Understanding
-
-FreshMart's pickers work orders that arrive from several channels on several systems, so they juggle screens and nobody can see fulfilment end to end. Build **one web app** that pulls orders from Nash, walks a picker through each item, handles the four real-world outcomes at the shelf, and reports completion back to Nash.
-
-The product claim in one line: **one queue, many sources.** The picker never learns which channel an order came from, and the manager finally sees all of them in one place.
+Nash build day, 2026-08-06. Written 11:30, after the briefing call with Kareem.
+Brief in `docs/BRIEF.md`. API research in `docs/API-NOTES.md`.
 
 ---
 
-## Assumptions I'm making
+## The one-line pitch
 
-Each one, and what changes if it is wrong.
-
-Updated after reading the API docs - see `docs/API-NOTES.md`.
-
-| # | Assumption | Status | If wrong |
-|---|---|---|---|
-| A1 | Location is structured - aisle, bay, shelf | ✅ **Confirmed.** On `inventory`, **not** on the order | - |
-| A1b | Aisle/bay/shelf are **strings**, so they will not sort numerically | ✅ Confirmed in the schema | Serpentine routing needs parse-and-collate plus a null-safe fallback to original order |
-| A2 | Channel is a field on the order | ❌ **Refuted.** No channel field exists | Normalise it in the adapter from `tags` / `orderMetadata`. **The absence is the pitch, not a problem** |
-| A3 | Nash models substitution and partial quantity | ❌ **Refuted.** No picking fields. `subItems` is the nearest thing | Picking state is mine. Nash gets the outcome via `PATCH /v1/order/{id}`, not the keystrokes |
-| A3b | Partial quantity exists because of **weighted items** - deli, produce, sold by weight | Inferred from `weightedItemInfo` | Model it as a **quantity**, never a boolean. A `picked: boolean` anywhere makes it unrepresentable |
-| A4 | One picker, one store, no auth | Unchanged | Hardcoded. Never a demo problem, always a production note |
-| A5 | Sandbox volume is small - tens, not thousands | Unchanged | No pagination, no virtualisation. Say plainly that it is small |
-| A6 | Completion is `PATCH /v1/order/{id}` | Likely - no picking endpoint documented | Isolated in one adapter function, so it is a one-line change |
-| **A7** | **Products and inventory can be read back, not only upserted** | ⚠️ **Unverified. Only POST endpoints are documented** | **If read is impossible I must seed the catalog and hold my own copy - this rewrites step 2** |
-
-**A7 is now the question that most changes the build.** Ask it first.
+**Three devices become one queue.** A FreshMart picker today carries an Uber device, a DoorDash device and a Coles first-party device. OnePick is one web app, on one device, that normalises all three and drives Nash's own pick-and-pack model.
 
 ---
 
-## Out of scope - deliberately, and this list is a deliverable (J5)
+## The single biggest finding
+
+**Nash already models picking end to end.** `pick_and_pack` is a first-class capability, not something to invent.
+
+```
+order.requirements[] must include "pick_and_pack"
+
+items[].subItems[]           <- the real pickable unit (a banana, a Coke)
+  .substitution
+      .preference            "substitute" | "refund"   <- the CUSTOMER already chose
+      .source                who decided
+      .substituteItems[]     { id, sku, quantity }     <- the approved alternatives
+
+pickedItems[]
+  .requestedQuantity         what was ordered
+  .quantity                  what was actually picked
+  .status                    picked | partially_picked | not_picked | substituted
+  .weight                    kg, for WEIGHTED products
+  .scannedBarcode            GS1 payload, carries weight and price
+  .scans[]                   per-scan detail, .substitutionType
+
+order status -> items_pick_complete
+```
+
+**The brief's four scenarios are Nash's four statuses.** R3 is not a design problem, it is a mapping problem.
+
+| Brief says | Nash calls it |
+|---|---|
+| mark items picked | `picked` |
+| partial quantities | `partially_picked` (`quantity` < `requestedQuantity`) |
+| out of stock | `not_picked` |
+| substitutions | `substituted`, driven by `subItems[].substitution` |
+
+**So the app does not invent a domain. It drives Nash's.** That is the answer to Kareem's steer - *"can this be stateless, or can you utilise something in Nash?"*
+
+> **Stateless. Nash holds the state.** No database, no session store. The picker's outcome is written to `pickedItems`, and `items_pick_complete` is the completion signal. If the tab closes, the run is recoverable from Nash.
+
+---
+
+## Answers from the briefing call
+
+| Question | Kareem's answer |
+|---|---|
+| Sandbox seeded? | **No.** *"the account is actually not seeded… it's your choice of how you want to seed the data, how you create the storyline"* |
+| Read endpoints? | **Yes.** `GET /v1/products`, `GET /v1/inventory?externalStoreLocationId=…` |
+| Substitutions | Pre-authorised by the customer at checkout, like Uber Eats. Arrives in `subItems[].substitution` |
+| Multi-channel | Coles web vs DoorDash app vs Uber app → **three physical devices in the store today** |
+| Accuracy failure | *"I ordered a Diet Coke and they gave me a Coke"* - picker grabbing a lookalike at speed |
+| Device | *"most of the time those are apps on chunky devices"* - build the lightweight web version |
+| Scanning | In the real product. Available to use |
+| Indoor GPS / nav | **Out.** Needs beacons. *"definitely not building this for the lightweight version"* |
+| Route sequencing / cold chain | *"it's more operational… do you have to cover it? It really depends how much progress you have. It's up to you"* → **stretch only** |
+| Ops manager view | *"not within scope, but it would be a plus"* |
+| Analytics, NFRs | *"everything is a plus. The core is picking"* |
+| Over-engineering | *"do I build a full-on net new product with net new infrastructure with a database? You don't have to do that"* |
+| Deployment | Run locally. No deploy, no repo required |
+| Check-in | **12:15**, then hourly. Zoom stays open, text in chat |
+
+---
+
+## Assumptions
+
+| # | Assumption | If wrong |
+|---|---|---|
+| A1 | `subItems[]` is the pickable unit; `items[]` is the bag or tote | Re-map in the adapter, one file |
+| A2 | Channel is not a first-class field - carry it on `tags` or the order `externalId` prefix | Normalise in the adapter either way. **The picker never sees it** |
+| A3 | `PATCH /v1/order/{id}` writes `pickedItems`; order transitions to `items_pick_complete` | If a dedicated pick endpoint exists, swap one adapter function |
+| A4 | One picker, one store, no auth | Hardcoded. Production note, never a demo problem |
+| A5 | Sandbox volume is tiny - my own seed | No pagination. Say plainly that it is small |
+| A6 | Aisle, bay and shelf are **strings** | `"A12"` will not sort numerically. Only matters if sequencing is reached |
+
+---
+
+## Out of scope - and this list is a deliverable
+
+Kareem's rubric names *"ownership of what you built and what you skipped."* An unbuilt thing only scores if it is named.
 
 | Not building | Why |
 |---|---|
-| **Dispatch and delivery** | That is Nash. The app ends at picked-and-staged |
-| **Route sequencing** | Not requested. `location` is displayed, not computed. Only if A1 turns out structured |
-| Batch picking | Multiplies tote-assignment complexity, demonstrates nothing the single flow does not |
-| Auth, roles, multi-tenancy | Hardcode the picker. Named as a production requirement instead |
-| A database | Nash is the source of truth. Local state is session-scoped and that is correct here, not a shortcut |
-| Offline queueing | Real in a supermarket, but it is an NFR I will *state*, not build |
-| Customer notification on substitution | Belongs to FreshMart's comms stack. Emit the event, do not own the channel |
+| **Dispatch and delivery** | Nash is dispatch. OnePick ends at `items_pick_complete` |
+| **A database** | Kareem asked directly. Nash is the state. Stateless by design, not by shortcut |
+| **Indoor navigation** | Needs beacons and store mapping. Kareem ruled it out explicitly |
+| **Auth, roles, multi-tenancy** | Hardcode the picker. Production note |
+| Route sequencing, cold chain | *"up to you"*, and it is not one of the four requirements. Stretch only |
+| Batch picking - multiple orders per trip | Real, and the obvious next release. Not today |
+| Customer notification on substitution | FreshMart's comms stack. Emit the event, do not own the channel |
+| Offline queueing | Real in a supermarket. **Stated as an NFR, not built** |
 
 ---
 
-## Open questions - ask before 10:45
+## The demo storyline - seed data is the product pitch
 
-1. **Does the API expose structured item location - aisle, bay, shelf - or a free-text string?**
-2. **Do orders carry a channel or source field, or do I simulate the multi-channel problem?**
-3. **How does Nash model substitutions and partial quantities - real fields, or my own state on top?**
-4. Which endpoint marks picking complete - order status, or something picking-specific?
-5. Are orders pre-seeded in the sandbox, or do I create them?
-6. Is the unified fulfilment view something you want built, or scenario colour for the roleplay?
-7. Anything you would consider out of scope, or over-engineered?
+The account is empty, which means **the data is mine to design**. Four orders, each seeded to demonstrate exactly one thing, arriving from three different channels.
+
+**Store:** FreshMart Richmond, `externalId: freshmart-richmond`
+
+| Order | Channel | Demonstrates |
+|---|---|---|
+| **A** | `web` (freshmart.com.au) | Clean pick. The happy path, end to end |
+| **B** | `doordash` | **Partial quantity** - 1kg bananas, `WEIGHTED`, picker weighs 0.94kg |
+| **C** | `uber` | **Substitution** - Diet Coke out of stock, customer pre-approved Coke Zero |
+| **D** | `web` | **Not picked** - customer chose `preference: refund`, no substitute allowed |
+
+**Order C uses Kareem's own accuracy example.** He said *"I ordered a Diet Coke and they gave me a Coke."* Seeding Diet Coke, Coke Zero and Coke as three lookalike SKUs on the same bay makes scan verification visibly necessary rather than theoretical.
+
+~14 products, each with `location { aisle, bay, shelf }`. Two `WEIGHTED` - bananas and deli chicken.
 
 ---
 
@@ -64,99 +124,107 @@ Updated after reading the API docs - see `docs/API-NOTES.md`.
 
 ```mermaid
 flowchart LR
-  subgraph nash["Nash sandbox"]
-    api["REST API<br/>orders, items, status"]
+  subgraph nash["Nash sandbox (AU)"]
+    orders["GET/PATCH /v1/order"]
+    prod["GET/POST /v1/products"]
+    inv["GET/POST /v1/inventory"]
   end
 
-  subgraph app["Picker Lite - Next.js"]
-    direction TB
-    route["Route handlers<br/>/api/orders, /api/pick<br/><i>API key stays server-side</i>"]
-    adapter["nash adapter<br/><i>the only file that knows Nash's shape</i>"]
-    domain["domain<br/>PickRun, PickLine, outcomes"]
-    events["event stream<br/>append-only, in memory"]
+  subgraph app["OnePick - Next.js, stateless"]
+    route["route handlers<br/>key stays server-side"]
+    adapter["nash adapter<br/>the only file that knows Nash's shape<br/>+ channel normalisation"]
     picker["Picker view<br/>one item, one action"]
-    mgr["Fulfilment view<br/>metrics by channel"]
+    ops["Fulfilment view<br/>fill rate by channel"]
+    events["event stream<br/>derived metrics"]
   end
 
-  api <--> route
+  seed["seed script<br/>products, inventory, 4 orders"] --> prod & inv & orders
+  orders <--> route
+  prod & inv --> route
   route <--> adapter
-  adapter --> domain
-  domain --> picker
-  picker -- "emit()" --> events
-  events --> mgr
-  picker -- "complete" --> route
+  adapter --> picker
+  picker -- "outcome" --> route
+  picker --> events --> ops
 ```
 
-**Why these boundaries.** The adapter is the only module that knows Nash's payload shape, so a schema surprise at hour four is one file, not a refactor. Route handlers exist so the sandbox key never reaches the browser and CORS never becomes a demo problem. The event stream is append-only and the manager view is **derived from it** - never a second set of counters that can disagree with the first.
+**Why these boundaries.** The adapter is the only module that knows Nash's payload shape and it is where channel gets normalised - so the picker screen is channel-blind by construction, not by discipline. Route handlers keep the API key server-side and make CORS a non-event. There is **no store layer** because there is no state to store; Nash is the database.
 
 ---
 
 ## Operational metric
 
-**Order fill rate** - percentage of ordered units actually delivered.
+**Order fill rate** - units delivered ÷ units ordered.
 
-It is the one number that absorbs all four shelf outcomes: a short pick, a partial quantity and a rejected substitution all reduce it. Retailers already report on it, so it is recognised rather than invented. Target direction: up.
+One number that absorbs all four Nash statuses: `not_picked`, `partially_picked` and a declined `substituted` all reduce it. FreshMart already reports it, so it is recognised rather than invented.
 
-Secondary: **pick accuracy** (P1), **units per hour** (P2), **substitution acceptance** (P3). One metric per stated pain, no orphans.
+Per stated pain, one metric each: **accuracy** → scan-verified pick rate · **speed** → units per hour · **substitutions** → substitution acceptance.
 
 ---
 
 ## Analytics and observability
 
-- **Events emitted:** `run_started` · `item_picked` · `item_short` · `item_substituted` · `item_partial` · `run_completed`
-  Fields: `ts`, `runId`, `orderId`, `lineId`, **`channel`**, `storeId`, `pickerId`, `sku`, `qtyOrdered`, `qtyPicked`, `durationMs`
-  `channel` and the two quantities are what make fill rate and the by-channel cut computable. Without them the manager view cannot be built at all.
-- **Correlation id:** `runId`, on every event, every log line and every response header. One order traceable end to end.
-- **Read by whom, to decide what:** the FreshMart store manager, on the fulfilment view, to decide **which channel is underperforming and why**. That is the answer to P5, and it is the only cut that is genuinely actionable.
-- **Latency budget:** 200ms from action to next item on screen. Above that the picker taps twice, and a double-tap is a data-quality bug, not a UX bug.
+- **Events:** `run_started` · `item_picked` · `item_partial` · `item_not_picked` · `item_substituted` · `scan_rejected` · `run_completed`
+  Fields: `ts`, `runId`, `orderId`, `subItemId`, **`channel`**, `storeId`, `pickerId`, `sku`, `requestedQuantity`, `quantity`, `weightKg`, `durationMs`
+- **Correlation id:** `runId` on every event, log line and response header
+- **Read by whom, to decide what:** the FreshMart store manager, to decide **which channel is underperforming**. That is the answer to *"no unified view of fulfillment"*
+- **Latency budget:** 200ms from scan to next item. Above that the picker scans twice, which is a data-quality bug not a UX bug
 
 ---
 
 ## Non-functional requirements
 
-"n/a because…" is a valid answer. Silence is not.
-
 | NFR | Answer |
 |---|---|
-| **Failure mode** | Nash unreachable → the picker keeps picking against the last-loaded run, outcomes queue, retry on completion. **Never block the picker on a network call** |
-| **Connectivity** | Supermarket wifi has dead spots. Stated, with a visible sync indicator. Full offline persistence is out of scope and named as such |
-| **Scale** | Deliberately small - 50 stores, tens of orders in the sandbox. No pagination, no virtualisation. Claiming scale I do not have is the over-engineering tell |
-| **Security and access** | Sandbox key server-side only, never in the bundle. Picker identity hardcoded, named as production work |
-| **Data lifecycle** | Location data goes stale every time a store resets a bay, and nothing tells you. **Top production risk**, worth saying unprompted |
-| **Privacy** | Customer name and address on a device carried round a shop floor. Show the picker the minimum needed to pick. A deliberate omission, not an oversight |
-| **Physical context** | Handheld, one-handed, pushing a trolley, sometimes gloved. 56px targets, 64px primary, high contrast, no hover states |
+| **Failure mode** | Nash unreachable → picker keeps working the loaded run, outcomes queue, flush on completion. **Never block the picker on a network call** |
+| **Connectivity** | Supermarket dead spots are real. Visible sync indicator. Full offline persistence stated, not built |
+| **Scale** | Tiny by design - one store, four orders. Claiming scale I do not have is the over-engineering tell |
+| **Security** | Key and org id server-side only. Never `NEXT_PUBLIC_` |
+| **Data lifecycle** | Aisle and bay data goes stale on every store reset and nothing tells you. **Top production risk** |
+| **Privacy** | Customer address on a device carried round a shop floor. Show the picker the minimum |
+| **Physical context** | Handheld, one hand, trolley, gloves. 56px targets, 64px primary, high contrast, no hover |
 
 ---
 
-## Plan
+## The clock - rebuilt from 11:30
 
-Timeboxed. Each numbered step is a commit.
+| Time | Work | Gate |
+|---|---|---|
+| **11:30 - 12:10** | This plan. Seed data designed on paper - products, aisles, four orders, three channels | No app code |
+| **12:10 - 12:15** | Send the plan to Kareem in chat before the call | |
+| **12:15** | **Check-in.** Walk the plan, the storyline, and the pick-and-pack finding | |
+| 12:25 - 12:55 | **Seed the sandbox.** Store location, products, inventory with locations, four orders | Data visible in the portal |
+| 12:55 - 13:45 | **R1 + R2** - order queue with channel badges, pick screen: name, quantity, image, location | Walks an order start to finish |
+| 13:45 - 14:20 | **R3** - all four outcomes, driven by Nash's statuses | Each of the four seeded orders behaves correctly |
+| 14:20 - 14:40 | **R4** - write `pickedItems`, reach `items_pick_complete` | Status visible in the portal |
+| **⛔ 14:40** | **HARD STOP - end to end runs.** If it does not, stop adding and finish it | |
+| 14:40 - 15:05 | **The plus** - fulfilment view, fill rate by channel | Cut first if behind |
+| **⛔ 15:05** | **FREEZE.** Broken things get cut, not fixed | |
+| 15:05 - 15:30 | Deck for part 1, rehearse the click-through **once, out loud, timed**, reset the data | |
+| **15:30 - 16:30** | **Present.** Part 1 customer 10-15 min · Part 2 technical 15-20 min | |
 
-| # | Step | Done when | Commit |
-|---|---|---|---|
-| 1 | Scaffold Next.js + TS + Tailwind, `.env` for the sandbox key | Blank page renders | ✓ |
-| 2 | **Nash adapter + one real API call.** Fetch orders, log the raw payload | Real order data on screen, unstyled | ✓ |
-| 3 | Domain types from the *actual* payload, not from a guess | `PickRun` built from a real order | ✓ |
-| 4 | **R1** Order queue - customer, item count, **channel badge** | Tap an order, start a run | ✓ |
-| 5 | **R2** Pick screen - name, quantity, location, one primary action | Advances through every item | ✓ |
-| 6 | **R3a** Mark picked, and **partial quantity** via a stepper | Both outcomes recorded | ✓ |
-| 7 | **R3b** Out of stock → skip, or substitute with one suggestion | Both outcomes recorded | ✓ |
-| 8 | **R4** Complete the run, push to Nash, staged confirmation | Status visible in the sandbox | ✓ |
-| | **⛔ HARD STOP - end to end runs. Ugly is fine** | | |
-| 9 | Event stream wired behind every outcome | Events queryable in console | ✓ |
-| 10 | **P4/P5** Fulfilment view - fill rate, accuracy, subs, **by channel** | The unified view they asked for | ✓ |
-| 11 | Two tests on the outcome reducer | Green | ✓ |
-| 12 | *Stretch, only if A1 is structured* - sequence by location | Toggle, live re-sequence | ✓ |
-| | **⛔ FREEZE - broken things get cut, not fixed** | | |
+**Hourly check-ins with Kareem at 12:15, 13:15, 14:15, 15:15.** Two minutes each, never more.
 
-**Cut order under pressure:** 12, then 11, then 10. **Never cut 4-8** - that is the brief's contract.
+**Cut order:** fulfilment view → scan verification → seeded order D. **Never cut R1-R4.**
+
+---
+
+## Part 2 structure - their headings, not mine
+
+The brief names six sections. Use them verbatim.
+
+1. **Working demo**
+2. **Architecture and key decisions** - stateless, Nash as state, adapter owns the join and the channel normalisation
+3. **Tradeoffs** - no database · no sequencing · pre-authorised substitutions only · seeded data
+4. **Current state** - R1-R4 complete against the real API
+5. **Future state** - batch picking, offline queue, sequencing by aisle, learned substitution ranking
+6. **Next action items** - planogram feed, picker identity, webhook on `items_pick_complete`
 
 ---
 
 ## First failing test
 
-`applyOutcome` reducer, partial quantity case:
+`toPickedItems()` - the adapter function that turns picker outcomes into Nash's payload.
 
-> Given a line with `qtyOrdered: 6`, when the picker records a partial pick of 4, the line status is `partial`, `qtyPicked` is 4, and the run's fill rate reflects 4/6 - **not** a binary picked/unpicked.
+> Given a `subItem` with `requestedQuantity: 1` on a `WEIGHTED` product, when the picker records 0.94kg, the output has `status: "partially_picked"`, `quantity: 1`, `weight: 0.94` - **not** a binary picked flag and **not** a quantity of zero.
 
-Chosen first because partial quantity is the requirement most likely to be modelled wrongly - it is the one outcome that is a *quantity*, not a *status*, and a boolean `picked` flag anywhere in the domain makes it unrepresentable.
+Chosen because weighted partials are the outcome most likely to be modelled wrongly, and because `toPickedItems()` is the one function every other feature depends on being right.
