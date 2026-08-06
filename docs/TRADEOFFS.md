@@ -69,11 +69,13 @@ Written as they happen. Part 2 of the presentation has "Tradeoffs" as a literal 
 
 **Tension:** `aisle / bay / shelf` is right there on inventory, and walking order is the single largest speed lever in picking. The brief says location is *displayed*.
 
-**Chose:** display it. Sequencing stays out.
+**Chose:** display it first, then use it. Sequencing was planned out and built anyway once R1-R5 were stable. (`D11`)
 
-**Cost:** the biggest available throughput win is left on the table on a day where speed is named pain P2.
+**Reversed, and worth saying why:** the reason it was excluded was cost, and the cost turned out to be near zero - the three-way join already had `aisle / bay / shelf` on every line, so the ordering was a pure function over data already in hand. An exclusion should be re-tested when the thing it was priced against changes.
 
-**Flips when:** throughput rather than accuracy becomes the binding constraint. Cheap to add - though `"A12"` is a string and will not sort numerically (`A6`), so it is an hour, not ten minutes.
+**Cost:** `"A12"` is a string and does not sort numerically against `"A6"`, so the collation is explicit and is the first thing that breaks on a store that names aisles differently. The route is also a heuristic, not an optimum - see `SEQUENCING.md` for what it does and does not claim.
+
+**Flips when:** a real planogram exists. Then a solver beats a serpentine, and not before.
 
 ---
 
@@ -81,11 +83,13 @@ Written as they happen. Part 2 of the presentation has "Tradeoffs" as a literal 
 
 **Tension:** accuracy is pain P1, and *"I ordered a Diet Coke and they gave me a Coke"* is fixed by scan verification. Scan verification is in none of the four requirements.
 
-**Chose:** R1-R4 first, always. Scan verification is stretch, cut second.
+**Chose:** R1-R4 first, always. Scan verification stayed stretch and second on the cut list.
 
-**Cost:** the demo may close without demonstrating a fix for the pain the customer described most vividly.
+**Outcome:** R1-R4 went green with time left, so the condition below was met and scanning was built. It gates the primary action, names the wrong product on rejection, and records an override when a picker proceeds without a match. (`D12`)
 
-**Flips when:** R1-R4 are stable before the freeze marker. The seed data is already built to make this land - three lookalike colas on one bay.
+**Cost:** it is the newest code in the repo and the least exercised. The demo path is rehearsed; the edge cases around a damaged label are reasoned about rather than proven.
+
+**Flipped when:** R1-R4 were stable before the freeze marker - which is exactly the condition this entry named in advance. The seed data was already built to make it land: three lookalike colas on one bay, and the third item on FM-1002 is the Diet Coke from the briefing call.
 
 ---
 
