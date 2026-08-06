@@ -16,16 +16,21 @@ The product claim in one line: **one queue, many sources.** The picker never lea
 
 Each one, and what changes if it is wrong.
 
-| # | Assumption | If wrong |
-|---|---|---|
-| A1 | Item location comes back as a string, not structured aisle/bay | If structured, sequencing becomes nearly free and moves into scope as a stretch |
-| A2 | Channel is either a field on the order or inferable from metadata | If absent, I simulate two channels in the adapter and say so out loud |
-| A3 | Nash models substitution and partial quantity, or tolerates a status plus a quantity | If not, I hold the outcome in my own state and push a single completion update |
-| A4 | One picker, one store, no auth | Hardcoded. Never a demo problem, always a production note |
-| A5 | Sandbox order volume is small - tens, not thousands | No pagination, no virtualisation. Say plainly that it is small |
-| A6 | Completion is an order status transition, not a picking-specific endpoint | Isolated in one adapter function, so it is a one-line change |
+Updated after reading the API docs - see `docs/API-NOTES.md`.
 
-**A1 and A2 are the two I most need answered in the first ten minutes.**
+| # | Assumption | Status | If wrong |
+|---|---|---|---|
+| A1 | Location is structured - aisle, bay, shelf | ✅ **Confirmed.** On `inventory`, **not** on the order | - |
+| A1b | Aisle/bay/shelf are **strings**, so they will not sort numerically | ✅ Confirmed in the schema | Serpentine routing needs parse-and-collate plus a null-safe fallback to original order |
+| A2 | Channel is a field on the order | ❌ **Refuted.** No channel field exists | Normalise it in the adapter from `tags` / `orderMetadata`. **The absence is the pitch, not a problem** |
+| A3 | Nash models substitution and partial quantity | ❌ **Refuted.** No picking fields. `subItems` is the nearest thing | Picking state is mine. Nash gets the outcome via `PATCH /v1/order/{id}`, not the keystrokes |
+| A3b | Partial quantity exists because of **weighted items** - deli, produce, sold by weight | Inferred from `weightedItemInfo` | Model it as a **quantity**, never a boolean. A `picked: boolean` anywhere makes it unrepresentable |
+| A4 | One picker, one store, no auth | Unchanged | Hardcoded. Never a demo problem, always a production note |
+| A5 | Sandbox volume is small - tens, not thousands | Unchanged | No pagination, no virtualisation. Say plainly that it is small |
+| A6 | Completion is `PATCH /v1/order/{id}` | Likely - no picking endpoint documented | Isolated in one adapter function, so it is a one-line change |
+| **A7** | **Products and inventory can be read back, not only upserted** | ⚠️ **Unverified. Only POST endpoints are documented** | **If read is impossible I must seed the catalog and hold my own copy - this rewrites step 2** |
+
+**A7 is now the question that most changes the build.** Ask it first.
 
 ---
 
