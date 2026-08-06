@@ -65,6 +65,28 @@ function Progress({ index, total }: { index: number; total: number }) {
 
 // ----------------------------------------------------------------- one item
 
+/**
+ * The primary action's label.
+ *
+ * "all" only earns its place when there is more than one of something. It is
+ * there to make the partial below it read as a quantity rather than an
+ * exception - "Picked all 3" against "Found fewer". At a quantity of one there
+ * is no "all" to contrast with, and "Picked all 1" is just noise.
+ *
+ * Weighted items are the case that made this wrong rather than merely clumsy.
+ * A 1kg order of loose bananas has requestedQuantity 1, so the button read
+ * "Picked all 1" - which looks like one banana. The unit is the whole point of
+ * a weighed item, so it is stated.
+ */
+function pickedAllLabel(row: PickRow): string {
+  if (row.isWeighted) {
+    return `Picked ${row.requestedQuantity}${row.weightUnit ?? "kg"}`;
+  }
+  return row.requestedQuantity > 1
+    ? `Picked all ${row.requestedQuantity}`
+    : "Picked";
+}
+
 function PickItem({
   row,
   onRecord,
@@ -209,7 +231,7 @@ function PickItem({
                 })
               }
             >
-              Picked all {row.requestedQuantity}
+              {pickedAllLabel(row)}
             </Primary>
 
             <div className="flex gap-2">
