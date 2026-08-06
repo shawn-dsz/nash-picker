@@ -15,7 +15,7 @@ Level 6 is only reached if 0-5 are stable.
 | **L3** | A picker can walk an order item by item | 30 min | ✅ **done** |
 | **L4** | All four outcomes recordable | 35 min | ✅ **done** - 25 tests, `npm test` |
 | **L5** | Nash knows picking is done | 20 min | ✅ **done** |
-| **L6** | Scan verification, fill rate by channel | 25 min | 🟡 **6.2 shipped**, 6.1 held |
+| **L6** | Scan verification, fill rate by channel | 25 min | ✅ **both shipped** |
 
 ---
 
@@ -170,12 +170,12 @@ a platform status. Dispatch will not trigger off it.
 
 ---
 
-## L6 - Stretch 🟡
+## L6 - Stretch ✅
 
 L0-L5 are stable, so L6 was reached.
 
 - [x] **6.2** `/ops` - fulfilment view by channel, answers *"no unified view of fulfilment"* · `feat: fulfilment view for the operations manager`
-- [ ] **6.1** Scan verification - reject a wrong barcode visibly. Diet Coke versus Coke · **held**
+- [x] **6.1** Scan verification - reject a wrong barcode by name · `feat(scan): verify before picking`
 
 **6.2 shipped.** Every number is derived from what picking wrote to Nash -
 no counter, no event table, no second copy. A counter incremented alongside a
@@ -190,11 +190,36 @@ plausible number:
 | Pick duration | `pick_completed_at` is written, nothing records when a run *started* |
 | Scan accuracy | `scanned_barcode` is stored, nothing records a *rejected* scan |
 
-**6.1 is held, not cut.** Shawn is taking the barcode approach himself.
-One finding for whoever builds it: **`upc` does not read back as `upc`.**
-Nash normalises it on write, so the expected barcode comes off
-`product.identifiers[] { type: "UPC", value }`, not `product.upc` and not
-`subItems[].barcode`, which is null on all four orders.
+**6.1 shipped.** The gate is a text input, not a camera, and that is the
+production design: store handhelds emulate a keyboard, so a focused input is
+the mechanism a real device drives. No camera permission, no HTTPS caveat, no
+lighting risk on stage.
+
+**`upc` does not read back as `upc`.** Nash normalises it on write, so the
+expected barcode comes off `product.identifiers[] { type: "UPC", value }`.
+`subItems[].barcode` is null on all four orders, which is why every row was
+unscannable until the join was fixed.
+
+| Action | Gated | Why |
+|---|---|---|
+| `picked` / `partially_picked` | yes | This is the accuracy claim |
+| `substituted` | yes, against the **substitute's** barcode | Penne goes in the tote, so penne is verified |
+| `not_picked` | **no** | You cannot scan an item that is not there. Gating it would make an out-of-stock item unrecordable |
+
+A mismatch **names what is in the picker's hand** - *"that is Coca-Cola
+Classic, you need Coke Zero"*. Override exists because labels get damaged, and
+a gate with no escape is one a picker works around. It writes `scan_override`
+plus the barcode **actually scanned**, never the expected one.
+
+### Defects found in review and fixed
+
+| | | |
+|---|---|---|
+| **D1** | Queue compared RFC-1123 dates as text, so `"Fri, 07 Aug"` sorted older than `"Thu, 06 Aug"` | `fix(queue): compare createdAt as time` |
+| **D2** | `statusFor` was tested but never called. The pick screen inlined a drifted copy | `refactor(pick): derive every status through the one rule` |
+| **D3** | `routeGain` was computed, tested, documented, and never rendered | `feat(pick): show what sequencing actually bought` |
+| **D4** | Only the first pre-approved substitute was ever offered | folded into the scan commit |
+| **D5** | `items_pick_partial` is unreachable - documented, not built | `docs(write): name the partial status as unreachable` |
 
 **⛔ 15:15 FEATURE FREEZE.** After this, no new features. Broken things get
 cut, not fixed. The remaining time goes to verification, the reset, and the
