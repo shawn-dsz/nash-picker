@@ -164,6 +164,18 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
     if (i.externalProductId) stockByExternalId.set(i.externalProductId, i);
   }
 
+  /** Nash returns the barcode as identifiers[], never as a `upc` field. */
+  const upcOf = (p?: NashProduct) =>
+    p?.identifiers?.find((i) => i.type === "UPC")?.value ?? null;
+
+  // UPC -> name, built from the catalog already fetched above. No extra call.
+  // This is what lets a wrong scan name the thing in the picker's hand.
+  const catalogByUpc: Record<string, string> = {};
+  for (const p of products) {
+    const upc = upcOf(p);
+    if (upc && p.name) catalogByUpc[upc] = p.name;
+  }
+
   const resolve = (sku: string) => {
     const product = bySku.get(sku);
     const stock = product?.externalIdentifier
@@ -205,7 +217,9 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
         : null,
       inStock: (stock?.available ?? false) && (stock?.quantity ?? 0) > 0,
       onHand: stock?.quantity ?? null,
-      barcode: s.barcode ?? null,
+      // Product first. The sub-item's own barcode is null on every order in
+      // the sandbox, so reading it alone left every row unscannable.
+      barcode: upcOf(product) ?? s.barcode ?? null,
       substitution:
         preference === "substitute" || preference === "refund"
           ? {
@@ -222,6 +236,9 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
                     name: p?.name ?? alt.sku ?? "Substitute",
                     quantity: alt.quantity ?? 1,
                     imageUrl: p?.imageUrls?.[0] ?? null,
+                    // The substitute's own barcode. A picker taking penne
+                    // scans penne, not the spirals that were out of stock.
+                    barcode: upcOf(p),
                   };
                 })
                 .filter((a) => a.sku),
@@ -247,6 +264,7 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
     // Measured, not asserted. On a small basket the gain is sometimes zero,
     // and claiming a saving that was not made is worse than reporting none.
     route: routeGain(rows),
+    catalogByUpc,
     pickStatus: alreadyPicked ? "complete" : "waiting",
     fillRate: meta.pick_fill_rate ? Number(meta.pick_fill_rate) : null,
     completedAt: meta.pick_completed_at ?? null,

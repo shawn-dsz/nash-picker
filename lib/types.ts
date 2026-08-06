@@ -76,6 +76,16 @@ export type NashProduct = {
   name?: string | null;
   imageUrls?: string[] | null;
   attributes?: string[] | null;
+  /**
+   * Nash normalises barcodes on write. The seed sends `upc: "930000001005"`
+   * and this is what comes back:
+   *
+   *     "identifiers": [ { "type": "UPC", "value": "930000001005" } ]
+   *
+   * So there is no `upc` field to read, and `subItems[].barcode` is null on
+   * every order. The product is the only place the barcode exists.
+   */
+  identifiers?: { type?: string | null; value?: string | null }[] | null;
   details?: {
     weightedItemInfo?: {
       weightPerItem?: number | null;
@@ -143,12 +153,24 @@ export type PickRow = {
   /** From inventory. A real state, not a mocked branch. */
   inStock: boolean;
   onHand: number | null;
+  /** The UPC the picker must scan to confirm this is the right item. */
   barcode: string | null;
   substitution: {
     preference: "substitute" | "refund";
     source: string | null;
-    /** Resolved against the catalog so the picker sees a name, not a SKU. */
-    items: { sku: string; name: string; quantity: number; imageUrl: string | null }[];
+    /**
+     * Resolved against the catalog so the picker sees a name, not a SKU.
+     * Each carries its OWN barcode: a picker taking penne puts penne in the
+     * tote, so the scan has to verify the substitute rather than the thing
+     * that was out of stock.
+     */
+    items: {
+      sku: string;
+      name: string;
+      quantity: number;
+      imageUrl: string | null;
+      barcode: string | null;
+    }[];
   } | null;
 };
 
@@ -165,6 +187,18 @@ export type PickRun = {
     after: { moves: number; travel: number };
     saved: number | null;
   };
+  /**
+   * UPC -> product name, so a wrong scan can say WHAT was scanned rather than
+   * just "wrong". Naming it is the whole point: "that is Coca-Cola Classic,
+   * you need Coke Zero" is actionable, "wrong item" is not.
+   *
+   * The whole catalog, which is correct at 14 products and wrong at 40,000.
+   * At real catalog size this becomes a server lookup or an on-device catalog
+   * sync. It ships to the client deliberately - the alternative is a network
+   * round trip per scan, and a picker waiting on the network between items is
+   * the speed problem this app exists to fix.
+   */
+  catalogByUpc: Record<string, string>;
   /** Read back from Nash, so a finished run reopens read-only. */
   pickStatus: "waiting" | "complete";
   fillRate: number | null;
