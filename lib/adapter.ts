@@ -1,5 +1,6 @@
 import "server-only";
 import { nash, unwrap } from "./nash";
+import { sequence } from "./sequence";
 import type {
   Channel,
   NashInventory,
@@ -234,6 +235,11 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
     };
   });
 
+  // Read back any outcome already written, so a completed run can be reopened
+  // read-only rather than picked a second time.
+  const meta = order.orderMetadata ?? {};
+  const alreadyPicked = meta.pick_status === "items_pick_complete";
+
   return {
     id: order.id,
     reference: order.externalId ?? order.id,
@@ -241,6 +247,20 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
       [order.dropoffFirstName, order.dropoffLastName].filter(Boolean).join(" ") ||
       "Customer",
     channel: toChannel(order.tags),
-    rows,
+    // Walked in store order rather than basket order. See lib/sequence.ts for
+    // why this is config and not an algorithm.
+    rows: sequence(rows),
+    pickStatus: alreadyPicked ? "complete" : "waiting",
+    fillRate: meta.pick_fill_rate ? Number(meta.pick_fill_rate) : null,
+    completedAt: meta.pick_completed_at ?? null,
+    recorded: subItemsOf(order).map((s) => {
+      const m = (s as { metadata?: Record<string, string> }).metadata ?? {};
+      return {
+        subItemId: s.id ?? "",
+        status: m.pick_status ?? null,
+        quantity: m.picked_quantity ? Number(m.picked_quantity) : null,
+        substituteSku: m.substitute_sku ?? null,
+      };
+    }),
   };
 }

@@ -81,14 +81,12 @@ export default async function QueuePage() {
 
         {orders.map((o) => {
           const done = o.pickStatus !== "waiting";
-          return (
-            <Link
-              key={o.id}
-              href={`/pick/${o.id}`}
-              // 88px row, well over the 56px minimum. No hover state - there is
-              // no mouse in an aisle, so active: is the only tap feedback.
-              className={`flex min-h-[88px] items-center gap-4 px-5 py-4 active:bg-white/5 ${done ? "opacity-45" : ""}`}
-            >
+          // A finished order is not re-pickable. Re-picking would let a second
+          // run silently overwrite the first, and the write replaces rather
+          // than merges, so there would be no trace of what was overwritten.
+          // It stays openable through View, because the record is the point.
+          const body = (
+            <>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
@@ -127,9 +125,24 @@ export default async function QueuePage() {
                 )}
               </div>
 
-              <span aria-hidden className="text-2xl text-white/30">
-                ›
+              <span aria-hidden className="shrink-0 text-2xl text-white/30">
+                {done ? "" : "›"}
               </span>
+            </>
+          );
+
+          const cls = `flex min-h-[88px] items-center gap-4 px-5 py-4 ${done ? "opacity-50 active:bg-transparent" : "active:bg-white/5"}`;
+
+          return done ? (
+            <Link key={o.id} href={`/pick/${o.id}`} className={cls}>
+              {body}
+              <span className="shrink-0 rounded-lg border border-white/20 px-3 py-2 text-[12px] font-semibold text-white/70">
+                View
+              </span>
+            </Link>
+          ) : (
+            <Link key={o.id} href={`/pick/${o.id}`} className={cls}>
+              {body}
             </Link>
           );
         })}

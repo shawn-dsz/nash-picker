@@ -148,5 +148,17 @@ export type PickRun = {
   reference: string;
   customer: string;
   channel: Channel;
+  /** Sequenced into store walk order, not basket order. */
   rows: PickRow[];
+  /** Read back from Nash, so a finished run reopens read-only. */
+  pickStatus: "waiting" | "complete";
+  fillRate: number | null;
+  completedAt: string | null;
+  /** What was recorded last time, if anything. */
+  recorded: {
+    subItemId: string;
+    status: string | null;
+    quantity: number | null;
+    substituteSku: string | null;
+  }[];
 };
