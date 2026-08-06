@@ -1,5 +1,6 @@
 import { call, STORE, ok, step, warn } from "../lib/api.ts";
 import { PRODUCTS, productsPayload, inventoryPayload } from "./catalog.ts";
+import { ORDERS, orderPayload } from "./orders.ts";
 
 /**
  * Idempotent. Nash upserts products on externalIdentifier and inventory on
@@ -62,6 +63,35 @@ async function main() {
     (p) => p.location.aisle === "4" && p.location.bay === "B2",
   );
   ok(`${bay.length} lookalikes on aisle 4 / bay B2 / shelf 3, distinct barcodes`);
+
+  step("Seeding orders");
+
+  for (const o of ORDERS) {
+    const res = await call<{
+      id: string;
+      status: string;
+      items?: { subItems?: { sku?: string; substitution?: unknown }[] }[];
+    }>("POST", "/order", orderPayload(o, STORE));
+
+    ok(`${o.externalId} ${o.channel.padEnd(10)} ${res.id}  ${o.demonstrates}`);
+
+    // Whether substitution survives order create was the open question. It
+    // decides whether orders C and D can exist at all, so it is asserted
+    // rather than assumed.
+    const subs = (res.items ?? [])
+      .flatMap((i) => i.subItems ?? [])
+      .filter((s) => s.substitution);
+    const expected = o.lines.filter((l) => l.substitution).length;
+
+    if (subs.length !== expected) {
+      warn(
+        `substitution did not round-trip: sent ${expected}, got back ${subs.length}. ` +
+          `Orders C and D depend on this.`,
+      );
+    } else if (expected > 0) {
+      ok(`  substitution round-tripped on ${expected} sub-item(s)`);
+    }
+  }
 }
 
 main().catch((e) => {
