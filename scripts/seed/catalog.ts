@@ -32,11 +32,22 @@ export type SeedProduct = {
   centsPerUnit?: number;
   /** Deliberately zero for the out-of-stock scenarios. */
   quantity: number;
-  colour: string;
 };
 
-const img = (name: string, colour: string) =>
-  `https://placehold.co/400x400/${colour}/ffffff/png?text=${encodeURIComponent(name)}`;
+/**
+ * A same-origin path, not an absolute URL, and that is the tradeoff.
+ *
+ * The files live in public/products and are committed - see
+ * scripts/images/build.mjs for where each photograph came from. Nash stores
+ * whatever string it is given, so the browser resolves this against whichever
+ * origin is serving the app: localhost in dev, Railway in the demo, with no
+ * per-environment seed config and no third-party fetch to fail mid-demo.
+ *
+ * What it costs: the URL only means something inside this app. Nash's own
+ * portal cannot render it. A real retailer would put a CDN origin here, which
+ * is a one-line change to this function.
+ */
+const img = (sku: string) => `/products/${sku}.jpg`;
 
 export const PRODUCTS: SeedProduct[] = [
   // ---- weighted -----------------------------------------------------------
@@ -53,7 +64,6 @@ export const PRODUCTS: SeedProduct[] = [
     valueCents: 449,
     centsPerUnit: 449,
     quantity: 60,
-    colour: "d4b106",
   },
   {
     externalIdentifier: "PRD-CHK-002",
@@ -68,7 +78,6 @@ export const PRODUCTS: SeedProduct[] = [
     valueCents: 1490,
     centsPerUnit: 1490,
     quantity: 24,
-    colour: "b04a4a",
   },
 
   // ---- the three lookalikes: same aisle, same bay, same shelf --------------
@@ -83,7 +92,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "4", bay: "B2", shelf: "3" },
     valueCents: 320,
     quantity: 40,
-    colour: "c0392b",
   },
   {
     externalIdentifier: "BEV-COKE-101",
@@ -96,7 +104,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "4", bay: "B2", shelf: "3" },
     valueCents: 320,
     quantity: 40,
-    colour: "8e9aa5",
   },
   {
     externalIdentifier: "BEV-COKE-102",
@@ -109,7 +116,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "4", bay: "B2", shelf: "3" },
     valueCents: 320,
     quantity: 40,
-    colour: "2c3e50",
   },
 
   // ---- substitution pair --------------------------------------------------
@@ -124,7 +130,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "2", bay: "B1", shelf: "2" },
     valueCents: 250,
     quantity: 0,
-    colour: "d68910",
   },
   {
     externalIdentifier: "DRY-PAS-200",
@@ -137,7 +142,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "2", bay: "B1", shelf: "2" },
     valueCents: 250,
     quantity: 35,
-    colour: "e67e22",
   },
 
   // ---- refund-preference item ---------------------------------------------
@@ -152,7 +156,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "Bakery", bay: "K1", shelf: "1" },
     valueCents: 650,
     quantity: 0,
-    colour: "a5673f",
   },
 
   // ---- the rest of a believable basket ------------------------------------
@@ -167,7 +170,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "2", bay: "B3", shelf: "1" },
     valueCents: 480,
     quantity: 28,
-    colour: "8d6e63",
   },
   {
     externalIdentifier: "DRY-OIL-203",
@@ -180,7 +182,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "2", bay: "B4", shelf: "2" },
     valueCents: 990,
     quantity: 18,
-    colour: "6b8e23",
   },
   {
     externalIdentifier: "CHL-MLK-300",
@@ -193,7 +194,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "Chilled", bay: "C1", shelf: "1" },
     valueCents: 340,
     quantity: 50,
-    colour: "3498db",
   },
   {
     externalIdentifier: "CHL-YOG-301",
@@ -206,7 +206,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "Chilled", bay: "C2", shelf: "2" },
     valueCents: 720,
     quantity: 22,
-    colour: "5dade2",
   },
   {
     externalIdentifier: "CHL-CHE-302",
@@ -219,7 +218,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "Chilled", bay: "C2", shelf: "3" },
     valueCents: 890,
     quantity: 30,
-    colour: "f1c40f",
   },
   {
     externalIdentifier: "FRZ-PEA-400",
@@ -232,7 +230,6 @@ export const PRODUCTS: SeedProduct[] = [
     location: { aisle: "Frozen", bay: "F1", shelf: "2" },
     valueCents: 420,
     quantity: 33,
-    colour: "27ae60",
   },
 ];
 
@@ -244,7 +241,7 @@ export function productsPayload() {
       sku: p.sku,
       name: p.name,
       description: p.description,
-      imageUrls: [img(p.name, p.colour)],
+      imageUrls: [img(p.sku)],
       categories: p.categories,
       weight: p.weight,
       dimensions: { depth: 10, width: 10, height: 20 },
