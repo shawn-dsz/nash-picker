@@ -127,6 +127,28 @@ for (const o of perOrder) {
   );
 }
 
+/*
+ * Sequencing on its own, before batching enters the picture.
+ *
+ * This is the number the customer conversation turns on: walking is the
+ * largest controllable cost on a pick, and it is the one that software can
+ * remove without moving a single shelf. Measured against basket order - the
+ * order the customer happened to add things to the cart - because that is the
+ * genuine counterfactual for a store with no picking system.
+ */
+const basketWalk = ORDERS.reduce(
+  (t, o) => t + travel(rowsFor(o)) * SECONDS_PER_AISLE_POSITION,
+  0,
+);
+const sequencedWalk = perOrder.reduce((t, o) => t + o.seconds, 0);
+
+console.log("\n  --- sequencing alone, before any batching ---");
+console.log(`  Basket order                ${num(basketWalk, 5)} s walking`);
+console.log(`  Sequenced                   ${num(sequencedWalk, 5)} s walking`);
+console.log(
+  `  Saved                       ${num(basketWalk - sequencedWalk, 5)} s  (${Math.round(((basketWalk - sequencedWalk) / basketWalk) * 100)}%)`,
+);
+
 const batch = formBatch(ORDERS as unknown as (typeof ORDERS)[number][], ORDERS.length);
 const allRows = batch.flatMap(rowsFor);
 

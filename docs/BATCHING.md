@@ -66,13 +66,57 @@ and be explicit that the decomposition is the engineering decision.
 
 ## 3. The algorithm, in five stages
 
+```mermaid
+flowchart TB
+  Q["<b>Orders</b><br/>web · DoorDash · Uber Eats"]
+  Q --> W
+
+  W["<b>1 · WAVE</b><br/>group by van departure"]
+  W --> REL
+
+  REL{"<b>release?</b><br/>departure − pickTime − margin<br/><i>AND staging has room</i>"}
+  REL -->|"too early, or staging full"| HOLD["<b>hold the wave</b><br/><i>idle pickers are recoverable,<br/>a jammed staging area is not</i>"]
+  HOLD --> REL
+
+  REL -->|"go"| Z["<b>2 · ZONE</b><br/>split by temperature and region<br/><i>partial fulfilment starts here</i>"]
+
+  subgraph PAR["picked in parallel, by different pickers"]
+    direction LR
+    ZA["<b>Ambient</b><br/>dwell: hours"] --> BA["<b>3 · BATCH</b><br/>aisle overlap"] --> SA["<b>4 · SEQ</b><br/>serpentine"]
+    ZC["<b>Chilled</b><br/>dwell: tens of min"] --> BC["<b>3 · BATCH</b>"] --> SC["<b>4 · SEQ</b>"]
+    ZF["<b>Frozen</b><br/>dwell: just in time"] --> BF["<b>3 · BATCH</b>"] --> SF["<b>4 · SEQ</b>"]
+  end
+
+  Z --> ZA
+  Z --> ZC
+  Z --> ZF
+
+  SA --> M
+  SC --> M
+  SF --> M
+
+  M["<b>5 · MERGE</b><br/>zone totes reconverge at staging"]
+  M --> ALL{"every zone in?"}
+  ALL -->|"no - order is partial"| M
+  ALL -->|"yes"| V["<b>dispatchable</b> → van"]
+
+  V -.->|"frees a staging slot"| REL
+
+  classDef gate fill:#c9ff00,stroke:#01051E,color:#01051E,font-weight:bold
+  classDef ship fill:#1a2332,stroke:#c9ff00,color:#c9ff00
+  class REL,ALL gate
+  class SA,SC,SF ship
 ```
-orders  ->  WAVE     (by van departure, released against staging capacity)
-        ->  ZONE     (split the store; this is where partial fulfilment starts)
-        ->  BATCH    (group orders on a trolley by aisle overlap)
-        ->  SEQUENCE (serpentine - already shipped, unchanged)
-        ->  MERGE    (zone totes reconverge; order becomes dispatchable)
-```
+
+The two things to read off that picture:
+
+**The dotted edge is the whole design.** A van leaving frees a staging slot,
+which is what permits the next wave to release. Throughput is governed by that
+loop, not by how fast anyone walks.
+
+**The parallel block is partial order fulfilment.** One order is picked by
+three people at once and is not a whole order again until merge. Highlighted in
+green is what is already shipped: sequencing does not change.
 
 ### Stage 1 - Wave formation (temporal)
 
