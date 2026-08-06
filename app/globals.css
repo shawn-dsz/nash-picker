@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
+/*
+  OnePick is a dark-only interface, deliberately.
+
+  It is designed for a handheld carried between a freezer aisle and a loading
+  dock. A dark surface with one high-chroma accent stays legible across that
+  range of lighting, and it does not blind a picker working an early shift.
+  There is no light variant because there is no context that wants one.
+
+  WHY THIS FILE HAD A BUG
+  -----------------------
+  create-next-app ships a globals.css that flips --foreground between #171717
+  and #ededed on prefers-color-scheme, then applies it with a bare `body`
+  selector.
+
+  In Tailwind v4, `@import "tailwindcss"` puts every utility inside a cascade
+  layer, and unlayered CSS beats layered CSS regardless of specificity. So
+  `body { color: var(--foreground) }` outranked the `text-white` utility on
+  the same element.
+
+  On a machine set to light mode that resolved to #171717 - near black - and
+  inherited down into every element that did not set its own colour. The h1
+  and the customer names went dark on a dark background and vanished. Anything
+  carrying an explicit `text-white/70` was unaffected, which is exactly the
+  pattern in the screenshot: some text visible, some invisible, background
+  correct.
+
+  It was invisible in dark mode because #ededed happens to look right.
+
+  The fix is to stop deriving colour from the system theme at all. The tokens
+  below are fixed, so the app renders identically regardless of the machine it
+  is demoed on - which for a store handheld is the correct behaviour anyway.
+*/
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --nash-bg: #01051e;
+  --nash-signal: #c9ff00;
+  --nash-signal-dim: #a8d400;
+  --nash-mist: #d7f0ee;
+  --nash-ocean: #314868;
+
+  --background: var(--nash-bg);
+  --foreground: #ffffff;
+
+  /* Do not let a system preference repaint a store device. */
+  color-scheme: dark;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-signal: var(--nash-signal);
+  --color-mist: var(--nash-mist);
+  --color-ocean: var(--nash-ocean);
+  --font-sans: var(--font-host);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/*
+  Picking is a two-handed job done at speed. Text selection on a tap is noise,
+  and the tap highlight flashes a colour that is not in the palette.
+*/
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  -webkit-user-select: none;
+  user-select: none;
 }
