@@ -130,8 +130,8 @@ Only if L0-L5 are stable. **Cut in this order.**
 | | Blocker | Needed for | Who |
 |---|---|---|---|
 | ✅ | ~~Sandbox credentials~~ | Resolved - key verified, store confirmed, catalog empty | - |
-| 🟡 | Where channel should live - `tags` or `orderMetadata` | L1.4, L2.3 | Kareem. **Assume `tags` and proceed** |
-| 🟡 | Whether `PATCH /v1/order` is the right write path | L5 | Kareem. **Assume yes and proceed** |
+| 🟡 | Where channel should live - `tags` or `orderMetadata` | L1.4, L2.3 | Confirm at check-in. **Assume `tags` and proceed** |
+| 🟡 | Whether `PATCH /v1/order` is the right write path | L5 | Confirm at check-in. **Assume yes and proceed** |
 
 **Nothing is blocking. Neither amber item blocks starting.** Both are isolated to one adapter function each, so a wrong guess is a small edit, not a rewrite. Do not wait on them.
 

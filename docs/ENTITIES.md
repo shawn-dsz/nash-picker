@@ -1,7 +1,7 @@
 # Nash entity model
 
 What Nash's own objects are and how they hang together, from https://docs.usenash.com/.
-Research in `_context/API-NOTES.md`. **OnePick invents no entities** - it drives these.
+**OnePick invents no entities** - it drives these.
 
 ---
 
@@ -116,7 +116,7 @@ inventory.location { aisle, bay, shelf }
 `items[]` is the **bag or tote** - the delivery-side unit Nash dispatches.
 `subItems[]` is the **banana or the Coke** - the thing a picker actually walks to and grabs.
 
-**Pick against `subItems[]`.** Assumption A1 in `_context/plan.md`; if wrong, it is one file in the adapter.
+**Pick against `subItems[]`.** This is an assumption, not a documented guarantee; if it is wrong, it is one file in the adapter.
 
 ---
 
