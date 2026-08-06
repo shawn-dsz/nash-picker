@@ -11,8 +11,8 @@ Level 6 is only reached if 0-5 are stable.
 |---|---|---|---|
 | **L0** | The app boots and talks to Nash | 10 min | ✅ **done** |
 | **L1** | The sandbox has a store, a catalog and four orders | 25 min | ✅ **done** |
-| **L2** | One queue showing all four orders, all three channels | 30 min | 🔨 **in progress** |
-| **L3** | A picker can walk an order item by item | 30 min | ⬜ |
+| **L2** | One queue showing all four orders, all three channels | 30 min | ✅ **done** |
+| **L3** | A picker can walk an order item by item | 30 min | 🔨 **in progress** |
 | **L4** | All four outcomes recordable | 35 min | ⬜ |
 | **L5** | Nash knows picking is done | 20 min | 🔴 **blocked** - see below |
 | **L6** | Scan verification, fill rate by channel | 25 min | ⬜ cut first |
@@ -71,23 +71,31 @@ That is how a real store catalog behaves anyway.
 
 ---
 
-## L2 - Read path 🔨
+## L2 - Read path ✅
 
 **Done when:** the queue shows four orders with channel badges, and the pick
 list for one order shows real names and locations.
 
-- [ ] **2.1** `lib/types.ts` - written from the **real payload**, not from the docs · `feat: domain types`
-- [ ] **2.2** `lib/adapter.ts` - the three-way join: order → products → inventory · `feat: adapter join`
-- [ ] **2.3** Channel normalisation inside the adapter. The picker view never receives it · `feat: channel normalisation`
-- [ ] **2.4** `app/api/orders/route.ts` - list, server-side · `feat: orders route`
-- [ ] **2.5** `app/page.tsx` - the queue. Customer, item count, channel badge · `feat: order queue`
+- [x] **2.1** `lib/types.ts` - written from the **real payload**, not from the docs · `feat: domain types`
+- [x] **2.2** `lib/adapter.ts` - the three-way join: order → products → inventory · `feat: adapter join`
+- [x] **2.3** Channel normalisation inside the adapter. The picker view never receives it · `feat: channel normalisation`
+- [x] **2.4** `app/api/orders/route.ts` - list, server-side · `feat: orders route`
+- [x] **2.5** `app/page.tsx` - the queue. Customer, item count, channel badge · `feat: order queue`
 
-**This is the highest-risk level.** The join is where an hour disappears. Build
-it against a real payload and log the raw response the first time.
+**Verified against live data.** All four runs resolve: names, aisle/bay/shelf,
+weighted flags, real stock levels, and both substitution preferences.
+
+**Found:** `GET /orders` returns a **summary** - no `items`, no `requirements`,
+no `orderMetadata`. The pick list needs `GET /order/{id}`. Also `itemsCount`
+comes back as a **string** (`"5"`), so anything doing arithmetic on it
+concatenates silently.
+
+**Also:** `POST /order` always creates, so seeding orders is not idempotent the
+way the catalog is. The queue dedupes on `externalId`, newest wins.
 
 ---
 
-## L3 - Pick screen ⬜
+## L3 - Pick screen 🔨
 
 **Done when:** a picker can walk order A start to finish and reach a done state.
 
