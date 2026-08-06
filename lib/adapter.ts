@@ -1,6 +1,6 @@
 import "server-only";
 import { nash, unwrap } from "./nash";
-import { sequence } from "./sequence";
+import { sequence, routeGain } from "./sequence";
 import type {
   Channel,
   NashInventory,
@@ -247,9 +247,11 @@ export async function getPickRun(orderId: string): Promise<PickRun | null> {
       [order.dropoffFirstName, order.dropoffLastName].filter(Boolean).join(" ") ||
       "Customer",
     channel: toChannel(order.tags),
-    // Walked in store order rather than basket order. See lib/sequence.ts for
-    // why this is config and not an algorithm.
+    // Serpentine traversal over the store layout, rather than basket order.
     rows: sequence(rows),
+    // Measured, not asserted. On a small basket the gain is sometimes zero,
+    // and claiming a saving that was not made is worse than reporting none.
+    route: routeGain(rows),
     pickStatus: alreadyPicked ? "complete" : "waiting",
     fillRate: meta.pick_fill_rate ? Number(meta.pick_fill_rate) : null,
     completedAt: meta.pick_completed_at ?? null,

@@ -150,6 +150,12 @@ export type PickRun = {
   channel: Channel;
   /** Sequenced into store walk order, not basket order. */
   rows: PickRow[];
+  /** What sequencing bought, measured against the basket as ordered. */
+  route: {
+    before: { moves: number; travel: number };
+    after: { moves: number; travel: number };
+    saved: number | null;
+  };
   /** Read back from Nash, so a finished run reopens read-only. */
   pickStatus: "waiting" | "complete";
   fillRate: number | null;

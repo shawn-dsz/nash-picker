@@ -115,3 +115,55 @@ export function aisleChanges(rows: PickRow[]): number {
   }
   return changes;
 }
+
+/**
+ * Distance proxy: total absolute movement through the layout, measured in
+ * aisle positions.
+ *
+ * Not metres, deliberately. Real distance needs aisle lengths and cross-aisle
+ * geometry, which is planogram data this system does not have. Aisle
+ * positions are a proxy that is honest about its own precision and still
+ * captures the thing that costs time: crossing the store.
+ */
+export function travel(rows: PickRow[]): number {
+  let total = 0;
+  for (let i = 1; i < rows.length; i++) {
+    total += Math.abs(
+      aisleRank(rows[i].location?.aisle) - aisleRank(rows[i - 1].location?.aisle),
+    );
+  }
+  return total;
+}
+
+export type RouteGain = {
+  before: { moves: number; travel: number };
+  after: { moves: number; travel: number };
+  /** Reduction in travel, 0 to 1. Null when the basket was already optimal. */
+  saved: number | null;
+};
+
+/**
+ * What sequencing actually bought, measured against the order as the customer
+ * built it.
+ *
+ * The point of computing this rather than asserting it: on a four-item basket
+ * the gain is sometimes zero, and a system that claims a saving it did not
+ * make is worse than one that reports honestly. The number is real or it is
+ * not shown.
+ */
+export function routeGain(basketOrder: PickRow[]): RouteGain {
+  const sequenced = sequence(basketOrder);
+
+  const before = {
+    moves: aisleChanges(basketOrder),
+    travel: travel(basketOrder),
+  };
+  const after = { moves: aisleChanges(sequenced), travel: travel(sequenced) };
+
+  return {
+    before,
+    after,
+    saved:
+      before.travel > 0 ? (before.travel - after.travel) / before.travel : null,
+  };
+}
