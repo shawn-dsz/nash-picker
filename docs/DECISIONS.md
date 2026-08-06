@@ -161,3 +161,19 @@ Each entry: what was decided, why, what was rejected, and **how reversible it is
 **Cost:** the scan-verified number is now a rate rather than a guarantee, which is the honest version but a weaker headline.
 
 **Reversibility:** cheap.
+
+---
+
+## D13 - Real product photographs, committed to the repo
+
+**Decided:** replace the `placehold.co` tiles with CC-licensed photographs of the actual packs, held in `public/products` and seeded as same-origin paths.
+
+**Why:** the catalog's whole argument is that three colas sit on one shelf and a picker cannot tell them apart by looking. Three grey squares with the product name typed on them prove the opposite - they are trivially distinguishable, which is exactly what the barcode is supposed to be needed for. A red bottle, a silver one and a black one make the case the scan gate exists to answer.
+
+Committing them removes the last third-party host from the render path: a demo that fetches fourteen thumbnails live has fourteen ways to show a broken image in front of a room.
+
+**Rejected:** hotlinking a retailer CDN, which is both fragile and someone else's bandwidth; and generated images, which would be placeholders wearing a better costume.
+
+**Cost:** 452kB of binaries in the repo, provenance to maintain in `public/products/CREDITS.md`, and a seeded `imageUrls` value that only resolves inside this app - the Nash portal cannot render it. A retailer would put a CDN origin in `img()`, which is one line.
+
+**Reversibility:** cheap. `scripts/images/build.mjs` records every source URL, so the set is rebuildable, and `img()` is a single function.
