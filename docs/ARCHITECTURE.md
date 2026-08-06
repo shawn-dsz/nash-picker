@@ -13,9 +13,9 @@ A lightweight web picking app for FreshMart, built on Nash's pick-and-pack model
 ```mermaid
 flowchart LR
   subgraph nash["Nash API (sandbox)"]
-    orders["GET / PATCH /v1/order"]
-    prod["GET / POST /v1/products"]
-    inv["GET / POST /v1/inventory"]
+    orders["GET /orders - list<br/>GET / PATCH /order/{id}"]
+    prod["GET / POST /products"]
+    inv["GET / POST /inventory"]
   end
 
   subgraph app["OnePick - Next.js, stateless"]
@@ -145,10 +145,24 @@ Real stores run this on rugged handhelds. This is the lightweight web equivalent
 
 ## 6. Current state
 
-- Orders fetched from Nash's sandbox, normalised across three channels into one queue
-- Picker walked through each sub-item: name, quantity, image, aisle / bay / shelf
-- All four outcomes recorded against Nash's own statuses
-- Completion written back, order reaching `items_pick_complete`
+Nothing is ticked until it has been seen working against the live sandbox. This list is
+the honest answer to *"what did you actually build"*, so it is filled in as things land,
+never in advance.
+
+- [ ] Orders fetched from Nash's sandbox, normalised across channels into one queue
+- [ ] Picker walked through each sub-item: name, quantity, image, aisle / bay / shelf
+- [ ] All four outcomes recorded against Nash's own statuses
+- [ ] Completion written back, order reaching `items_pick_complete`
+
+**Verified against the live sandbox so far:**
+
+| | |
+|---|---|
+| Region | US - `https://api.sandbox.usenash.com/v1`. The AU host rejects this key |
+| Reads | `GET /orders`, `GET /products`, `GET /inventory` all return 200, though none are in the published docs |
+| Store | One - `stl_FHRyQgmDr9DwC8qhkD3r75`, "Carlton" |
+| Catalog | Empty. 0 products, 0 inventory rows, 0 orders. The seed is the demo |
+| Not yet verified | `pickedItems`, `items_pick_complete`, the four picking statuses, `requirements: ["pick_and_pack"]`, and `PATCH /order/{id}` as the write path |
 
 ---
 
@@ -175,10 +189,8 @@ Real stores run this on rugged handhelds. This is the lightweight web equivalent
 
 ## Running it
 
-```bash
-cp .env.example .env           # fill in the sandbox key and store location
-npm install
-npm run dev
-```
+Not runnable yet - there is no application scaffold. This section gets filled in when
+`npm run dev` actually boots, not before.
 
-Nash sandbox: `https://api.sandbox.usenash.com/v1`
+Nash sandbox base URL: `https://api.sandbox.usenash.com/v1` (US - verified. The AU host
+rejects this key.)

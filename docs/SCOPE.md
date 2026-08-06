@@ -10,7 +10,7 @@ What is being built, what is deliberately not, and where the boundary with Nash 
 
 | | Meaning |
 |---|---|
-| 🟩 **Built** | In scope today. Demonstrable in the walkthrough |
+| 🟩 **Committed** | In scope today. The contract - these are what "done" means |
 | 🟨 **Stretch** | Built only if the core is finished and stable. First to be cut |
 | ⬜ **Not building** | Deliberately excluded. Each one has a reason, not an excuse |
 | 🟦 **Nash** | Already exists in the platform. Used, not rebuilt |
@@ -79,14 +79,17 @@ flowchart TB
 
 ---
 
-## 🟩 Built - the four requirements are the contract
+## 🟩 Committed - the four requirements are the contract
+
+Committed means in scope, not finished. What is actually working is tracked in
+`ARCHITECTURE.md` section 6, and nothing is claimed there until it has run live.
 
 | | Requirement | What it means concretely |
 |---|---|---|
-| **R1** | Fetch orders from Nash's sandbox | Real API, real payloads. Three channels normalised into **one queue** |
+| **R1** | Fetch orders from Nash's sandbox | Real API, real payloads. Channels normalised into **one queue**. Channel is seeded demo metadata, not a Nash field |
 | **R2** | Guide the picker through items | Name, quantity, image, and `aisle / bay / shelf` from per-store inventory |
 | **R3** | Handle the picking scenarios | All four, mapped onto Nash's own statuses rather than invented |
-| **R4** | Update Nash when picking is complete | `pickedItems` written back, order reaches `items_pick_complete` |
+| **R4** | Update Nash when picking is complete | `pickedItems` written back, order reaches `items_pick_complete`. **Write path unverified - confirm before building** |
 
 Plus the seed script, because the sandbox account starts empty and **the seed data is the demo storyline**.
 
